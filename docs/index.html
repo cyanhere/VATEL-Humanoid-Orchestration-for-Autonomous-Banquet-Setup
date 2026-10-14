@@ -19,6 +19,8 @@
 
   <link rel="stylesheet" href="./components/team-member/team-member.css">
   <script type="module" src="./components/team-member/team-member.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.2.1/dist/mermaid.min.js"></script>
 </head>
 
 <body>
@@ -39,6 +41,10 @@
         department="Electrical Engineering" year="Year 4">
       </team-member>
     </div>
+    <p class="doc-meta">
+      Supervisor: <span class="blank">[name]</span> &middot;
+      Industry partner: <span class="blank">[company]</span>
+    </p>
 
     <sl-divider></sl-divider>
 
@@ -48,23 +54,10 @@
       purpose-built for human reach and access, where fixed automation is impractical and a separate
       task-specific robot per item type is uneconomical. VATEL develops and evaluates an autonomous
       perception-and-manipulation pipeline for a humanoid robot to transfer and place banquet
-      tableware, using plate transfer from an AGV as the representative case, with the approach
-      intended to generalise to other tableware handling tasks.
+      tableware. The representative case is plate transfer from an AGV, a requirement from our
+      industry partner, who is deploying the AGV. The approach is intended to generalise to other
+      tableware handling tasks.
     </p>
-
-    <h2>How it works</h2>
-    <ol class="pipeline-steps">
-      <li><strong>Plan.</strong> The banquet team opens the VATEL Planner on an iPad or a computer.
-        It shows the whole hall with the tables segmented on a 2-D map, and the team plans the
-        event's arrangement there.</li>
-      <li><strong>Hand off.</strong> The planner sends the Unitree R1 humanoid the static map: where
-        each table is, how many sets each table needs, and the position of every set.</li>
-      <li><strong>Navigate.</strong> The R1 navigates the hall from that map, using its Hesai JT128
-        lidar to find where the tables really are and update the map.</li>
-      <li><strong>Transfer.</strong> It takes plates one at a time off a stack delivered by an AGV
-        and places each at its designated position.</li>
-      <li><strong>Done.</strong> At least 90 % of the plates are in place, and none are broken.</li>
-    </ol>
 
     <h2>Reports</h2>
     <div class="report-cards">
@@ -83,7 +76,80 @@
         <span>Planner, navigation, perception, manipulation and hardware on GitHub</span>
       </a>
     </div>
+
+    <h2>How it works</h2>
+    <ol class="pipeline-steps">
+      <li><strong>Plan the banquet.</strong> The banquet team opens the VATEL Planner on an iPad or a
+        computer. It shows the whole banquet hall, segments out the tables and draws them on a 2-D
+        map, where the team plans the arrangement and setup for the event.</li>
+      <li><strong>Hand the plan to the robot.</strong> When the arrangement is done, the planner sends
+        the static map to the Unitree R1 humanoid: where each table is, how many sets of plates and
+        cutlery each table needs, and the calculated position of every set.</li>
+      <li><strong>Map the real hall and navigate.</strong> The R1 navigates the hall autonomously from
+        the planner's static map. Its onboard Hesai JT128 lidar maps the real room to find the exact
+        location of each table, correcting the difference between the plan and the real arrangement.
+        The robot updates the map and navigates to each set position.</li>
+      <li><strong>Transfer plates from the AGV.</strong> Once the robot can navigate the whole hall and
+        reach at least 80 % of the required workspace, it goes to the AGV plate-delivery area, where
+        an AGV brings plates stacked from the kitchen. It takes one plate at a time off the stack and
+        places it at its designated position. One plate per trip is a deliberate limit, set by the
+        dexterous hands and the robot platform.</li>
+      <li><strong>Done.</strong> The task is complete when the plates are at their designated
+        positions, with up to 10 % of all plates allowed to miss, and no plate broken.</li>
+    </ol>
+
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TB
+  PL["<b>1 · Plan</b> in the VATEL Planner<br/>on an iPad or a computer:<br/>segment tables, plan the layout,<br/>calculate set positions"]
+  subgraph R1["Unitree R1"]
+    NAV["<b>3 · Navigate</b> from the static map<br/>JT128 lidar finds the real tables;<br/>map and set positions updated"]
+    PICK["<b>4 · Pick</b> one plate<br/>off the AGV stack"]
+    PLACE["<b>Place</b> it at its<br/>designated position"]
+  end
+  AGV[("AGV with<br/>stacked plates")]
+  DONE["<b>5 · Done</b>: ≥ 90 % of plates placed, none broken"]
+  PL -- "2 · static map, tables, sets per table, set positions" --> NAV
+  NAV -- "≥ 80 % of the workspace reached" --> PICK
+  AGV -.-> PICK
+  PICK --> PLACE
+  PLACE -- "next plate" --> PICK
+  PLACE --> DONE
+      </pre>
+      <sub>The VATEL pipeline</sub>
+    </div>
+
+    <h2>Success criteria</h2>
+    <div class="table-scroll">
+      <table class="report-table">
+        <thead>
+          <tr><th>Criterion</th><th>Target</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Workspace the robot reaches by navigation</td><td><strong>&ge; 80 %</strong> of the required workspace</td></tr>
+          <tr><td>Plates at their designated positions</td><td><strong>&ge; 90 %</strong> of all plates (up to 10 % may miss)</td></tr>
+          <tr><td>Plates broken</td><td><strong>0</strong></td></tr>
+          <tr><td>Plates carried per trip</td><td><strong>1</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Hardware</h2>
+    <div class="table-scroll">
+      <table class="report-table">
+        <tbody>
+          <tr><th scope="row">Robot</th><td>Unitree R1 humanoid: 26 DoF, 2 kg payload per arm</td></tr>
+          <tr><th scope="row">Head sensors</th><td>Hesai JT128 lidar and Intel RealSense D435if depth camera, on a custom clamp-on sensor helmet</td></tr>
+          <tr><th scope="row">Hands</th><td>BrainCo Revo 2 dexterous hands</td></tr>
+          <tr><th scope="row">Onboard compute</th><td>NVIDIA Jetson Orin</td></tr>
+          <tr><th scope="row">Plate delivery</th><td>AGV with stacked plates, deployed by our industry partner</td></tr>
+          <tr><th scope="row">Planner</th><td>Any web browser, on an iPad or a computer</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+
+  <script src="./components/diagram/diagram.js"></script>
 </body>
 
 </html>
