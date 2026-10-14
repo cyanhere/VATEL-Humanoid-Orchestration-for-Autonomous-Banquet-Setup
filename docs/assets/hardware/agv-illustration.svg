@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="640" height="480">
+  <!-- A generic flat-deck AGV carrying a stack of plates. An illustration in the site's
+       palette, not a picture of the industry partner's vehicle. -->
+  <defs>
+    <radialGradient id="glow" cx="78%" cy="-5%" r="85%">
+      <stop offset="0" stop-color="#5FC2A2" stop-opacity="0.26"/>
+      <stop offset="0.7" stop-color="#5FC2A2" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#000" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E3ECE8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="640" height="480" fill="#0F1513"/>
+  <rect width="640" height="480" fill="url(#glow)"/>
+  <!-- floor grid, as on the hero's hall -->
+  <g stroke="#FFFFFF" stroke-opacity="0.04">
+    <path d="M0 390H640M0 430H640M0 350H640"/>
+    <path d="M80 480L170 330M240 480L270 330M400 480L370 330M560 480L470 330"/>
+  </g>
+  <ellipse cx="322" cy="356" rx="230" ry="34" fill="url(#shadow)"/>
+
+  <!-- the AGV: top deck, front and side faces -->
+  <g stroke="#5FC2A2" stroke-opacity="0.55" stroke-width="1.5" stroke-linejoin="round">
+    <path d="M150 268 L430 268 L512 222 L232 222 Z" fill="#26322D"/>
+    <path d="M150 268 L430 268 L430 318 Q430 326 422 326 L158 326 Q150 326 150 318 Z" fill="#1A231F"/>
+    <path d="M430 268 L512 222 L512 270 Q512 276 506 279 L430 322 Z" fill="#141B18"/>
+  </g>
+  <!-- wheels -->
+  <g fill="#0B100E" stroke="#5FC2A2" stroke-opacity="0.35" stroke-width="1.2">
+    <ellipse cx="196" cy="330" rx="22" ry="9"/>
+    <ellipse cx="384" cy="330" rx="22" ry="9"/>
+    <ellipse cx="478" cy="290" rx="16" ry="7"/>
+  </g>
+  <!-- status light, bumper and front lidar window -->
+  <rect x="172" y="286" width="72" height="6" rx="3" fill="#5FC2A2"/>
+  <rect x="360" y="282" width="52" height="14" rx="7" fill="#0B100E" stroke="#5FC2A2" stroke-opacity="0.45"/>
+  <path d="M150 306 H430" stroke="#5FC2A2" stroke-opacity="0.25"/>
+
+  <!-- the plate stack on the deck: eight nested plates, the top one showing its well -->
+  <g stroke="#9DBFB3" stroke-width="1.2">
+    <ellipse cx="330" cy="244" rx="82" ry="21" fill="#C9D8D1"/>
+    <ellipse cx="330" cy="236" rx="82" ry="21" fill="url(#plate)"/>
+    <ellipse cx="330" cy="228" rx="82" ry="21" fill="url(#plate)"/>
+    <ellipse cx="330" cy="220" rx="82" ry="21" fill="url(#plate)"/>
+    <ellipse cx="330" cy="212" rx="82" ry="21" fill="url(#plate)"/>
+    <ellipse cx="330" cy="204" rx="82" ry="21" fill="url(#plate)"/>
+    <ellipse cx="330" cy="196" rx="82" ry="21" fill="url(#plate)"/>
+    <ellipse cx="330" cy="188" rx="82" ry="21" fill="url(#plate)"/>
+    <ellipse cx="330" cy="180" rx="82" ry="21" fill="#FFFFFF"/>
+  </g>
+  <ellipse cx="330" cy="181" rx="52" ry="12.5" fill="none" stroke="#CFE0D8" stroke-width="1.4"/>
+  <ellipse cx="330" cy="181" rx="52" ry="12.5" fill="#F4F7F5" opacity="0.6"/>
+
+  <!-- one plate lifting off the stack, the way the robot takes them -->
+  <g opacity="0.95">
+    <path d="M330 150 V120" stroke="#5FC2A2" stroke-width="1.5" stroke-dasharray="3 4" stroke-linecap="round"/>
+    <path d="M323 126 L330 116 L337 126" fill="none" stroke="#5FC2A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

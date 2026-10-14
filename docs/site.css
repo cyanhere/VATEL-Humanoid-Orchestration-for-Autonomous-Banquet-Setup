@@ -437,27 +437,57 @@ sl-divider {
 .spec-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 28px 32px;
-  margin: 0;
+  gap: 44px 32px;
 }
 
 .spec {
-  padding-top: 14px;
-  border-top: 2px solid var(--accent);
+  display: flex;
+  flex-direction: column;
 }
 
-.spec dt {
-  margin-bottom: 6px;
+/* every picture in the same 4:3 frame; product shots on dark, renders on light */
+.spec-img {
+  display: block;
+  margin-bottom: 18px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.spec-img.dark {
+  border-color: #1E2824;
+  background: var(--dark);
+}
+
+.spec-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.spec-label {
+  margin: 0 0 6px;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.1em;
+  line-height: 1.4;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.spec dd {
+.spec-text {
   margin: 0;
   color: var(--ink);
+}
+
+.credit {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
 }
 
 .report-cards {
@@ -692,12 +722,35 @@ a.report-card:hover {
   transform: scaleX(0);
 }
 
-.spec dt {
+/* hardware cards: the picture eases in a touch and the label turns green */
+.spec-label {
   transition: color 0.2s;
 }
 
-.spec:hover dt {
+.spec-img {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.spec-img img {
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.spec:hover .spec-label,
+.spec:focus-within .spec-label {
   color: var(--accent);
+}
+
+.spec:hover .spec-img {
+  box-shadow: 0 12px 30px rgba(17, 20, 18, 0.1);
+}
+
+.spec:hover .spec-img img {
+  transform: scale(1.04);
+}
+
+a.spec-img:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 a.report-card:focus-visible {
@@ -723,11 +776,13 @@ a.report-card:active {
   .btn:hover,
   .stat:hover,
   a.report-card:hover,
-  .steps li.hl::before {
+  .steps li.hl::before,
+  .spec:hover .spec-img img {
     transform: none;
   }
 
-  .stat-bar i {
+  .stat-bar i,
+  .spec-img img {
     transition: none;
   }
 }
