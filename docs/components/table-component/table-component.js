@@ -27,13 +27,16 @@ class TableComponent extends HTMLElement {
     <style>
       :host {
         display: block;
+        margin: 20px 0 28px;
         text-align: center;
-        margin: 16px 0 24px;
       }
 
       sub {
-        font-size: 1rem;
+        display: block;
+        margin-top: 12px;
+        font-size: 0.9rem;
         font-style: italic;
+        color: #5E6B66;
       }
     </style>
   `;

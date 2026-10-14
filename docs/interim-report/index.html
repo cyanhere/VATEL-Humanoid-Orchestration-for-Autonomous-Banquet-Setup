@@ -12,8 +12,12 @@
   <script type="module"
     src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/shoelace-autoloader.js"></script>
 
-  <link rel="stylesheet" href="../index.css">
-  <link rel="stylesheet" href="../report.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap">
+
+  <link rel="stylesheet" href="../site.css">
 
   <link rel="stylesheet" href="../components/team-member/team-member.css">
   <script type="module" src="../components/team-member/team-member.js"></script>
@@ -46,11 +50,23 @@
     - Every section in 5 has a "Lead" line. The course assesses each member individually, so keep
       those and Section 10 accurate.
   -->
-  <div class="content">
-    <sl-button href="../" size="small">&larr; VATEL home</sl-button>
+  <header class="site-bar">
+    <div class="site-bar-inner">
+      <a class="brand" href="../"><img src="../favicon.svg" alt="">VATEL</a>
+      <nav class="site-nav" aria-label="Site">
+        <a class="optional" href="../">Project site</a>
+        <a href="./" aria-current="page">Interim report</a>
+        <a href="https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup"
+          target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
 
+  <div class="doc">
+    <header class="doc-header">
+    <p class="eyebrow">Interim report &middot; Semester 1</p>
     <h1>VATEL: Humanoid Orchestration for Autonomous Banquet Setup</h1>
-    <p class="subtitle">Interim Report &middot; CDE4301 Innovation &amp; Design Capstone &middot; AY2026/27 Semester 1</p>
+    <p class="subtitle">CDE4301 Innovation &amp; Design Capstone &middot; AY2026/27 Semester 1</p>
     <p class="doc-meta">
       Supervisor: <span class="blank">[name]</span> &middot;
       Industry partner: <span class="blank">[company]</span> &middot;
@@ -69,11 +85,11 @@
         department="Electrical Engineering" year="Year 4">
       </team-member>
     </div>
+    </header>
 
-    <sl-divider></sl-divider>
-
-    <div class="table-of-content">
-      <h2>Table of Contents</h2>
+    <div class="doc-layout">
+    <aside class="table-of-content">
+      <h2>Contents</h2>
       <sl-tree>
         <sl-tree-item>
           <a href="#summary">Executive Summary</a>
@@ -151,10 +167,9 @@
         <sl-tree-item><a href="#references">References</a></sl-tree-item>
         <sl-tree-item><a href="#appendices">Appendices</a></sl-tree-item>
       </sl-tree>
-    </div>
+    </aside>
 
-    <sl-divider></sl-divider>
-
+    <main class="content">
     <!-- ================================================================== -->
     <section id="summary">
       <h2>Executive Summary</h2>
@@ -984,11 +999,21 @@ flowchart TB
           target="_blank">GitHub repository</a>.
       </p>
     </section>
+    </main>
+    </div>
   </div>
 
   <sl-button class="scroll-to-top" variant="primary" size="medium" circle onclick="scrollToTop()">
     <sl-icon name="arrow-up" label="Back to top"></sl-icon>
   </sl-button>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p>VATEL &middot; Humanoid Orchestration for Autonomous Banquet Setup</p>
+      <p>CDE4301 Innovation &amp; Design Capstone &middot; College of Design and Engineering, National
+        University of Singapore &middot; AY2026/27</p>
+    </div>
+  </footer>
 
   <script src="../components/diagram/diagram.js"></script>
 </body>

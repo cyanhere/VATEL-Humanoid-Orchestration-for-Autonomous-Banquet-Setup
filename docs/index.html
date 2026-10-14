@@ -10,77 +10,112 @@
     content="VATEL: Humanoid Orchestration for Autonomous Banquet Setup. A CDE4301 capstone project at the National University of Singapore.">
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/themes/light.css" />
-  <script type="module"
-    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/shoelace-autoloader.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap">
 
-  <link rel="stylesheet" href="./index.css">
-  <link rel="stylesheet" href="./report.css">
+  <link rel="stylesheet" href="./site.css">
 
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11.2.1/dist/mermaid.min.js"></script>
 </head>
 
 <body>
-  <div class="content">
-    <h1>VATEL</h1>
-    <p class="subtitle">Humanoid Orchestration for Autonomous Banquet Setup</p>
-    <p class="doc-meta">CDE4301 Innovation &amp; Design Capstone &middot; College of Design and Engineering,
-      National University of Singapore &middot; AY2026/27</p>
-
-    <sl-divider></sl-divider>
-
-    <h2>The problem</h2>
-    <p>
-      Banquet table setting requires handling diverse, fragile tableware across an environment
-      purpose-built for human reach and access, where fixed automation is impractical and a separate
-      task-specific robot per item type is uneconomical. VATEL develops and evaluates an autonomous
-      perception-and-manipulation pipeline for a humanoid robot to transfer and place banquet
-      tableware. The representative case is plate transfer from an AGV, a requirement from our
-      industry partner, who is deploying the AGV. The approach is intended to generalise to other
-      tableware handling tasks.
-    </p>
-
-    <h2>Reports</h2>
-    <div class="report-cards">
-      <a class="report-card" href="./interim-report/">
-        <strong>Interim Report</strong>
-        <span>Semester 1: problem, specifications, concept, detailed design and first results</span>
-      </a>
-      <div class="report-card pending">
-        <strong>Final Report</strong>
-        <span>Semester 2: to be published</span>
-      </div>
-      <a class="report-card"
-        href="https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup"
-        target="_blank">
-        <strong>Source Code</strong>
-        <span>Planner, navigation, perception, manipulation and hardware on GitHub</span>
-      </a>
+  <header class="site-bar">
+    <div class="site-bar-inner">
+      <a class="brand" href="./"><img src="./favicon.svg" alt="">VATEL</a>
+      <nav class="site-nav" aria-label="Site">
+        <a class="optional" href="#how-it-works">How it works</a>
+        <a class="optional" href="#criteria">Success criteria</a>
+        <a class="optional" href="#hardware">Hardware</a>
+        <a href="./interim-report/">Interim report</a>
+        <a href="https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup"
+          target="_blank">GitHub</a>
+      </nav>
     </div>
+  </header>
 
-    <h2>How it works</h2>
-    <ol class="pipeline-steps">
-      <li><strong>Plan the banquet.</strong> The banquet team opens the VATEL Planner on an iPad or a
-        computer. It shows the whole banquet hall, segments out the tables and draws them on a 2-D
-        map, where the team plans the arrangement and setup for the event.</li>
-      <li><strong>Hand the plan to the robot.</strong> When the arrangement is done, the planner sends
-        the static map to the Unitree R1 humanoid: where each table is, how many sets of plates and
-        cutlery each table needs, and the calculated position of every set.</li>
-      <li><strong>Map the real hall and navigate.</strong> The R1 navigates the hall autonomously from
-        the planner's static map. Its onboard Hesai JT128 lidar maps the real room to find the exact
-        location of each table, correcting the difference between the plan and the real arrangement.
-        The robot updates the map and navigates to each set position.</li>
-      <li><strong>Transfer plates from the AGV.</strong> Once the robot can navigate the whole hall and
-        reach at least 80 % of the required workspace, it goes to the AGV plate-delivery area, where
-        an AGV brings plates stacked from the kitchen. It takes one plate at a time off the stack and
-        places it at its designated position. One plate per trip is a deliberate limit, set by the
-        dexterous hands and the robot platform.</li>
-      <li><strong>Done.</strong> The task is complete when the plates are at their designated
-        positions, with up to 10 % of all plates allowed to miss, and no plate broken.</li>
-    </ol>
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">CDE4301 Innovation &amp; Design Capstone &middot; NUS</p>
+      <h1>VATEL</h1>
+      <p class="hero-subtitle">Humanoid Orchestration for Autonomous Banquet Setup</p>
+      <p class="hero-lead">
+        A humanoid robot that sets banquet tables. The banquet team plans the hall on an iPad or a
+        computer; the Unitree R1 maps the real room with its lidar, then carries plates one at a time
+        from an AGV to every set position.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="./interim-report/">Read the interim report &rarr;</a>
+        <a class="btn btn-ghost"
+          href="https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup"
+          target="_blank">Source code on GitHub</a>
+      </div>
+    </div>
+  </section>
 
-    <div class="diagram">
-      <pre class="mermaid">
+  <main>
+    <section class="section" id="problem">
+      <div class="wrap split">
+        <div>
+          <p class="eyebrow">Why</p>
+          <h2>The problem</h2>
+        </div>
+        <p class="lead">
+          Banquet table setting requires handling diverse, fragile tableware across an environment
+          purpose-built for human reach and access, where fixed automation is impractical and a separate
+          task-specific robot per item type is uneconomical. VATEL develops and evaluates an autonomous
+          perception-and-manipulation pipeline for a humanoid robot to transfer and place banquet
+          tableware. The representative case is plate transfer from an AGV, a requirement from our
+          industry partner, who is deploying the AGV. The approach is intended to generalise to other
+          tableware handling tasks.
+        </p>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="how-it-works">
+      <div class="wrap">
+        <p class="eyebrow">Pipeline</p>
+        <h2>How it works</h2>
+        <div class="how-grid">
+          <ol class="steps">
+            <li>
+              <h3>Plan the banquet</h3>
+              <p>The banquet team opens the VATEL Planner on an iPad or a computer. It shows the whole
+                banquet hall, segments out the tables and draws them on a 2-D map, where the team plans
+                the arrangement and setup for the event.</p>
+            </li>
+            <li>
+              <h3>Hand the plan to the robot</h3>
+              <p>When the arrangement is done, the planner sends the static map to the Unitree R1
+                humanoid: where each table is, how many sets of plates and cutlery each table needs, and
+                the calculated position of every set.</p>
+            </li>
+            <li>
+              <h3>Map the real hall and navigate</h3>
+              <p>The R1 navigates the hall autonomously from the planner's static map. Its onboard Hesai
+                JT128 lidar maps the real room to find the exact location of each table, correcting the
+                difference between the plan and the real arrangement. The robot updates the map and
+                navigates to each set position.</p>
+            </li>
+            <li>
+              <h3>Transfer plates from the AGV</h3>
+              <p>Once the robot can navigate the whole hall and reach at least 80 % of the required
+                workspace, it goes to the AGV plate-delivery area, where an AGV brings plates stacked from
+                the kitchen. It takes one plate at a time off the stack and places it at its designated
+                position. One plate per trip is a deliberate limit, set by the dexterous hands and the
+                robot platform.</p>
+            </li>
+            <li>
+              <h3>Done</h3>
+              <p>The task is complete when the plates are at their designated positions, with up to
+                10 % of all plates allowed to miss, and no plate broken.</p>
+            </li>
+          </ol>
+
+          <div class="diagram-panel">
+            <div class="diagram">
+              <pre class="mermaid">
 flowchart TB
   PL["<b>1 · Plan</b> in the VATEL Planner<br/>on an iPad or a computer:<br/>segment tables, plan the layout,<br/>calculate set positions"]
   subgraph R1["Unitree R1"]
@@ -96,39 +131,109 @@ flowchart TB
   PICK --> PLACE
   PLACE -- "next plate" --> PICK
   PLACE --> DONE
-      </pre>
-      <sub>The VATEL pipeline</sub>
-    </div>
+              </pre>
+              <sub>The VATEL pipeline</sub>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <h2>Success criteria</h2>
-    <div class="table-scroll">
-      <table class="report-table">
-        <thead>
-          <tr><th>Criterion</th><th>Target</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Workspace the robot reaches by navigation</td><td><strong>&ge; 80 %</strong> of the required workspace</td></tr>
-          <tr><td>Plates at their designated positions</td><td><strong>&ge; 90 %</strong> of all plates (up to 10 % may miss)</td></tr>
-          <tr><td>Plates broken</td><td><strong>0</strong></td></tr>
-          <tr><td>Plates carried per trip</td><td><strong>1</strong></td></tr>
-        </tbody>
-      </table>
-    </div>
+    <section class="section" id="criteria">
+      <div class="wrap">
+        <p class="eyebrow">Targets</p>
+        <h2>Success criteria</h2>
+        <div class="stats">
+          <div class="stat">
+            <p class="stat-value">&ge; 80 %</p>
+            <p class="stat-label">of the required workspace reached by navigation</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">&ge; 90 %</p>
+            <p class="stat-label">of plates at their designated positions; up to 10 % may miss</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">0</p>
+            <p class="stat-label">plates broken</p>
+          </div>
+          <div class="stat">
+            <p class="stat-value">1</p>
+            <p class="stat-label">plate per trip, set by the dexterous hands and the robot platform</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <h2>Hardware</h2>
-    <div class="table-scroll">
-      <table class="report-table">
-        <tbody>
-          <tr><th scope="row">Robot</th><td>Unitree R1 humanoid: 26 DoF, 2 kg payload per arm</td></tr>
-          <tr><th scope="row">Head sensors</th><td>Hesai JT128 lidar and Intel RealSense D435if depth camera, on a custom clamp-on sensor helmet</td></tr>
-          <tr><th scope="row">Hands</th><td>BrainCo Revo 2 dexterous hands</td></tr>
-          <tr><th scope="row">Onboard compute</th><td>NVIDIA Jetson Orin</td></tr>
-          <tr><th scope="row">Plate delivery</th><td>AGV with stacked plates, deployed by our industry partner</td></tr>
-          <tr><th scope="row">Planner</th><td>Any web browser, on an iPad or a computer</td></tr>
-        </tbody>
-      </table>
+    <section class="section" id="hardware">
+      <div class="wrap">
+        <p class="eyebrow">Platform</p>
+        <h2>Hardware</h2>
+        <dl class="spec-grid">
+          <div class="spec">
+            <dt>Robot</dt>
+            <dd>Unitree R1 humanoid: 26 DoF, 2 kg payload per arm</dd>
+          </div>
+          <div class="spec">
+            <dt>Head sensors</dt>
+            <dd>Hesai JT128 lidar and Intel RealSense D435if depth camera, on a custom clamp-on sensor
+              helmet</dd>
+          </div>
+          <div class="spec">
+            <dt>Hands</dt>
+            <dd>BrainCo Revo 2 dexterous hands</dd>
+          </div>
+          <div class="spec">
+            <dt>Onboard compute</dt>
+            <dd>NVIDIA Jetson Orin</dd>
+          </div>
+          <div class="spec">
+            <dt>Plate delivery</dt>
+            <dd>AGV with stacked plates, deployed by our industry partner</dd>
+          </div>
+          <div class="spec">
+            <dt>Planner</dt>
+            <dd>Any web browser, on an iPad or a computer</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="reports">
+      <div class="wrap">
+        <p class="eyebrow">Documentation</p>
+        <h2>Reports and code</h2>
+        <div class="report-cards">
+          <a class="report-card" href="./interim-report/">
+            <span class="card-title">Interim Report</span>
+            <span class="card-text">Semester 1: problem, specifications, concept, detailed design and
+              first results</span>
+            <span class="card-link">Read the report &rarr;</span>
+          </a>
+          <div class="report-card pending">
+            <span class="card-title">Final Report</span>
+            <span class="card-text">Semester 2: the full system, tested against the success
+              criteria</span>
+            <span class="card-link">To be published</span>
+          </div>
+          <a class="report-card"
+            href="https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup"
+            target="_blank">
+            <span class="card-title">Source Code</span>
+            <span class="card-text">Planner, navigation, perception, manipulation and hardware</span>
+            <span class="card-link">Open on GitHub &rarr;</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p>VATEL &middot; Humanoid Orchestration for Autonomous Banquet Setup</p>
+      <p>CDE4301 Innovation &amp; Design Capstone &middot; College of Design and Engineering, National
+        University of Singapore &middot; AY2026/27</p>
     </div>
-  </div>
+  </footer>
 
   <script src="./components/diagram/diagram.js"></script>
 </body>

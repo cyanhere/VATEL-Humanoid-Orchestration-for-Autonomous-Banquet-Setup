@@ -24,16 +24,22 @@ class ImageComponent extends HTMLElement {
     <style>
       :host {
         display: block;
+        margin: 20px 0 28px;
         text-align: center;
       }
 
       img {
+        display: block;
         width: 100%;
+        border-radius: 12px;
       }
 
       sub {
-        font-size: 1rem;
+        display: block;
+        margin-top: 12px;
+        font-size: 0.9rem;
         font-style: italic;
+        color: #5E6B66;
       }
     </style>
   `;
