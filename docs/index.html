@@ -17,7 +17,7 @@
 
   <link rel="stylesheet" href="./site.css">
 
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.2.1/dist/mermaid.min.js"></script>
+  <script type="module" src="./components/pipeline/pipeline.js"></script>
 </head>
 
 <body>
@@ -116,26 +116,7 @@
           </ol>
 
           <div class="diagram-panel">
-            <div class="diagram">
-              <pre class="mermaid">
-flowchart TB
-  PL["<b>1 · Plan</b> in the VATEL Planner<br/>on an iPad or a computer:<br/>segment tables, plan the layout,<br/>calculate set positions"]
-  subgraph R1["Unitree R1"]
-    NAV["<b>3 · Navigate</b> from the static map<br/>JT128 lidar finds the real tables;<br/>map and set positions updated"]
-    PICK["<b>4 · Pick</b> one plate<br/>off the AGV stack"]
-    PLACE["<b>Place</b> it at its<br/>designated position"]
-  end
-  AGV[("AGV with<br/>stacked plates")]
-  DONE["<b>5 · Done</b><br/>≥ 90 % of plates placed, none broken"]
-  PL -- "2 · static map, tables,<br/>sets per table,<br/>set positions" --> NAV
-  NAV -- "≥ 80 % of the<br/>workspace reached" --> PICK
-  AGV -.-> PICK
-  PICK --> PLACE
-  PLACE -- "next plate" --> PICK
-  PLACE --> DONE
-              </pre>
-              <sub>The VATEL pipeline</sub>
-            </div>
+            <pipeline-diagram subtitle="The VATEL pipeline"></pipeline-diagram>
           </div>
         </div>
       </div>
@@ -237,7 +218,6 @@ flowchart TB
     </div>
   </footer>
 
-  <script src="./components/diagram/diagram.js"></script>
 </body>
 
 </html>
