@@ -1,0 +1,3618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VATEL: Humanoid Orchestration for Autonomous Banquet Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111412'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='4.5' transform='translate(6 6) scale(.8125)'%3E%3Ccircle cx='12' cy='12' r='6'/%3E%3Ccircle cx='22' cy='31' r='6'/%3E%3Ccircle cx='42' cy='31' r='6'/%3E%3Ccircle cx='52' cy='12' r='6'/%3E%3C/g%3E%3Ccircle cx='32' cy='46.6' r='6.1' fill='%235FC2A2'/%3E%3C/svg%3E">
+<style>
+  /* ---------------------------------------------------------------------------
+     VATEL: white paper, black ink and the logo's green, which carries the page. One
+     touch of champagne gold, on the chairs only, for the banquet's warmth -- never on
+     anything you press or read. Cormorant Garamond sets the name and the headings; Inter
+     sets everything that is read or tapped, in tabular figures so columns line up and a
+     measurement reads as a measurement. The top bar is black in both themes.
+     --------------------------------------------------------------------------- */
+  :root {
+    color-scheme: light;
+    --paper:   #FFFFFF;   /* the plan itself */
+    --bg:      #EDF1EF;   /* the desk it lies on */
+    --panel:   #FFFFFF;
+    --panel-2: #F3F6F4;
+    --ink:     #111412;
+    --ink-soft:#49524D;
+    --ink-faint:#86908B;
+    --rule:    #CFD7D3;
+    --rule-soft:#E4EAE7;
+    --accent:  #1D6152;
+    --accent-2:#2A8A72;
+    --accent-soft: #E1EFE9;
+    --on-accent: #FFFFFF;      /* text on a green fill */
+    --alert:   #B4472B;
+    --alert-soft: #F8E9E3;
+    --table-fill: #F6FAF8;
+    --table-line: #5E8F80;
+    --chair:   #EFE5CF;   /* champagne gold banquet chairs: the only gold */
+    --chair-line: #BE9B57;
+    --stage:   #E1E8E4;
+    --dance:   #EEF4F1;
+    --bar:     #111412;   /* the top bar, black in both themes */
+    --bar-2:   #1C221F;
+    --bar-ink: #F4F7F5;
+    --bar-soft:#9DA8A2;
+    --bar-rule:rgba(255,255,255,.14);
+    --logo-accent: #5FC2A2;
+    --serif: "Cormorant Garamond", "Times New Roman", Times, serif;
+    --sans: "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: var(--sans);
+    --r: 4px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #151917; --bg: #0B0D0C; --panel: #121614; --panel-2: #1A1F1C;
+      --ink: #E8EEEA; --ink-soft: #A3ADA8; --ink-faint: #6E7873;
+      --rule: #2B322E; --rule-soft: #1F2522;
+      --accent: #5FB79E; --accent-2: #7CCDB3; --accent-soft: #14261F; --on-accent: #0B1310;
+      --alert: #E0805F; --alert-soft: #2B1C17;
+      --table-fill: #1B2320; --table-line: #4F8473; --chair: #3A3122;
+      --chair-line: #8F7444; --stage: #222A26; --dance: #1C2420;
+      --bar: #070908; --bar-2: #141917;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #151917; --bg: #0B0D0C; --panel: #121614; --panel-2: #1A1F1C;
+    --ink: #E8EEEA; --ink-soft: #A3ADA8; --ink-faint: #6E7873;
+    --rule: #2B322E; --rule-soft: #1F2522;
+    --accent: #5FB79E; --accent-2: #7CCDB3; --accent-soft: #14261F; --on-accent: #0B1310;
+    --alert: #E0805F; --alert-soft: #2B1C17;
+    --table-fill: #1B2320; --table-line: #4F8473; --chair: #3A3122;
+    --chair-line: #8F7444; --stage: #222A26; --dance: #1C2420;
+    --bar: #070908; --bar-2: #141917;
+  }
+
+  * { box-sizing: border-box; }
+  /* a display rule on a selector beats the UA's [hidden], so say it plainly */
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-variant-numeric: tabular-nums;
+    font-size: 13px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  .app { display: flex; flex-direction: column; min-height: 100%; }
+
+  /* ------------------------------------------------------------------ top bar */
+  .topbar {
+    display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap;
+    padding: 8px 16px; background: var(--bar); color: var(--bar-ink);
+    border-bottom: 3px solid var(--accent);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .logo { width: 30px; height: 30px; flex: none; color: var(--bar-ink); }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+  .brand h1 { font-family: var(--serif); font-size: 26px; font-weight: 600; margin: 0;
+              white-space: nowrap; letter-spacing: .2em; line-height: 1; }
+  .brand .tagline { font-family: var(--serif); font-size: 14px; font-style: italic;
+                    font-weight: 500; color: var(--bar-soft); white-space: nowrap; }
+  @media (max-width: 700px) { .brand .tagline { display: none; } }
+  .brand .room-tag { display: none; }
+
+  /* never narrower than what it holds: the bar wraps a row rather than overlap */
+  .evt { display: flex; align-items: center; gap: 4px; flex: 1 0 auto; }
+  .evt input { font: inherit; color: var(--bar-ink); background: transparent;
+               border: 1px solid transparent; border-radius: var(--r); padding: 3px 7px; }
+  .evt input:hover { background: rgba(255,255,255,.07); }
+  .evt input:focus { outline: none; border-color: var(--logo-accent); background: var(--bar-2); }
+  #evName { flex: 1 1 170px; width: 170px; min-width: 120px; font-family: var(--serif);
+            font-size: 20px; font-weight: 600; }
+  #evDate { flex: 0 0 128px; font-family: var(--sans); font-size: 11.5px;
+            color: var(--bar-soft); color-scheme: dark; }
+  .pax { display: flex; align-items: center; gap: 5px; flex: none; font-family: var(--sans);
+         font-size: 11.5px; color: var(--bar-soft); white-space: nowrap; }
+  .topbar .pax input { width: 72px; text-align: right; font-family: var(--sans); font-size: 14px;
+               font-weight: 600; color: var(--bar-ink); background: var(--bar-2);
+               border-color: var(--bar-rule); margin: 0;
+               -moz-appearance: textfield; appearance: textfield; }
+  .pax input::-webkit-outer-spin-button, .pax input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0; }
+  .seat { position: relative; flex: none; }
+  .menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; width: 300px;
+          background: var(--panel); color: var(--ink); border: 1px solid var(--rule);
+          border-radius: 8px; padding: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.18);
+          display: flex; flex-direction: column; gap: 2px; }
+  .menu button { width: 100%; justify-content: flex-start; flex-direction: column;
+                 align-items: flex-start; gap: 1px; border: none; white-space: normal;
+                 text-align: left; padding: 7px 9px; }
+  .menu button b { font-family: var(--serif); font-size: 18px; font-weight: 700; }
+  .menu button span { font-size: 11.5px; color: var(--ink-soft); }
+
+  .tb-actions { display: flex; align-items: center; gap: 3px; }
+  .topbar button { background: transparent; color: var(--bar-ink); border-color: var(--bar-rule); }
+  .topbar button:hover:not([disabled]) { background: rgba(255,255,255,.09);
+                                         border-color: rgba(255,255,255,.3); }
+  .topbar button.ghost { border-color: transparent; color: var(--bar-soft); }
+  .topbar button.ghost:hover:not([disabled]) { color: var(--bar-ink); }
+  .topbar button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .topbar button.primary:hover:not([disabled]) { background: var(--accent-2);
+                                                 border-color: var(--accent-2); }
+  .topbar .menu button { color: var(--ink); background: transparent; border: none; }
+  .topbar .menu button:hover:not([disabled]) { background: var(--panel-2); }
+
+  /* --------------------------------------------------------------- stat strip */
+  .chips { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0;
+           font-family: var(--sans); }
+  .chip { display: flex; align-items: baseline; gap: 5px; padding: 2px 10px;
+          border-left: 1px solid var(--bar-rule); }
+  .chip:first-child { border-left: none; padding-left: 0; }
+  .chip b { font-size: 13.5px; font-weight: 600; color: var(--bar-ink); }
+  .chip span { font-size: 10.5px; color: var(--bar-soft); letter-spacing: .02em; }
+  .chip.bad b { color: #F08C6C; }
+  .chip.good b { color: var(--logo-accent); }
+
+  /* ------------------------------------------------------------------ buttons */
+  button {
+    font-family: var(--sans); font-size: 12px; line-height: 1.5; color: var(--ink);
+    background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r);
+    padding: 4px 9px; cursor: pointer; display: inline-flex; align-items: center;
+    gap: 5px; white-space: nowrap;
+  }
+  button:hover:not([disabled]) { background: var(--panel-2); border-color: var(--ink-faint); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button[disabled] { opacity: .4; cursor: not-allowed; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  button.primary:hover:not([disabled]) { background: var(--accent-2); border-color: var(--accent-2); }
+  button.big { width: 100%; justify-content: center; font-size: 14px; padding: 10px 12px;
+               font-weight: 500; }
+  button.ghost { background: transparent; border-color: transparent; color: var(--ink-soft); }
+  button.ghost:hover:not([disabled]) { background: var(--panel-2); color: var(--ink); }
+  button.danger { color: var(--alert); }
+  button.danger:hover:not([disabled]) { background: var(--alert-soft); border-color: var(--alert); }
+  button.icon { padding: 4px 5px; }
+  /* a toggle that is on is tinted, not filled: filled is reserved for the one
+     button on screen that does the thing */
+  button.on { background: var(--accent-soft); border-color: var(--accent);
+              color: var(--accent); font-weight: 500; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 4px; }
+  svg.i { width: 14px; height: 14px; flex: none; stroke: currentColor; fill: none;
+          stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ------------------------------------------------------------------- layout */
+  .cols { display: grid; grid-template-columns: minmax(0,1fr) 286px; gap: 9px;
+          padding: 9px; align-items: start; flex: 1 1 auto; }
+  @media (max-width: 1000px) { .cols { grid-template-columns: minmax(0,1fr); } }
+
+  .board { background: var(--panel); border: 1px solid var(--rule);
+           border-radius: var(--r); overflow: hidden; }
+  .plantools { display: flex; align-items: center; gap: 2px; flex-wrap: wrap;
+               padding: 5px 7px; border-bottom: 1px solid var(--rule-soft); }
+  .livepill { display: none; align-items: center; gap: 6px; font-family: var(--sans);
+              font-size: 11px; color: var(--accent); padding: 2px 8px; border-radius: 99px;
+              background: var(--accent-soft); white-space: nowrap; }
+  .livepill.on { display: inline-flex; }
+  .livepill i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+                animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .25; } }
+  .camthumb { position: absolute; left: 10px; top: 10px; width: 232px; z-index: 5;
+              background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
+              overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.14); }
+  .camthumb img { display: block; width: 100%; height: auto; background: #000; }
+  .camthumb .cap { display: flex; align-items: center; justify-content: space-between;
+                   gap: 6px; padding: 3px 4px 3px 8px; font-family: var(--sans);
+                   font-size: 10.5px; color: var(--ink-soft); }
+  .plantools .sep { width: 1px; height: 16px; background: var(--rule-soft); margin: 0 5px; }
+  .planwrap { position: relative; background: var(--bg); }
+  svg.plan { display: block; width: 100%; height: clamp(340px, 74vh, 820px);
+             touch-action: none; user-select: none; }
+  .planfoot { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+              padding: 4px 10px; border-top: 1px solid var(--rule-soft);
+              font-family: var(--sans); font-size: 10.5px; color: var(--ink-faint);
+              min-height: 26px; }
+  .planfoot .key { display: inline-flex; align-items: center; gap: 4px; }
+  .sw { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .sw.sq { border-radius: 1px; }
+
+  /* -------------------------------------------------------------------- panel */
+  .panel { display: flex; flex-direction: column; gap: 7px; position: sticky; top: 52px; }
+  @media (max-width: 1000px) { .panel { position: static; } }
+  .tabs { display: flex; border-bottom: 1px solid var(--rule); }
+  .tabs button { flex: 1 1 0; justify-content: center; border: none; border-radius: 0;
+                 background: transparent; color: var(--ink-faint); padding: 7px 3px;
+                 font-size: 12px; margin-bottom: -1px;
+                 border-bottom: 2px solid transparent; }
+  .tabs button:hover { color: var(--ink); background: transparent; }
+  .tabs button[aria-selected="true"] { color: var(--accent); font-weight: 600;
+                                       border-bottom-color: var(--accent); }
+  .tabs button .dot { width: 5px; height: 5px; border-radius: 50%;
+                      background: var(--alert); display: none; }
+  .tabs button.flag .dot { display: block; }
+
+  .pane { display: none; flex-direction: column; gap: 7px; }
+  .pane.live { display: flex; }
+  .card { background: var(--panel); border: 1px solid var(--rule-soft);
+          border-radius: var(--r); padding: 10px 11px; }
+  .card h2 { font-family: var(--serif); font-size: 20px; color: var(--ink); margin: 0 0 8px;
+             font-weight: 600; letter-spacing: .01em; line-height: 1.15; position: relative;
+             padding-left: 11px;
+             display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .card h2::before { content: ""; position: absolute; left: 0; top: 4px; bottom: 4px;
+                     width: 3px; border-radius: 2px; background: var(--accent); }
+  .card h2 .n { font-family: var(--sans); font-size: 10.5px; letter-spacing: 0;
+                font-weight: 400; color: var(--ink-faint); }
+  .card.accent { border-color: var(--accent); border-top-width: 3px; }
+
+  label.field { display: block; font-family: var(--sans); font-size: 11.5px;
+                color: var(--ink-soft); margin-bottom: 8px; }
+  label.field:last-child { margin-bottom: 0; }
+  label.field b { font-family: var(--mono); color: var(--ink); font-weight: 500; }
+  select, input[type="number"], input.box, textarea {
+    width: 100%; margin-top: 3px; padding: 4px 6px; font-family: var(--sans); font-size: 12px;
+    color: var(--ink); background: var(--panel); border: 1px solid var(--rule);
+    border-radius: var(--r);
+  }
+  input[type="number"] { font-family: var(--mono); }
+  select:focus, input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  input[type="range"] { width: 100%; margin-top: 3px; accent-color: var(--accent); }
+  label.check { display: flex; align-items: center; gap: 6px; font-family: var(--sans);
+                font-size: 11.5px;
+                color: var(--ink-soft); cursor: pointer; padding: 2px 0; }
+  label.check input { accent-color: var(--accent); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  .rows { display: flex; flex-direction: column; gap: 3px; }
+  .row { display: flex; justify-content: space-between; gap: 10px; font-family: var(--sans);
+         font-size: 11.5px; padding: 1px 0; }
+  .row dt { color: var(--ink-soft); margin: 0; }
+  .row dd { margin: 0; font-family: var(--mono); font-size: 11.5px; text-align: right; }
+
+  .stock { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .stock button { flex-direction: column; align-items: flex-start; gap: 0;
+                  padding: 4px 7px; }
+  .stock button b { font-size: 11.5px; font-weight: 600; }
+  .stock button span { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+
+  .tlist { display: flex; flex-direction: column; max-height: 290px; overflow: auto;
+           margin: 0 -3px; padding: 0 3px; }
+  .titem { display: flex; align-items: center; gap: 7px; padding: 3px 6px;
+           border-radius: var(--r); cursor: pointer; font-family: var(--sans); font-size: 11.5px; }
+  .titem:hover { background: var(--panel-2); }
+  .titem.sel { background: var(--accent); color: var(--on-accent); }
+  .titem .tag { font-family: var(--mono); font-weight: 600; min-width: 30px; }
+  .titem .desc { color: var(--ink-soft); flex: 1 1 auto; overflow: hidden;
+                 text-overflow: ellipsis; white-space: nowrap; }
+  .titem.sel .desc, .titem.sel .bad { color: inherit; }
+  .titem .bad { color: var(--alert); font-family: var(--mono); font-size: 10.5px; }
+
+  ul.issues { list-style: none; margin: 0; padding: 0; display: flex;
+              flex-direction: column; gap: 5px; }
+  ul.issues li { font-size: 11.5px; padding: 6px 8px; background: var(--alert-soft);
+                 border-left: 2px solid var(--alert); }
+  ul.issues li.ok { background: var(--accent-soft); border-left-color: var(--accent);
+                    color: var(--ink-soft); }
+  ul.issues li.note { background: var(--panel-2); border-left-color: var(--rule);
+                      color: var(--ink-soft); }
+  ul.issues li b { font-weight: 600; }
+
+  textarea.json { height: 110px; font-family: var(--mono); font-size: 10px;
+                  line-height: 1.45; background: var(--panel-2); resize: vertical; }
+  .hint { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); margin: 7px 0 0; }
+  .hint code { font-family: var(--mono); background: var(--panel-2); padding: 0 3px; }
+  .empty { font-size: 12.5px; color: var(--ink-soft); margin: 0; }
+  .stepper { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .stepper button { width: 34px; justify-content: center; font-size: 16px; padding: 3px 0; }
+  .stepper input { width: 64px; margin: 0; text-align: center; font-size: 16px; }
+  .ready { list-style: none; margin: 0 0 12px; padding: 0; display: flex;
+           flex-direction: column; gap: 4px; font-family: var(--sans); font-size: 12px; }
+  .ready li { display: flex; align-items: center; gap: 7px; }
+  .ready li::before { content: ""; width: 7px; height: 7px; border-radius: 50%;
+                      background: var(--accent); flex: none; }
+  .ready li.bad::before { background: var(--alert); }
+  .ready li.off::before { background: var(--ink-faint); }
+  .set-sec { border-top: 1px solid var(--rule-soft); padding-top: 12px; margin-top: 14px; }
+  .set-sec:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+  .set-sec > h4 { font-family: var(--serif); font-size: 20px; font-weight: 600; margin: 0 0 6px; }
+  .calpts { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4px 8px;
+            align-items: center; font-family: var(--sans); font-size: 11.5px; margin-top: 10px; }
+  .calpts input { margin: 0; }
+
+  /* ------------------------------------------------------------------- toasts */
+  .toasts { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
+            display: flex; flex-direction: column; gap: 5px; z-index: 60;
+            pointer-events: none; align-items: center; }
+  .toast { background: var(--bar); color: var(--bar-ink); font-family: var(--sans); font-size: 12px;
+           padding: 6px 12px; border-radius: var(--r); display: flex;
+           align-items: center; gap: 10px; pointer-events: auto; max-width: 90vw; }
+  .toast button { background: transparent; border: none; color: var(--logo-accent); padding: 0;
+                  font-weight: 600; font-size: 11.5px; text-decoration: underline; }
+  .toast button:hover { background: transparent; }
+
+  /* ------------------------------------------------------------------- dialog */
+  dialog { border: 1px solid var(--rule); border-radius: var(--r); padding: 0;
+           background: var(--panel); color: var(--ink); max-width: 580px; width: 92vw; }
+  dialog::backdrop { background: rgba(26,25,21,.45); }
+  .dlg-head { display: flex; align-items: center; justify-content: space-between;
+              padding: 10px 13px; border-bottom: 1px solid var(--rule-soft); }
+  .dlg-head h3 { margin: 0; font-family: var(--serif); font-size: 23px; font-weight: 600;
+                 color: var(--ink); }
+  dialog.wide { max-width: 640px; }
+  .dlg-body { padding: 13px; max-height: 64vh; overflow: auto; }
+  .dlg-foot { padding: 9px 13px; border-top: 1px solid var(--rule-soft);
+              display: flex; justify-content: flex-end; gap: 5px; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px;
+          align-items: center; font-family: var(--sans); font-size: 11.5px; }
+  .keys kbd { font-family: var(--mono); font-size: 10.5px; background: var(--panel-2);
+              border: 1px solid var(--rule); border-radius: 2px; padding: 1px 5px;
+              white-space: nowrap; justify-self: start; }
+  .keys .grp { grid-column: 1 / -1; font-size: 10px; color: var(--ink-faint);
+               letter-spacing: .08em; text-transform: uppercase; margin-top: 7px;
+               font-weight: 600; }
+
+  .saves { display: flex; flex-direction: column; gap: 3px; }
+  .save-it { display: flex; align-items: center; gap: 9px; padding: 5px 8px;
+             border: 1px solid var(--rule-soft); border-radius: var(--r);
+             font-family: var(--sans); font-size: 11.5px; }
+  .save-it .nm { font-weight: 600; flex: 1 1 auto; overflow: hidden;
+                 text-overflow: ellipsis; white-space: nowrap; }
+  .save-it .mt { font-family: var(--mono); color: var(--ink-faint); font-size: 10.5px;
+                 white-space: nowrap; }
+
+  /* -------------------------------------------------------------------- print */
+  .sheet { display: none; }
+  @media print {
+    @page { size: A4 landscape; margin: 11mm; }
+    body { background: #fff; color: #000; }
+    .topbar, .panel, .plantools, .planfoot, .toasts, dialog, .noprint { display: none !important; }
+    .cols { display: block; padding: 0; }
+    .board { border: none; border-radius: 0; }
+    .planwrap { background: #fff; }
+    svg.plan { height: 148mm !important; width: 100%; }
+    .sheet { display: block; margin-top: 7mm; font-size: 10px; color: #000;
+             break-inside: avoid; }
+    .sheet h2 { font-size: 13px; margin: 0 0 1.5mm; }
+    .sheet .meta { font-size: 10px; margin: 0 0 4mm; color: #333; }
+    .sheet table { width: 100%; border-collapse: collapse; }
+    .sheet th, .sheet td { text-align: left; padding: 1.3mm 2mm;
+                           border-bottom: .3pt solid #bbb; }
+    .sheet th { font-size: 8.5px; text-transform: uppercase; letter-spacing: .06em;
+                color: #444; }
+    .sheet td { font-family: var(--mono); }
+  }
+  @media (max-width: 560px) {
+    .evt { order: 3; flex: 1 1 100%; flex-wrap: wrap; }
+    svg.plan { height: clamp(280px, 58vh, 520px); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.5"><circle cx="12" cy="12" r="6"/><circle cx="22" cy="31" r="6"/><circle cx="42" cy="31" r="6"/><circle cx="52" cy="12" r="6"/></g><circle cx="32" cy="50" r="7.5" fill="var(--logo-accent)"/></svg>
+      <div class="brand-text">
+        <h1>VATEL</h1>
+        <span class="tagline">Humanoid Orchestration for Autonomous Banquet Setup</span>
+        <span class="room-tag" id="roomTag"></span>
+      </div>
+    </div>
+
+    <div class="evt">
+      <input id="evName" type="text" value="Untitled function" aria-label="Function name"
+             placeholder="Function name" spellcheck="false">
+      <input id="evDate" type="date" aria-label="Function date">
+      <span class="pax">
+        <label for="evPax">Guests</label>
+        <input id="evPax" type="number" min="0" max="2000" step="1" value="0" aria-label="Guests expected">
+      </span>
+      <span class="seat">
+        <button id="doSeat" class="primary" title="Lay out enough tables for the guests, or spread them across the tables you have">Seat guests</button>
+        <div class="menu" id="seatMenu" hidden role="menu"></div>
+      </span>
+    </div>
+
+    <div class="chips" id="chips"></div>
+
+    <div class="tb-actions">
+      <button id="undo" class="icon ghost" title="Undo (Ctrl+Z)" aria-label="Undo">
+        <svg class="i" viewBox="0 0 24 24"><path d="M3 10h11a5 5 0 1 1 0 10H9"/><path d="M3 10l5-5M3 10l5 5"/></svg>
+      </button>
+      <button id="redo" class="icon ghost" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">
+        <svg class="i" viewBox="0 0 24 24"><path d="M21 10H10a5 5 0 1 0 0 10h5"/><path d="M21 10l-5-5M21 10l-5 5"/></svg>
+      </button>
+      <span class="sep" style="width:1px;height:20px;background:var(--rule-soft);margin:0 3px"></span>
+      <button id="doSave" title="Save this layout to a file (Ctrl+S)">
+        <svg class="i" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        Save
+      </button>
+      <button id="doPrint" title="Print the floor plan and table schedule (Ctrl+P)">
+        <svg class="i" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+        Print
+      </button>
+      <button id="doHelp" class="icon ghost" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">
+        <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a3 3 0 0 1 5.8 1c0 2-3 2.4-3 4"/><path d="M12 17.5v.01"/></svg>
+      </button>
+      <button id="doTheme" class="icon ghost" title="Light / dark" aria-label="Toggle light or dark">
+        <svg class="i" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <button id="doSettings" class="icon ghost" title="Settings: camera, robot link, map files" aria-label="Settings">
+        <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="cols">
+    <!-- ------------------------------------------------------------- the plan -->
+    <section class="board">
+      <div class="plantools noprint">
+        <button id="tSnap" class="ghost" title="Snap to a 0.25 m grid while dragging">Snap</button>
+        <button id="tChairs" class="ghost" title="Draw chairs around every table">Chairs</button>
+        <button id="tCovers" class="ghost" title="Show the robot's service station at every cover">Stations</button>
+        <button id="tClear" class="ghost" title="Shade the floor the robot cannot drive through">Clearance</button>
+        <span class="sep"></span>
+        <button id="tRuler" class="ghost" title="Measure a distance on the plan (M)">Measure</button>
+        <span style="flex:1 1 auto"></span>
+        <span class="livepill" id="livePill"><i></i><span id="livePillText">Live</span></span>
+        <button id="doDelete" class="ghost danger" title="Delete selection (Del)" disabled>Delete</button>
+      </div>
+
+      <div class="planwrap">
+        <svg class="plan" id="plan" role="application"
+             aria-label="Floor plan. Click a table to select it, drag to move it."></svg>
+        <div class="camthumb noprint" id="camThumb" hidden>
+          <img id="camThumbImg" alt="Live view from the hall camera">
+          <div class="cap"><span id="camThumbCap">Hall camera</span>
+            <button class="ghost icon" id="camThumbHide" title="Hide the camera view" aria-label="Hide the camera view">
+              <svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+        </div>
+      </div>
+
+      <div class="planfoot noprint">
+        <span class="key"><span class="sw" style="background:var(--table-fill);border:1px solid var(--table-line)"></span>table</span>
+        <span class="key"><span class="sw sq" style="background:var(--stage)"></span>fixture</span>
+        <span class="key"><span class="sw sq" style="background:var(--chair);border:1px solid var(--chair-line)"></span>chair</span>
+        <span class="key"><span class="sw" style="background:var(--accent)"></span>service station</span>
+        <span class="key"><span class="sw" style="background:var(--alert)"></span>robot can't reach</span>
+        <span class="key"><span class="sw" style="border:1.5px dashed var(--accent)"></span>seen by the camera</span>
+        <span style="flex:1 1 auto"></span>
+        <span id="readout"></span>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------ the panel -->
+    <aside class="panel noprint">
+      <nav class="tabs" role="tablist" aria-label="Planner sections">
+        <button role="tab" data-pane="plan"   aria-selected="true">Plan</button>
+        <button role="tab" data-pane="tables" aria-selected="false">Tables</button>
+        <button role="tab" data-pane="checks" aria-selected="false" id="tabChecks">Checks <span class="dot"></span></button>
+        <button role="tab" data-pane="robot" aria-selected="false">Robot</button>
+      </nav>
+
+      <!-- ---- plan ---- -->
+      <div class="pane live" data-pane="plan">
+        <div class="card">
+          <h2>Room</h2>
+          <label class="field">Function room
+            <select id="room"></select>
+          </label>
+          <div class="rows" id="roomInfo"></div>
+        </div>
+
+        <div class="card accent">
+          <h2>Hall camera <span class="n" id="liveState"></span></h2>
+          <p class="hint" id="liveHint" style="margin:0 0 9px"></p>
+          <div class="btn-row">
+            <button id="liveGo" class="primary">Go live</button>
+            <button id="liveShow" class="ghost">Show camera view</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Fill the room</h2>
+          <div class="two">
+            <label class="field">Table
+              <select id="arrStock"></select>
+            </label>
+            <label class="field">How many
+              <input id="arrCount" type="number" min="1" max="120" step="1" value="0">
+            </label>
+          </div>
+          <label class="field">Aisle between edges: <b id="arrGapVal">1.50</b> m
+            <input id="arrGap" type="range" min="0.9" max="2.5" step="0.05" value="1.5">
+          </label>
+          <label class="check"><input type="checkbox" id="arrStagger" checked>
+            stagger the rows (fits more in)</label>
+          <div class="btn-row" style="margin-top:9px">
+            <button id="doArrange" class="primary">Arrange</button>
+            <button id="doFitMax">Fit the most I can</button>
+          </div>
+          <p class="hint" id="arrHint"></p>
+        </div>
+
+        <div class="card">
+          <h2>Add a table</h2>
+          <div class="stock" id="addBtns"></div>
+        </div>
+
+        <div class="card">
+          <h2>Add a fixture</h2>
+          <div class="stock" id="fixBtns"></div>
+        </div>
+      </div>
+
+      <!-- ---- tables ---- -->
+      <div class="pane" data-pane="tables">
+        <div class="card">
+          <h2>Selected</h2>
+          <div id="sel"><p class="empty">Click something on the plan to edit it.</p></div>
+        </div>
+        <div class="card">
+          <h2>On the floor <span class="n" id="listCount"></span></h2>
+          <div class="tlist" id="tlist"></div>
+          <div class="btn-row" style="margin-top:10px">
+            <button id="doRenumber">Renumber</button>
+            <button id="doClear" class="danger">Clear the room</button>
+          </div>
+          <label class="field" style="margin-top:9px">Numbering runs
+            <select id="numOrder">
+              <option value="rows">left to right, front to back</option>
+              <option value="stage">nearest the stage first</option>
+              <option value="serpent">boustrophedon (snake down the rows)</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <!-- ---- checks ---- -->
+      <div class="pane" data-pane="checks">
+        <div class="card">
+          <h2>Service check</h2>
+          <ul class="issues" id="issues"></ul>
+        </div>
+        <div class="card">
+          <h2>Numbers for the floor</h2>
+          <div class="rows" id="opsInfo"></div>
+        </div>
+        <div class="card">
+          <h2>Robot envelope</h2>
+          <div class="rows" id="envInfo"></div>
+        </div>
+      </div>
+
+      <!-- ---- robot ---- -->
+      <div class="pane" data-pane="robot">
+        <div class="card accent">
+          <h2>Send to the robot</h2>
+          <ul class="ready" id="robotReady"></ul>
+          <div class="btn-row" style="flex-direction:column;gap:7px">
+            <button id="robSend" class="big">Send plan to robot</button>
+            <button id="robStart" class="primary big">Start mission</button>
+          </div>
+          <p class="hint" id="robHint"></p>
+        </div>
+        <button id="doSettings2" class="ghost" style="align-self:flex-start">
+          <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
+          Settings
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ------------------------------------------------------- printed schedule -->
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<dialog id="dlgSettings" class="wide">
+  <div class="dlg-head"><h3>Settings</h3><button class="ghost" data-close>Close</button></div>
+  <div class="dlg-body" style="max-height:72vh">
+    <div class="set-sec">
+      <h4>Robot link</h4>
+      <label class="field">Robot service address
+        <input class="box" id="setRobot" type="text" placeholder="http://192.168.123.161:8780" spellcheck="false">
+      </label>
+      <div class="btn-row"><button id="robTest">Test</button></div>
+      <p class="hint" id="robTestHint">Where <b>Send plan</b> and <b>Start mission</b> go. Blank, or
+        unreachable, and the plan downloads as files instead.</p>
+    </div>
+    <div class="set-sec">
+      <h4>Robot map frame</h4>
+      <p class="hint" style="margin:0 0 8px">Where this room's south-west corner (the map's
+        lower-left pixel) sits in the robot's own map, and the grid it wants. Leave at 0 if the
+        robot's map starts at that corner.</p>
+      <div class="two" style="grid-template-columns:1fr 1fr 1fr">
+        <label class="field">Origin x (m)<input type="number" id="setOx" step="0.01"></label>
+        <label class="field">Origin y (m)<input type="number" id="setOy" step="0.01"></label>
+        <label class="field">Grid (m/px)<input type="number" id="setRes" step="0.01" min="0.01" max="0.5"></label>
+      </div>
+    </div>
+    <div class="set-sec">
+      <h4>Hall camera (CCTV)</h4>
+      <label class="field">Camera service address
+        <input class="box" id="setCam" type="text" placeholder="http://localhost:8765" spellcheck="false">
+      </label>
+      <div class="btn-row">
+        <button id="camTest">Test</button>
+        <button id="camLiveCal" class="primary">Calibrate on the live view</button>
+      </div>
+      <p class="hint" style="margin:7px 0 9px">Four floor points the camera can see, clicked
+        on its picture, turn its pixels into metres on this plan. Or calibrate on a still:</p>
+      <div class="btn-row">
+        <button id="camLoad">Load a still</button>
+        <button id="camClearCal" class="ghost">Reset points</button>
+      </div>
+      <input type="file" id="camFile" accept="image/*" hidden>
+      <label class="field" style="margin-top:11px">Camera height above the floor (m)
+        <input type="number" id="camH" step="0.1" min="0" max="25"
+               placeholder="leave blank to skip the correction">
+      </label>
+      <div class="two">
+        <label class="field">Below the camera, x (m)
+          <input type="number" id="camNx" step="0.1"></label>
+        <label class="field">Below the camera, y (m)
+          <input type="number" id="camNy" step="0.1"></label>
+      </div>
+      <p class="hint" style="margin:0 0 9px">A tabletop sits 0.762 m above the floor you
+        calibrate on, so without these every table maps too far out and too big &mdash; at
+        6 m up, 1.45 m out of place.</p>
+      <div class="rows" id="camInfo"></div>
+    </div>
+    <div class="set-sec">
+      <h4>Import detections</h4>
+      <div class="btn-row">
+        <button id="detFileBtn">Open a JSON file</button>
+        <button id="detSample" class="ghost">Paste sample</button>
+      </div>
+      <input type="file" id="detFile" accept="application/json,.json" hidden>
+      <textarea id="detText" class="json" spellcheck="false"
+        placeholder="Paste what detect_tables.py printed, or open the file."></textarea>
+      <div class="btn-row" style="margin-top:8px">
+        <button id="detReview" class="primary">Review</button>
+      </div>
+    </div>
+    <div class="set-sec">
+      <h4>Static map for navigation</h4>
+      <div class="btn-row">
+        <button id="dlRos" class="primary">Download .pgm + .yaml</button>
+      </div>
+      <p class="hint" style="margin:6px 0 9px">Three files: the map, its resolution and
+        origin, and the named service goals. What <code>map_server</code> loads.</p>
+      <div class="btn-row">
+        <button id="build">Show JSON</button>
+        <button id="copy">Copy</button>
+        <button id="dlJson">Download JSON</button>
+      </div>
+      <textarea id="out" class="json" readonly aria-label="Exported map JSON"></textarea>
+      <p class="hint">Table and fixture footprints as static obstacles, plus one named goal
+        per cover (<code>T07/cover03</code>). A prior for SLAM to start from, not a
+        substitute for it.</p>
+    </div>
+    <div class="set-sec">
+      <h4>This layout</h4>
+      <div class="btn-row">
+        <button id="dlPlan" class="primary">Save to file</button>
+        <button id="upPlan">Open a file</button>
+      </div>
+      <input type="file" id="planFile" accept="application/json,.json" hidden>
+      <p class="hint">A layout file holds the room, everything on it, and the traced
+        structure. It is the one that always works.</p>
+      <div class="btn-row" style="margin-top:9px">
+        <button id="doSave2" class="ghost">Keep in browser</button>
+        <button id="doOpen" class="ghost">Recent</button>
+      </div>
+      <p class="hint" id="storeHint"></p>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlgConfirm">
+  <div class="dlg-head"><h3 id="cfTitle">Are you sure?</h3><button class="ghost" data-close>Close</button></div>
+  <div class="dlg-body"><p id="cfBody" style="margin:0;font-size:15px"></p></div>
+  <div class="dlg-foot">
+    <button data-close class="ghost">Cancel</button>
+    <button id="cfOk" class="primary">OK</button>
+  </div>
+</dialog>
+
+<dialog id="dlgHelp">
+  <div class="dlg-head"><h3>Shortcuts</h3><button class="ghost" data-close>Close</button></div>
+  <div class="dlg-body">
+    <div class="keys">
+      <span class="grp">Moving things</span>
+      <kbd>Drag</kbd><span>Move a table. Hold <kbd>Shift</kbd> to add to the selection.</span>
+      <kbd>Arrows</kbd><span>Nudge by 0.1 m — with <kbd>Shift</kbd>, by 0.5 m</span>
+      <kbd>Drag empty floor</kbd><span>Rubber-band select</span>
+      <span class="grp">Editing</span>
+      <kbd>Ctrl A</kbd><span>Select everything</span>
+      <kbd>Ctrl D</kbd><span>Duplicate the selection</span>
+      <kbd>Del</kbd><span>Delete the selection</span>
+      <kbd>R</kbd><span>Rotate a rectangle by 15°</span>
+      <kbd>Esc</kbd><span>Deselect, or cancel the measure</span>
+      <span class="grp">The session</span>
+      <kbd>Ctrl Z</kbd><span>Undo</span>
+      <kbd>Ctrl Shift Z</kbd><span>Redo</span>
+      <kbd>Ctrl S</kbd><span>Save the layout</span>
+      <kbd>Ctrl P</kbd><span>Print the plan and schedule</span>
+      <kbd>M</kbd><span>Measure a distance</span>
+      <kbd>?</kbd><span>This list</span>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlgSaves">
+  <div class="dlg-head"><h3>Saved layouts</h3><button class="ghost" data-close>Close</button></div>
+  <div class="dlg-body"><div class="saves" id="savesList"></div></div>
+</dialog>
+
+<dialog id="dlgReview">
+  <div class="dlg-head"><h3>Review what the camera found</h3><button class="ghost" data-close>Close</button></div>
+  <div class="dlg-body"><div id="reviewBody"></div></div>
+  <div class="dlg-foot">
+    <button data-close class="ghost">Cancel</button>
+    <button id="revAccept" class="primary">Place the ones I kept</button>
+  </div>
+</dialog>
+
+<dialog id="dlgCal">
+  <div class="dlg-head"><h3>Calibrate the camera</h3><button class="ghost" data-close>Close</button></div>
+  <div class="dlg-body">
+    <p class="hint" id="calStep" style="margin:0 0 10px"></p>
+    <div id="calStage" style="position:relative;display:inline-block;max-width:100%;
+         border:1px solid var(--rule);border-radius:8px;overflow:hidden;cursor:crosshair">
+      <img id="calImg" style="display:block;max-width:100%;height:auto" alt="">
+      <div id="calMarks" style="position:absolute;inset:0;pointer-events:none"></div>
+    </div>
+    <div class="calpts" id="calPts"></div>
+    <p class="hint">Click four points on the floor, then say where each one is on the plan,
+      in metres from the north-west corner. Room corners are the default; a camera in a corner
+      cannot see the one below it, so use tape marks or table legs it can see instead. Four
+      points fix the mapping, wherever the camera is mounted.</p>
+  </div>
+  <div class="dlg-foot">
+    <button id="calAuto" class="ghost" hidden>Use the camera's own points</button>
+    <button id="calReset" class="ghost">Start over</button>
+    <button id="calDone" class="primary" disabled>Use these points</button>
+  </div>
+</dialog>
+<script>
+(function () {
+  "use strict";
+
+  /* ================================================================ the venue
+     Generic room presets, standard banquet table stock and the usual 0.762 m (2.5 ft)
+     table height. Covers per round follow the trade rule of ~0.6 m of rim each,
+     which reproduces the usual 8 / 10 / 12 for 5 / 6 / 7 ft.                    */
+  const FT = 0.3048;
+  const ROOMS = [
+    { id: "ballroom", name: "Grand Ballroom", w: 20.0, h: 21.0 },
+    { id: "func_ab", name: "Function Room A + B (partition open)", w: 18.0, h: 9.7 },
+    { id: "func_a", name: "Function Room A or B", w: 9.0, h: 9.7 },
+    // Any rectangle you can tape out on a floor. The corner calibration maps the four
+    // clicked corners onto THIS room's size, so testing a camera anywhere but the hall
+    // needs the real size of the space in front of it -- otherwise a lab table comes
+    // back scaled to a ballroom.
+    { id: "custom", name: "Custom — measure it yourself", w: 6.0, h: 4.0 }
+  ];
+  const STOCK = [
+    { key: "r5",  label: "5 ft round",   shape: "round", d: 5 * FT,   covers: 8 },
+    { key: "r55", label: "5.5 ft round", shape: "round", d: 5.5 * FT, covers: 9 },
+    { key: "r6",  label: "6 ft round",   shape: "round", d: 6 * FT,   covers: 10 },
+    { key: "r7",  label: "7 ft round",   shape: "round", d: 7 * FT,   covers: 12 },
+    { key: "oblong", label: "Oblong", shape: "rect", w: 6 * FT, h: 2.5 * FT, covers: 6, sides: "both" },
+    { key: "ibm",    label: "IBM",    shape: "rect", w: 6 * FT, h: 1.5 * FT, covers: 3, sides: "one" }
+  ];
+  const stockNote = (s) => s.shape === "round"
+    ? (s.d / FT).toFixed(s.d / FT % 1 ? 1 : 0) + " ft · " + s.covers + " covers"
+    : (s.w / FT).toFixed(0) + " x " + (s.h / FT).toFixed(1) + " ft · " + s.covers;
+
+  // Everything else that stands on a banquet floor. `nav` says what it means to the
+  // robot: a hard obstacle, a zone it may cross but should keep out of during
+  // service, or a point it uses (a door it comes through, the dish return).
+  // Three separate questions, and they genuinely differ:
+  //   nav    -- what the export calls it, for the nav stack
+  //   solid  -- does it stop the robot's footprint
+  //   clear  -- may a table stand on it
+  // A dance floor is not solid (the robot may cross it) but no table goes on it.
+  // A doorway is neither solid nor off-limits. A dish return is both.
+  const FIXTURES = [
+    { key: "stage",  label: "Stage",        w: 6.0, h: 3.0,  nav: "obstacle", solid: true,  clear: true },
+    { key: "dance",  label: "Dance floor",  w: 5.0, h: 5.0,  nav: "zone",     solid: false, clear: true },
+    { key: "buffet", label: "Buffet line",  w: 4.0, h: 0.75, nav: "obstacle", solid: true,  clear: true },
+    { key: "bar",    label: "Bar",          w: 3.0, h: 0.75, nav: "obstacle", solid: true,  clear: true },
+    { key: "desk",   label: "Reception",    w: 1.8, h: 0.75, nav: "obstacle", solid: true,  clear: true },
+    { key: "pillar", label: "Pillar",       w: 0.6, h: 0.6,  nav: "obstacle", solid: true,  clear: true },
+    { key: "door",   label: "Service door", w: 1.2, h: 0.25, nav: "access",   solid: false, clear: false },
+    { key: "dish",   label: "Dish return",  w: 1.5, h: 0.8,  nav: "access",   solid: true,  clear: true },
+    // What a room already has before anyone lays a table. Traced out of a lidar map by
+    // map_to_plan.py, or dropped in by hand for a room nobody has scanned.
+    { key: "wall",   label: "Wall",         w: 4.0, h: 0.15, nav: "obstacle", solid: true,  clear: true },
+    { key: "obst",   label: "Obstacle",     w: 1.0, h: 1.0,  nav: "obstacle", solid: true,  clear: true }
+  ];
+  const fixSpec = (k) => FIXTURES.find((f) => f.key === k);
+
+  /* ------------------------------------------------------------ robot envelope
+     Assumptions, not measurements. STAND_OFF and MIN_AISLE in particular want
+     checking against the real robot before anyone plans a room around them.     */
+  const ROBOT_RADIUS = 0.30;   // G1 footprint taken as a circle, generously
+  const STAND_OFF    = 0.45;   // table edge to robot centre when working a cover
+  const MIN_AISLE    = 0.90;   // clear floor needed to pass between tables
+  const TRADE_AISLE  = 1.50;   // what banquet service normally wants
+  const PLATE_D      = 0.225;  // the plate the arm pipeline handles, tape-measured
+  const TABLE_HEIGHT = 0.762;  // 2.5 ft
+  const SNAP_M       = 0.25;
+  const EPS          = 0.005;  // a gap laid at exactly 1.50 m must not read as under it
+
+  /* ==================================================================== state */
+  const S = {
+    roomId: ROOMS[0].id,
+    event: { name: "Untitled function", date: "", pax: 0, courses: 3 },
+    custom: { w: 6.0, h: 4.0 },      // only used when roomId === "custom"
+    setup: defaultSetup(),           // camera, robot link, map frame: Settings, not undo
+    floor: null,                     // where a traced map says there is open floor
+    items: [],          // tables {k:"t"} and fixtures {k:"f"}, one list, one z-order
+    nextId: 1
+  };
+  // What a developer sets once per hall: where the camera and the robot answer, how the
+  // camera's pixels map onto this plan, and where the room sits in the robot's map. Kept
+  // out of the undo history -- undoing a table move must not forget the robot's address --
+  // and saved with the layout file and in the browser instead.
+  function defaultSetup() {
+    return { robotUrl: "", camUrl: "",
+             map: { ox: 0, oy: 0, res: 0.05 },
+             cam: { corners: [], size: null, height: 0, nadir: null } };
+  }
+  function mergeSetup(o, legacyMapRef) {
+    const d = defaultSetup();
+    if (o) {
+      d.robotUrl = o.robotUrl || ""; d.camUrl = o.camUrl === undefined ? d.camUrl : o.camUrl;
+      Object.assign(d.map, o.map || {});
+      Object.assign(d.cam, o.cam || {});
+    }
+    if (legacyMapRef && legacyMapRef.origin) {   // a layout traced from a lidar map
+      d.map = { ox: +legacyMapRef.origin[0] || 0, oy: +legacyMapRef.origin[1] || 0,
+                res: +legacyMapRef.resolution || 0.05 };
+    }
+    return d;
+  }
+  const SEL = new Set();            // ids, not part of undo
+  const UI = { snap: true, chairs: true, covers: false, clearance: false,
+               ruler: false, tab: "plan", numOrder: "rows" };
+  const VIEW = { x: 0, y: 0, w: 0 };
+  let ruler = null;                 // {a:{x,y}, b:{x,y}} while measuring
+  let camera = { img: null, name: "" };   // the picture being calibrated on; points are in S.setup
+
+  function room() {
+    const r = ROOMS.find((x) => x.id === S.roomId) || ROOMS[0];
+    return r.id === "custom" ? { id: "custom", name: r.name, w: S.custom.w, h: S.custom.h } : r;
+  }
+  const tables = () => S.items.filter((i) => i.k === "t");
+  const fixtures = () => S.items.filter((i) => i.k === "f");
+  const byId = (id) => S.items.find((i) => i.id === id);
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n, d) => Number(n).toFixed(d === undefined ? 2 : d);
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const specOf = (t) => STOCK.find((s) => s.key === t.stock);
+  const tagOf = (t) => t.k === "t" ? "T" + String(t.num).padStart(2, "0")
+                                   : fixSpec(t.type).label;
+
+  function makeTable(stockKey, x, y) {
+    const s = STOCK.find((t) => t.key === stockKey);
+    return { k: "t", id: S.nextId++, num: nextNum(), stock: s.key,
+             x: x, y: y, rot: 0, covers: s.covers, sides: s.sides || null };
+  }
+  function makeFixture(type, x, y) {
+    const f = fixSpec(type);
+    return { k: "f", id: S.nextId++, type: type, x: x, y: y, w: f.w, h: f.h, rot: 0 };
+  }
+  function nextNum() {
+    const used = tables().map((t) => t.num);
+    let n = 1; while (used.indexOf(n) >= 0) n++; return n;
+  }
+
+  /* =============================================================== geometry */
+
+  // Distance from a table's centre out to its edge along `ang`.
+  function edgeReach(t, ang) {
+    const s = specOf(t);
+    if (s.shape === "round") return s.d / 2;
+    const a = ang - (t.rot * Math.PI) / 180;
+    const c = Math.abs(Math.cos(a)), si = Math.abs(Math.sin(a));
+    return Math.min(c > 1e-6 ? (s.w / 2) / c : Infinity,
+                    si > 1e-6 ? (s.h / 2) / si : Infinity);
+  }
+  function boundRadius(it) {
+    if (it.k === "f") return it.shape === "circle" ? it.w / 2 : Math.hypot(it.w, it.h) / 2;
+    const s = specOf(it);
+    return s.shape === "round" ? s.d / 2 : Math.hypot(s.w, s.h) / 2;
+  }
+  // Half-width and half-depth of the upright box a thing actually occupies. The
+  // circumscribed circle is too fat to keep a rotated oblong against a wall, and
+  // walls are exactly where the buffet and the top table belong.
+  function aabb(w, h, rotDeg) {
+    const a = (rotDeg * Math.PI) / 180;
+    const c = Math.abs(Math.cos(a)), s = Math.abs(Math.sin(a));
+    return { hx: (w / 2) * c + (h / 2) * s, hy: (w / 2) * s + (h / 2) * c };
+  }
+  function halfExtent(it) {
+    if (it.k === "f") {
+      if (it.shape === "circle") return { hx: it.w / 2, hy: it.w / 2 };
+      return aabb(it.w, it.h, it.rot);
+    }
+    const s = specOf(it);
+    return s.shape === "round" ? { hx: s.d / 2, hy: s.d / 2 } : aabb(s.w, s.h, it.rot);
+  }
+  // Distance from a point to a fixture's outline (0 when inside). A traced piece may
+  // be a disc -- a pillar, a round table -- and forcing those through the rectangle
+  // path is what made curves come out as staircases.
+  function rectDist(f, px, py) {
+    if (f.shape === "circle") {
+      return Math.max(Math.hypot(px - f.x, py - f.y) - f.w / 2, 0);
+    }
+    const a = -(f.rot * Math.PI) / 180;
+    const dx = px - f.x, dy = py - f.y;
+    const u = dx * Math.cos(a) - dy * Math.sin(a);
+    const v = dx * Math.sin(a) + dy * Math.cos(a);
+    return Math.hypot(Math.max(Math.abs(u) - f.w / 2, 0),
+                      Math.max(Math.abs(v) - f.h / 2, 0));
+  }
+  const blocksNav = (f) => fixSpec(f.type).solid === true;    // stops the robot
+  const keepClear = (f) => fixSpec(f.type).clear === true;    // no table on it
+
+  /* Every service station used to be tested against every fixture. Fine for a ballroom
+     with a stage and two pillars; at an exact trace of a lidar map there are seven
+     thousand of them, and a twenty-move drag took the best part of two seconds.
+
+     So bucket them by the metre. A station only ever collides with something within the
+     robot's own radius, which is one bucket, maybe four. Rebuilt whenever the fixtures
+     change -- cheap, because it is one pass -- and shared by the reachability test, the
+     clash check and Arrange. */
+  const isStruct = (f) => f.k === "f" && (f.type === "wall" || f.type === "obst");
+
+  /* Traced structure is thousands of pieces that almost never move, and everything else
+     on the plan is a few dozen that move constantly. Rebuilding the first because the
+     second moved is what made a drag crawl at an exact trace: seven thousand SVG nodes
+     thrown away and remade sixty times a second.
+
+     So the structure is built once into its own <g> and that node is reused -- appending
+     an element that is already in the tree moves it, it does not rebuild it -- until
+     something actually changes the structure. STRUCT_REV says when that happened. */
+  let STRUCT_REV = 0, STRUCT_LAYER = null, STRUCT_LAYER_REV = -1;
+  function touchStructure() { STRUCT_REV++; STRUCT_LAYER = null; FIX_INDEX = null; }
+
+  let FIX_INDEX = null, FIX_STAMP = "";
+  function fixtureIndex() {
+    const fx = fixtures();
+    const R = room();
+    const stamp = STRUCT_REV + ":" + fx.length + ":" + R.w + "x" + R.h;
+    if (FIX_INDEX && FIX_STAMP === stamp && FIX_INDEX.n === fx.length) return FIX_INDEX;
+    const cell = 1.2;
+    const w = Math.max(1, Math.ceil(R.w / cell)), h = Math.max(1, Math.ceil(R.h / cell));
+    const b = new Array(w * h);
+    fx.forEach(function (f) {
+      const e = halfExtent(f);
+      const c0 = Math.max(0, Math.floor((f.x - e.hx) / cell));
+      const c1 = Math.min(w - 1, Math.floor((f.x + e.hx) / cell));
+      const r0 = Math.max(0, Math.floor((f.y - e.hy) / cell));
+      const r1 = Math.min(h - 1, Math.floor((f.y + e.hy) / cell));
+      for (let r = r0; r <= r1; r++)
+        for (let c = c0; c <= c1; c++) {
+          const i = r * w + c;
+          (b[i] || (b[i] = [])).push(f);
+        }
+    });
+    FIX_INDEX = {
+      n: fx.length,
+      near: function (x, y, rad) {
+        const c0 = Math.max(0, Math.floor((x - rad) / cell));
+        const c1 = Math.min(w - 1, Math.floor((x + rad) / cell));
+        const r0 = Math.max(0, Math.floor((y - rad) / cell));
+        const r1 = Math.min(h - 1, Math.floor((y + rad) / cell));
+        const out = [];
+        for (let r = r0; r <= r1; r++)
+          for (let c = c0; c <= c1; c++) {
+            const l = b[r * w + c];
+            if (l) for (let k = 0; k < l.length; k++) out.push(l[k]);
+          }
+        return out;
+      }
+    };
+    FIX_STAMP = stamp;
+    return FIX_INDEX;
+  }
+  const dropIndex = function () { FIX_INDEX = null; };
+
+  // Where the covers sit, and where the robot stands to work each one.
+  function coversOf(t) {
+    const s = specOf(t), out = [];
+    const inset = PLATE_D / 2 + 0.02;    // plate centre, held clear of the edge
+    if (s.shape === "round") {
+      const R = s.d / 2;
+      for (let i = 0; i < t.covers; i++) {
+        const ang = -Math.PI / 2 + (i * 2 * Math.PI) / t.covers;
+        out.push({
+          x: t.x + (R - inset) * Math.cos(ang), y: t.y + (R - inset) * Math.sin(ang),
+          stand: { x: t.x + (R + STAND_OFF) * Math.cos(ang),
+                   y: t.y + (R + STAND_OFF) * Math.sin(ang) },
+          heading: Math.atan2(-Math.sin(ang), -Math.cos(ang)), ang: ang
+        });
+      }
+    } else {
+      // Rectangles are laid classroom-style: covers along the long side, both sides
+      // for an oblong, one side for an IBM.
+      const rot = (t.rot * Math.PI) / 180;
+      const rows = t.sides === "one" ? [1] : [1, -1];
+      const per = Math.max(1, Math.round(t.covers / rows.length));
+      rows.forEach((sign) => {
+        for (let i = 0; i < per; i++) {
+          const u = -s.w / 2 + (s.w * (i + 0.5)) / per;
+          const v = sign * (s.h / 2 - inset);
+          const px = t.x + u * Math.cos(rot) - v * Math.sin(rot);
+          const py = t.y + u * Math.sin(rot) + v * Math.cos(rot);
+          const nx = -Math.sin(rot) * sign, ny = Math.cos(rot) * sign;
+          out.push({ x: px, y: py,
+            stand: { x: px + nx * (inset + STAND_OFF), y: py + ny * (inset + STAND_OFF) },
+            heading: Math.atan2(-ny, -nx), ang: Math.atan2(ny, nx) });
+        }
+      });
+    }
+    return out;
+  }
+
+  // Can the robot stand there? Its footprint has to clear the walls, every other
+  // table and every fixture that is a real obstacle.
+  function standBlocked(t, c) {
+    const p = c.stand, R = room();
+    if (p.x < ROBOT_RADIUS || p.y < ROBOT_RADIUS ||
+        p.x > R.w - ROBOT_RADIUS || p.y > R.h - ROBOT_RADIUS) return "the wall";
+    for (const o of tables()) {
+      if (o === t) continue;
+      const ang = Math.atan2(p.y - o.y, p.x - o.x);
+      if (Math.hypot(p.x - o.x, p.y - o.y) < edgeReach(o, ang) + ROBOT_RADIUS)
+        return tagOf(o);
+    }
+    const near = fixtureIndex().near(p.x, p.y, ROBOT_RADIUS);
+    for (let i = 0; i < near.length; i++) {
+      const o = near[i];
+      if (blocksNav(o) && rectDist(o, p.x, p.y) < ROBOT_RADIUS)
+        return fixSpec(o.type).label.toLowerCase();
+    }
+    return null;
+  }
+
+  // Smallest gap between any two table edges -- the number that decides if a
+  // layout actually drives.
+  function narrowestGap() {
+    const ts = tables();
+    let best = Infinity, pair = null;
+    for (let i = 0; i < ts.length; i++)
+      for (let j = i + 1; j < ts.length; j++) {
+        const a = ts[i], b = ts[j];
+        const ang = Math.atan2(b.y - a.y, b.x - a.x);
+        const gap = Math.hypot(b.x - a.x, b.y - a.y)
+                  - edgeReach(a, ang) - edgeReach(b, ang + Math.PI);
+        if (gap < best) { best = gap; pair = [tagOf(a), tagOf(b)]; }
+      }
+    return { gap: best, pair: pair };
+  }
+
+  /* ================================================================ analysis
+     One pass per render. coversOf() and standBlocked() are each O(items), and the
+     panels used to recompute them independently -- at 25 tables that is ~25k
+     distance tests a frame, which a drag asks for sixty times a second.          */
+  let A = { per: new Map(), covers: 0, blocked: 0, gap: { gap: Infinity, pair: null },
+            overhang: [], clash: [] };
+
+  function analyse() {
+    const per = new Map();
+    let covers = 0, blocked = 0;
+    const overhang = [], clash = [];
+    const R = room();
+    tables().forEach((t) => {
+      const cs = coversOf(t).map((c) => ({ c: c, bad: standBlocked(t, c) }));
+      per.set(t.id, cs);
+      covers += cs.length;
+      for (const x of cs) if (x.bad) blocked++;
+    });
+    S.items.forEach((it) => {
+      // A door or a dish return is supposed to sit against the wall, so it is not
+      // overhanging anything when it does.
+      if (it.k === "f" && fixSpec(it.type).nav === "access") return;
+      const e = halfExtent(it);
+      if (it.x < e.hx - 1e-6 || it.y < e.hy - 1e-6 ||
+          it.x > R.w - e.hx + 1e-6 || it.y > R.h - e.hy + 1e-6)
+        overhang.push(tagOf(it));
+    });
+    // A table sitting on the stage or in a pillar is a setup error, not a nav one.
+    tables().forEach((t) => {
+      const br = boundRadius(t);
+      fixtureIndex().near(t.x, t.y, br).forEach((f) => {
+        if (!keepClear(f)) return;
+        if (rectDist(f, t.x, t.y) < br)
+          clash.push(tagOf(t) + " overlaps the " + fixSpec(f.type).label.toLowerCase());
+      });
+    });
+    return { per: per, covers: covers, blocked: blocked, gap: narrowestGap(),
+             overhang: overhang, clash: clash };
+  }
+  const coversFor = (t) => A.per.get(t.id) || [];
+
+  /* ================================================================= drawing */
+  const SVGNS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, parent) {
+    const n = document.createElementNS(SVGNS, name);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function txt(parent, x, y, s, attrs) {
+    const n = el("text", Object.assign({ x: x, y: y, "text-anchor": "middle",
+      "font-family": "Cormorant Garamond, Times New Roman, serif",
+      style: "font-variant-numeric: lining-nums", "pointer-events": "none" }, attrs || {}), parent);
+    n.textContent = s;
+    return n;
+  }
+
+  /* ------------------------------------------------------------------- view */
+  function planBox() {
+    const r = $("plan").getBoundingClientRect();
+    return { w: Math.max(r.width, 1), h: Math.max(r.height, 1) };
+  }
+  const viewH = () => { const b = planBox(); return VIEW.w * (b.h / b.w); };
+  // The plan box itself is sized to the window: on a wide screen it takes the height the
+  // window has left, on a narrow one the room's own proportions, so the fitted room fills
+  // it instead of sitting small in the middle of a letterbox.
+  function sizePlan() {
+    const plan = $("plan"), R = room();
+    if (!plan || window.matchMedia("print").matches) return;
+    const used = document.querySelector(".topbar").offsetHeight +
+                 document.querySelector(".plantools").offsetHeight +
+                 document.querySelector(".planfoot").offsetHeight + 26;
+    const avail = Math.max(300, window.innerHeight - used);
+    const w = plan.getBoundingClientRect().width || 1;
+    const byRoom = w * (R.h + 2.4) / (R.w + 2.4);
+    const h = Math.round(window.innerWidth > 1000 ? avail : Math.max(260, Math.min(byRoom, avail)));
+    if (Math.abs(plan.getBoundingClientRect().height - h) > 1) plan.style.height = h + "px";
+  }
+  function fitView() {
+    sizePlan();
+    const R = room(), b = planBox(), pad = 1.2;
+    const wantW = R.w + pad * 2, wantH = R.h + pad * 2;
+    VIEW.w = Math.max(wantW, wantH * (b.w / Math.max(b.h, 1)));
+    VIEW.x = R.w / 2 - VIEW.w / 2;
+    VIEW.y = R.h / 2 - viewH() / 2;
+  }
+  function screenToRoom(evt) {
+    const plan = $("plan");
+    const pt = plan.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    const m = plan.getScreenCTM();
+    if (!m) return { x: 0, y: 0 };
+    return pt.matrixTransform(m.inverse());
+  }
+
+  /* ---------------------------------------------------------------- chairs */
+  // A chair, drawn just outside the table edge and facing it. Cheap, and it turns
+  // an abstract circle into something a banquet manager reads at a glance.
+  function chair(parent, cx, cy, angRad) {
+    const g = el("g", { transform: "translate(" + cx.toFixed(3) + " " + cy.toFixed(3) +
+      ") rotate(" + (angRad * 180 / Math.PI).toFixed(1) + ")" }, parent);
+    el("rect", { x: -0.20, y: -0.21, width: 0.40, height: 0.42, rx: 0.09,
+      fill: "var(--chair)", stroke: "var(--chair-line)", "stroke-width": 0.014 }, g);
+    el("rect", { x: 0.11, y: -0.21, width: 0.09, height: 0.42, rx: 0.045,
+      fill: "var(--chair-line)" }, g);
+    return g;
+  }
+
+  function drawClearance(parent) {
+    const R = room();
+    const g = el("g", { fill: "var(--alert)", "fill-opacity": .085,
+                        "pointer-events": "none" }, parent);
+    // the band along the walls the robot's centre can never enter
+    el("path", { "fill-rule": "evenodd", d:
+      "M0 0H" + R.w + "V" + R.h + "H0Z M" + ROBOT_RADIUS + " " + ROBOT_RADIUS +
+      "H" + (R.w - ROBOT_RADIUS) + "V" + (R.h - ROBOT_RADIUS) + "H" + ROBOT_RADIUS + "Z" }, g);
+    tables().forEach((t) => {
+      const s = specOf(t);
+      if (s.shape === "round")
+        el("circle", { cx: t.x, cy: t.y, r: s.d / 2 + ROBOT_RADIUS }, g);
+      else
+        el("rect", { x: t.x - s.w / 2 - ROBOT_RADIUS, y: t.y - s.h / 2 - ROBOT_RADIUS,
+          width: s.w + 2 * ROBOT_RADIUS, height: s.h + 2 * ROBOT_RADIUS, rx: ROBOT_RADIUS,
+          transform: "rotate(" + t.rot + " " + t.x + " " + t.y + ")" }, g);
+    });
+    fixtures().filter(blocksNav).forEach((f) => {
+      el("rect", { x: f.x - f.w / 2 - ROBOT_RADIUS, y: f.y - f.h / 2 - ROBOT_RADIUS,
+        width: f.w + 2 * ROBOT_RADIUS, height: f.h + 2 * ROBOT_RADIUS, rx: ROBOT_RADIUS,
+        transform: "rotate(" + f.rot + " " + f.x + " " + f.y + ")" }, g);
+    });
+  }
+
+  function drawFixture(parent, f) {
+    const spec = fixSpec(f.type), sel = SEL.has(f.id);
+    const structure = f.type === "wall" || f.type === "obst";
+    // A traced room is thousands of small pieces and none of them carries a label, so
+    // the wrapping <g> is pure overhead -- it doubles the node count for nothing. Put
+    // the class and the id straight on the shape; closest('.it') finds it either way.
+    const g = structure ? parent : el("g", { class: "it", style: "cursor:grab" }, parent);
+    if (!structure) g.dataset.id = f.id;
+    const fill = f.type === "stage" ? "var(--stage)"
+               : f.type === "dance" ? "var(--dance)"
+               : structure ? "var(--ink-faint)"
+               : spec.nav === "access" ? "var(--accent-soft)" : "var(--panel-2)";
+    const skin = {
+      fill: fill,
+      stroke: sel ? "var(--accent)" : (spec.nav === "access" ? "var(--accent)" : "var(--ink-faint)"),
+      "stroke-width": sel ? 2.5 : (structure ? 0.6 : 1.2),
+      "stroke-dasharray": spec.nav === "zone" ? "6 4" : "",
+      "fill-opacity": structure ? 0.85 : 1,
+      "vector-effect": "non-scaling-stroke"
+    };
+    if (structure) { skin.class = "it"; skin.style = "cursor:grab"; }
+    const shape = f.shape === "circle"
+      ? el("circle", Object.assign({ cx: f.x, cy: f.y, r: f.w / 2 }, skin), g)
+      : el("rect", Object.assign({ x: f.x - f.w / 2, y: f.y - f.h / 2,
+          width: f.w, height: f.h, rx: structure ? 0 : 0.06,
+          transform: "rotate(" + f.rot + " " + f.x + " " + f.y + ")" }, skin), g);
+    if (structure) { shape.dataset.id = f.id; return shape; }
+    // Sized to the text, not to the box: "Service door" across a 0.25 m doorway
+    // used to run off both ends of it.
+    const long = Math.max(f.w, f.h), short = Math.min(f.w, f.h);
+    const size = clamp(Math.min(long / (0.58 * spec.label.length), short * 0.62),
+                       0.11, 0.42);
+    txt(g, f.x, f.y + size * 0.34, spec.label, {
+      fill: "var(--ink-soft)",
+      "font-size": size, "font-weight": 600,
+      transform: "rotate(" + (f.w >= f.h ? f.rot : f.rot + 90) + " " + f.x + " " + f.y + ")" });
+    return g;
+  }
+
+  function drawTable(parent, t) {
+    const s = specOf(t), sel = SEL.has(t.id);
+    const cs = coversFor(t);
+    const g = el("g", { class: "it", style: "cursor:grab" }, parent);
+    g.dataset.id = t.id;
+
+    if (UI.chairs) {
+      const ch = el("g", { "pointer-events": "none" }, g);
+      // Set out from the cover along its own outward normal, so a chair sits square
+      // to the place it belongs to on a rectangle as well as on a round.
+      cs.forEach((x) => {
+        const a = x.c.ang;
+        chair(ch, x.c.x + 0.33 * Math.cos(a), x.c.y + 0.33 * Math.sin(a), a);
+      });
+    }
+
+    if (s.shape === "round") {
+      el("circle", { cx: t.x, cy: t.y, r: s.d / 2, fill: sel ? "var(--accent-soft)" : "var(--table-fill)",
+        stroke: sel ? "var(--accent)" : "var(--table-line)", "stroke-width": sel ? 2.5 : 1.4,
+        "vector-effect": "non-scaling-stroke" }, g);
+      el("circle", { cx: t.x, cy: t.y, r: Math.max(s.d / 2 - 0.12, 0.05), fill: "none",
+        stroke: "var(--table-line)", "stroke-width": .6, opacity: .5,
+        "vector-effect": "non-scaling-stroke", "pointer-events": "none" }, g);
+    } else {
+      el("rect", { x: t.x - s.w / 2, y: t.y - s.h / 2, width: s.w, height: s.h, rx: 0.04,
+        transform: "rotate(" + t.rot + " " + t.x + " " + t.y + ")", fill: "var(--table-fill)",
+        stroke: sel ? "var(--accent)" : "var(--table-line)", "stroke-width": sel ? 2.5 : 1.4,
+        "vector-effect": "non-scaling-stroke" }, g);
+    }
+
+    if (t.src === "cam") {
+      // seen by the hall camera: a dashed ring just outside the edge
+      const ring = { fill: "none", stroke: "var(--accent)", "stroke-width": 1.3,
+        "stroke-dasharray": "4 3", "vector-effect": "non-scaling-stroke", "pointer-events": "none" };
+      if (s.shape === "round") el("circle", Object.assign({ cx: t.x, cy: t.y, r: s.d / 2 + 0.1 }, ring), g);
+      else el("rect", Object.assign({ x: t.x - s.w / 2 - 0.1, y: t.y - s.h / 2 - 0.1,
+        width: s.w + 0.2, height: s.h + 0.2, rx: 0.1,
+        transform: "rotate(" + t.rot + " " + t.x + " " + t.y + ")" }, ring), g);
+    }
+    txt(g, t.x, t.y + 0.19, tagOf(t), { fill: "var(--ink)", "font-size": 0.6,
+      "font-weight": 700 });
+    if (t.covers !== specOf(t).covers)      // a table set for a different number than its stock
+      txt(g, t.x, t.y + 0.55, t.covers + " pax", { fill: "var(--accent)", "font-size": 0.3,
+        "font-family": "Inter, sans-serif", "font-weight": 600 });
+
+    if (UI.covers || sel) {
+      const st = el("g", { "pointer-events": "none" }, g);
+      cs.forEach((x) => {
+        const col = x.bad ? "var(--alert)" : "var(--accent)";
+        el("line", { x1: x.c.x, y1: x.c.y, x2: x.c.stand.x, y2: x.c.stand.y,
+          stroke: col, "stroke-width": .025, opacity: .5 }, st);
+        el("circle", { cx: x.c.stand.x, cy: x.c.stand.y, r: ROBOT_RADIUS, fill: col,
+          "fill-opacity": x.bad ? .2 : .14, stroke: col, "stroke-width": .02,
+          "stroke-opacity": .75 }, st);
+        el("circle", { cx: x.c.x, cy: x.c.y, r: PLATE_D / 2, fill: col,
+          "fill-opacity": x.bad ? .5 : .8 }, st);
+      });
+    }
+    return g;
+  }
+
+  function draw() {
+    const plan = $("plan"), R = room();
+    fitView();     // no zoom, no pan: always the whole room, fitted to the window
+    plan.setAttribute("viewBox",
+      [VIEW.x, VIEW.y, VIEW.w, viewH()].map((n) => n.toFixed(4)).join(" "));
+
+    const frag = document.createDocumentFragment();
+
+    // the floor itself, so the room reads as a sheet laid on the desk
+    el("rect", { x: 0, y: 0, width: R.w, height: R.h, fill: "var(--paper)",
+      "pointer-events": "none" }, frag);
+
+    // metre grid, thinned out when it would be denser than the eye can use.
+    //
+    // vector-effect does NOT inherit, so setting it on the group left every line with
+    // vector-effect: none and a stroke-width of 1 USER UNIT -- one metre. In a 20 m room
+    // the 1 m lines sat 1 m apart, touched, and covered the whole floor in a flat wash
+    // that passed for the floor colour. Load a 37 m map, where the step widens to 2 m,
+    // and the same bug draws a lattice of metre-wide bars across everything.
+    const step = VIEW.w > 34 ? 2 : 1;
+    const GRID = { stroke: "var(--rule-soft)", "stroke-width": 1,
+                   "vector-effect": "non-scaling-stroke" };
+    const grid = el("g", { "pointer-events": "none" }, frag);
+    for (let x = 0; x <= R.w + 1e-6; x += step)
+      el("line", Object.assign({ x1: x, y1: 0, x2: x, y2: R.h }, GRID), grid);
+    for (let y = 0; y <= R.h + 1e-6; y += step)
+      el("line", Object.assign({ x1: 0, y1: y, x2: R.w, y2: y }, GRID), grid);
+
+    if (UI.clearance) drawClearance(frag);
+
+    // the walls
+    el("rect", { x: 0, y: 0, width: R.w, height: R.h, fill: "none", stroke: "var(--ink)",
+      "stroke-width": 2.4, "vector-effect": "non-scaling-stroke",
+      "pointer-events": "none" }, frag);
+
+    // the traced structure, built once and kept
+    const struct = fixtures().filter(isStruct);
+    if (struct.length) {
+      if (!STRUCT_LAYER || STRUCT_LAYER_REV !== STRUCT_REV) {
+        STRUCT_LAYER = el("g", { class: "struct" });
+        struct.forEach((f) => drawFixture(STRUCT_LAYER, f));
+        STRUCT_LAYER_REV = STRUCT_REV;
+      }
+      frag.appendChild(STRUCT_LAYER);
+    }
+    fixtures().forEach((f) => { if (!isStruct(f)) drawFixture(frag, f); });
+    tables().forEach((t) => drawTable(frag, t));
+
+    // dimensions, and the origin the export is measured from
+    const dimCol = { fill: "var(--ink-faint)", "font-size": 0.44 };
+    txt(frag, R.w / 2, -0.38, fmt(R.w, 1) + " m", dimCol);
+    txt(frag, -0.55, R.h / 2, fmt(R.h, 1) + " m",
+        Object.assign({ transform: "rotate(-90 " + (-0.55) + " " + R.h / 2 + ")" }, dimCol));
+    const o = el("g", { "pointer-events": "none", opacity: .65 }, frag);
+    el("path", { d: "M0 0h1.1M0 0v1.1", stroke: "var(--accent)", "stroke-width": .05 }, o);
+    txt(o, 1.35, .16, "x", { fill: "var(--accent)", "font-size": .38 });
+    txt(o, .0, 1.5, "y", { fill: "var(--accent)", "font-size": .38 });
+
+    if (marquee) {
+      el("rect", { x: Math.min(marquee.x0, marquee.x1), y: Math.min(marquee.y0, marquee.y1),
+        width: Math.abs(marquee.x1 - marquee.x0), height: Math.abs(marquee.y1 - marquee.y0),
+        fill: "var(--accent)", "fill-opacity": .1, stroke: "var(--accent)",
+        "stroke-width": 1, "stroke-dasharray": "5 4", "vector-effect": "non-scaling-stroke",
+        "pointer-events": "none" }, frag);
+    }
+
+    if (ruler && ruler.b) {
+      const g = el("g", { "pointer-events": "none" }, frag);
+      const d = Math.hypot(ruler.b.x - ruler.a.x, ruler.b.y - ruler.a.y);
+      el("line", { x1: ruler.a.x, y1: ruler.a.y, x2: ruler.b.x, y2: ruler.b.y,
+        stroke: "var(--accent)", "stroke-width": 2, "vector-effect": "non-scaling-stroke" }, g);
+      [ruler.a, ruler.b].forEach((p) =>
+        el("circle", { cx: p.x, cy: p.y, r: .09, fill: "var(--accent)" }, g));
+      const mx = (ruler.a.x + ruler.b.x) / 2, my = (ruler.a.y + ruler.b.y) / 2;
+      el("rect", { x: mx - .62, y: my - .58, width: 1.24, height: .58, rx: .12,
+        fill: "var(--panel)", stroke: "var(--accent)", "stroke-width": 1,
+        "vector-effect": "non-scaling-stroke" }, g);
+      txt(g, mx, my - .17, fmt(d) + " m", { fill: "var(--accent)", "font-size": .36,
+        "font-weight": 700 });
+    }
+
+    if (STRUCT_LAYER && STRUCT_LAYER.parentNode === plan) plan.removeChild(STRUCT_LAYER);
+    plan.textContent = "";
+    plan.appendChild(frag);
+  }
+
+  // Pointer moves arrive faster than the plan can be rebuilt; coalesce onto frames.
+  // Some contexts never run the frame callback at all -- a hidden frame, a preview
+  // pane serving a snapshot -- and there the plan would simply stop redrawing. A
+  // timer is a worse clock than the compositor, but it is a clock.
+  let frameQueued = false, frameTimer = null;
+  function scheduleRender() {
+    if (frameQueued) return;
+    frameQueued = true;
+    const go = function () {
+      if (!frameQueued) return;
+      frameQueued = false;
+      clearTimeout(frameTimer); frameTimer = null;
+      render();
+    };
+    requestAnimationFrame(go);
+    frameTimer = setTimeout(go, 60);
+  }
+
+  /* ================================================================= history
+     Snapshots of the plan, not of the selection or the view -- undoing a move
+     should not also undo what you had highlighted.                             */
+  const HIST = { past: [], future: [], depth: 90 };
+  const serialise = () => ({ roomId: S.roomId, event: S.event, items: S.items,
+                             nextId: S.nextId, custom: S.custom, floor: S.floor });
+  // what a saved file holds: the plan, plus the hall's setup
+  const fileDoc = () => Object.assign(serialise(), { setup: S.setup });
+  const snap = () => JSON.stringify(serialise());
+  function mark() {
+    HIST.past.push(snap());
+    if (HIST.past.length > HIST.depth) HIST.past.shift();
+    HIST.future.length = 0;
+  }
+  function restore(str) {
+    const o = JSON.parse(str);
+    S.roomId = o.roomId; S.event = o.event; S.items = o.items; S.nextId = o.nextId;
+    touchStructure();
+    if (o.custom) S.custom = o.custom;
+    S.floor = o.floor || null;
+    FLOOR = null;
+    for (const id of Array.from(SEL)) if (!byId(id)) SEL.delete(id);
+    syncEventFields();
+    render();
+  }
+  function undo() {
+    if (!HIST.past.length) return toast("Nothing left to undo");
+    HIST.future.push(snap()); restore(HIST.past.pop());
+  }
+  function redo() {
+    if (!HIST.future.length) return;
+    HIST.past.push(snap()); restore(HIST.future.pop());
+  }
+
+  /* =================================================================== toast */
+  function toast(msg, actionLabel, action) {
+    const box = $("toasts");
+    const n = document.createElement("div");
+    n.className = "toast";
+    n.appendChild(document.createTextNode(msg));
+    if (actionLabel) {
+      const b = document.createElement("button");
+      b.textContent = actionLabel;
+      b.addEventListener("click", function () { n.remove(); action(); });
+      n.appendChild(b);
+    }
+    box.appendChild(n);
+    setTimeout(function () { n.remove(); }, actionLabel ? 6000 : 2600);
+    while (box.children.length > 3) box.firstChild.remove();
+  }
+
+  /* ============================================================ interaction */
+  let drag = null, marquee = null;
+
+  function selectedItems() { return S.items.filter((i) => SEL.has(i.id)); }
+
+  function moveSelection(dx, dy) {
+    const R = room();
+    // while live, a table the camera placed is the camera's to move
+    const items = selectedItems().filter((it) => !(LIVE.on && it.src === "cam"));
+    if (!items.length) return;
+    if (items.some(isStruct)) touchStructure(); else FIX_INDEX = null;
+    // Clamp the group, not each item, so a multi-drag keeps its shape.
+    let lo = -Infinity, hi = Infinity, lo2 = -Infinity, hi2 = Infinity;
+    items.forEach((it) => {
+      const e = halfExtent(it);
+      lo = Math.max(lo, e.hx - it.x); hi = Math.min(hi, R.w - e.hx - it.x);
+      lo2 = Math.max(lo2, e.hy - it.y); hi2 = Math.min(hi2, R.h - e.hy - it.y);
+    });
+    dx = clamp(dx, lo, hi); dy = clamp(dy, lo2, hi2);
+    items.forEach((it) => { it.x += dx; it.y += dy; });
+  }
+
+  function bindPlan() {
+    const plan = $("plan");
+
+    plan.addEventListener("pointerdown", function (e) {
+      plan.focus({ preventScroll: true });
+      const p = screenToRoom(e);
+
+      if (UI.ruler) {
+        if (!ruler || ruler.done) ruler = { a: p, b: p, done: false };
+        else { ruler.b = p; ruler.done = true; UI.ruler = false; }
+        render();
+        return;
+      }
+      if (e.button !== 0) return;
+
+      const g = e.target.closest ? e.target.closest(".it") : null;
+      if (!g) {
+        if (!e.shiftKey) SEL.clear();
+        marquee = { x0: p.x, y0: p.y, x1: p.x, y1: p.y, keep: new Set(SEL) };
+        try { plan.setPointerCapture(e.pointerId); } catch (_) {}
+        render();
+        return;
+      }
+      const id = +g.dataset.id;
+      if (e.shiftKey) { SEL.has(id) ? SEL.delete(id) : SEL.add(id); }
+      else if (!SEL.has(id)) { SEL.clear(); SEL.add(id); }
+      const it = byId(id);
+      if (LIVE.on && it && it.src === "cam") {
+        if (!LIVE.warnedDrag) {
+          toast("This table follows the hall camera. Pause live to move it by hand.");
+          LIVE.warnedDrag = true;
+        }
+        render();
+        return;
+      }
+      drag = { ox: p.x, oy: p.y, lx: it ? it.x : 0, ly: it ? it.y : 0,
+               anchor: it, moved: false };
+      try { plan.setPointerCapture(e.pointerId); } catch (_) {}
+      render();
+    });
+
+    plan.addEventListener("pointermove", function (e) {
+      const p = screenToRoom(e);
+      if (marquee) {
+        marquee.x1 = p.x; marquee.y1 = p.y;
+        const x0 = Math.min(marquee.x0, marquee.x1), x1 = Math.max(marquee.x0, marquee.x1);
+        const y0 = Math.min(marquee.y0, marquee.y1), y1 = Math.max(marquee.y0, marquee.y1);
+        SEL.clear();
+        marquee.keep.forEach((id) => SEL.add(id));
+        S.items.forEach((it) => {
+          if (it.x >= x0 && it.x <= x1 && it.y >= y0 && it.y <= y1) SEL.add(it.id);
+        });
+        scheduleRender();
+        return;
+      }
+      if (drag) {
+        if (!drag.moved) { mark(); drag.moved = true; }
+        let tx = drag.lx + (p.x - drag.ox), ty = drag.ly + (p.y - drag.oy);
+        if (UI.snap) {
+          tx = Math.round(tx / SNAP_M) * SNAP_M;
+          ty = Math.round(ty / SNAP_M) * SNAP_M;
+        }
+        if (drag.anchor) moveSelection(tx - drag.anchor.x, ty - drag.anchor.y);
+        scheduleRender();
+        return;
+      }
+      if (ruler && !ruler.done) { ruler.b = p; scheduleRender(); }
+      setReadout(p);
+    });
+
+    const stop = function (e) {
+      if (drag && !drag.moved && !marquee) { /* a plain click: selection already set */ }
+      if (drag && drag.moved) HIST.future.length = 0;
+      drag = null; marquee = null;
+      try { plan.releasePointerCapture(e.pointerId); } catch (_) {}
+      render();
+    };
+    plan.addEventListener("pointerup", stop);
+    plan.addEventListener("pointercancel", stop);
+    plan.addEventListener("pointerleave", function () { if (!drag) setReadout(null); });
+
+    plan.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  }
+
+  // Called with a point while the pointer moves, and with nothing from render(),
+  // which must not wipe the position the pointer last reported.
+  let lastCursor = null;
+  function setReadout(p) {
+    if (p !== undefined) lastCursor = p;
+    const parts = [];
+    if (SEL.size === 1) {
+      const it = byId(Array.from(SEL)[0]);
+      if (it) parts.push(tagOf(it) + "  " + fmt(it.x) + ", " + fmt(it.y) + " m");
+    } else if (SEL.size > 1) parts.push(SEL.size + " selected");
+    if (lastCursor) parts.push("cursor " + fmt(lastCursor.x) + ", " + fmt(lastCursor.y) + " m");
+    if (UI.ruler) parts.push("click two points to measure");
+    $("readout").textContent = parts.join("     ");
+  }
+
+  /* -------------------------------------------------------------- keyboard */
+  function typing(e) {
+    const t = e.target;
+    return t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" ||
+                 t.tagName === "SELECT" || t.isContentEditable);
+  }
+  document.addEventListener("keydown", function (e) {
+    const mod = e.ctrlKey || e.metaKey;
+
+    if (mod && e.key.toLowerCase() === "s") {
+      e.preventDefault();
+      download(slug(S.event.name) + ".plan.json", JSON.stringify(fileDoc(), null, 1));
+      return;
+    }
+    if (mod && e.key.toLowerCase() === "z") {
+      e.preventDefault(); e.shiftKey ? redo() : undo(); return;
+    }
+    if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); return; }
+    if (typing(e)) return;
+    if (mod && e.key.toLowerCase() === "a") { e.preventDefault(); selectAll(); return; }
+    if (mod && e.key.toLowerCase() === "d") { e.preventDefault(); duplicateSel(); return; }
+    if (mod) return;
+
+    const step = e.shiftKey ? 0.5 : 0.1;
+    if (e.key === "ArrowLeft")  { e.preventDefault(); nudge(-step, 0); return; }
+    if (e.key === "ArrowRight") { e.preventDefault(); nudge(step, 0); return; }
+    if (e.key === "ArrowUp")    { e.preventDefault(); nudge(0, -step); return; }
+    if (e.key === "ArrowDown")  { e.preventDefault(); nudge(0, step); return; }
+    if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); deleteSel(); return; }
+    if (e.key === "Escape") {
+      if (!$("seatMenu").hidden) { $("seatMenu").hidden = true; return; }
+      if (UI.ruler || ruler) { UI.ruler = false; ruler = null; syncTools(); }
+      else SEL.clear();
+      render(); return;
+    }
+    if (e.key === "?" ) { $("dlgHelp").showModal(); return; }
+    if (e.key.toLowerCase() === "m") { UI.ruler = !UI.ruler; ruler = null; syncTools(); render(); return; }
+    if (e.key.toLowerCase() === "r") { rotateSel(15); return; }
+  });
+
+  let nudgeTimer = null;
+  function nudge(dx, dy) {
+    if (!SEL.size) return;
+    // One undo step for a burst of arrow keys, not one per press.
+    if (!nudgeTimer) mark();
+    clearTimeout(nudgeTimer);
+    nudgeTimer = setTimeout(function () { nudgeTimer = null; }, 700);
+    moveSelection(dx, dy);
+    render();
+  }
+  function selectAll() { SEL.clear(); S.items.forEach((i) => SEL.add(i.id)); render(); }
+  function deleteSel() {
+    if (!SEL.size) return;
+    mark();
+    const n = SEL.size;
+    S.items = S.items.filter((i) => !SEL.has(i.id));
+    touchStructure();
+    SEL.clear(); render();
+    toast(n + (n > 1 ? " items removed" : " item removed"), "Undo", undo);
+  }
+  function duplicateSel() {
+    if (!SEL.size) return;
+    mark();
+    const copies = selectedItems().map(function (it) {
+      const c = Object.assign({}, it, { id: S.nextId++ });
+      if (c.k === "t") c.num = 0;
+      const e = halfExtent(c);
+      c.x = clamp(c.x + 1.0, e.hx, room().w - e.hx);
+      c.y = clamp(c.y + 1.0, e.hy, room().h - e.hy);
+      return c;
+    });
+    S.items = S.items.concat(copies);
+    touchStructure();
+    copies.forEach(function (c) { if (c.k === "t") c.num = nextNum(); });
+    SEL.clear(); copies.forEach((c) => SEL.add(c.id));
+    render();
+  }
+  function rotateSel(by) {
+    const rot = selectedItems().filter((i) => i.k === "f" || specOf(i).shape === "rect");
+    if (!rot.length) return;
+    mark();
+    rot.forEach((i) => { i.rot = (i.rot + by + 360) % 360; });
+    touchStructure();
+    render();
+  }
+
+  /* ================================================================= arrange
+     Lay `n` tables on a grid that respects the aisle, skipping any cell that
+     lands on a fixture. Staggering the rows lets a round pack tighter without
+     closing the diagonal gap.                                                  */
+  /* Where a table is allowed to stand, once the room is no longer a rectangle.
+
+     A traced room's outline is a hundred wall segments with a gap at every doorway, so
+     working out what is "inside" from the walls does not work -- flooding from outside
+     leaks through the first doorway and declares the whole hall outdoors, and the first
+     version of this placed exactly zero tables because of it.
+
+     The scan already knows. Free cells in the lidar map are precisely the floor the
+     robot drove over, and map_to_plan.py carries that through as a coarse bitmap. So
+     this is not a guess; it is the measurement. */
+  let FLOOR = null;
+  function floorMask() {
+    if (FLOOR !== null) return FLOOR || null;
+    const f = S.floor;
+    if (!f || !f.bits) { FLOOR = false; return null; }
+    let bin;
+    try { bin = atob(f.bits); } catch (e) { FLOOR = false; return null; }
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    FLOOR = {
+      cell: f.cell, w: f.w, h: f.h,
+      at: function (x, y) {
+        const c = Math.floor(x / f.cell), r = Math.floor(y / f.cell);
+        if (c < 0 || r < 0 || c >= f.w || r >= f.h) return false;
+        const i = r * f.w + c;
+        return (bytes[i >> 3] >> (i & 7)) & 1 ? true : false;
+      }
+    };
+    return FLOOR;
+  }
+
+  function arrangeCells(stockKey, aisle, stagger) {
+    const s = STOCK.find((x) => x.key === stockKey), R = room();
+    const w = s.shape === "round" ? s.d : Math.hypot(s.w, s.h);
+    const pitchX = w + aisle;
+    const pitchY = stagger ? (w + aisle) * 0.87 : w + aisle;
+    const margin = w / 2 + Math.max(ROBOT_RADIUS, 0.35);
+    const usableW = R.w - 2 * margin, usableH = R.h - 2 * margin;
+    if (usableW < 0 || usableH < 0) return [];
+    const cols = Math.floor(usableW / pitchX) + 1;
+    const rows = Math.floor(usableH / pitchY) + 1;
+    const inside = floorMask();
+    const idx = fixtureIndex();
+
+    const fits = function (x, y) {
+      if (x < margin - 1e-6 || x > R.w - margin + 1e-6) return false;
+      if (y < margin - 1e-6 || y > R.h - margin + 1e-6) return false;
+      const near = idx.near(x, y, w / 2 + 0.4);
+      for (let i = 0; i < near.length; i++)
+        if (keepClear(near[i]) && rectDist(near[i], x, y) <= w / 2 + 0.4) return false;
+      // the whole table has to be inside the room, not just its centre
+      return !inside || (inside.at(x, y) &&
+        inside.at(x - w / 2, y) && inside.at(x + w / 2, y) &&
+        inside.at(x, y - w / 2) && inside.at(x, y + w / 2));
+    };
+
+    // A grid pinned to the middle of the room loses every cell a stage or a pillar
+    // happens to land on, and gains nothing back. Sliding the whole grid by a fraction
+    // of a pitch often clears the obstruction and picks up a row. Cheap to try, so try
+    // a few and keep whichever lays the most tables.
+    const build = function (phx, phy) {
+      const cells = [];
+      for (let r = -1; r <= rows; r++) {
+        const odd = stagger && ((r % 2) + 2) % 2 === 1;
+        const n = odd ? cols - 1 : cols;
+        if (n < 1) continue;
+        const x0 = margin + (usableW - (n - 1) * pitchX) / 2 + phx;
+        const y = margin + (usableH - (rows - 1) * pitchY) / 2 + r * pitchY + phy;
+        // A short row re-centres itself, and for one table fewer that lands exactly
+        // half a pitch across -- which IS the stagger. Offsetting again on top of it
+        // moves the row a whole pitch instead, closing the vertical gap to nothing.
+        for (let c = 0; c < n; c++) {
+          const x = x0 + c * pitchX;
+          if (fits(x, y)) cells.push({ x: x, y: y });
+        }
+      }
+      return cells;
+    };
+
+    const PHASES = 3;
+    let best = build(0, 0);
+    for (let i = 0; i < PHASES; i++) {
+      for (let j = 0; j < PHASES; j++) {
+        if (!i && !j) continue;
+        const cells = build(i * pitchX / PHASES, j * pitchY / PHASES);
+        if (cells.length > best.length) best = cells;
+      }
+    }
+    return best;
+  }
+  function doArrange(n, stockKey, aisle, stagger, replace) {
+    const cells = arrangeCells(stockKey, aisle, stagger);
+    if (!cells.length) { toast("No room for that table at that aisle"); return 0; }
+    mark();
+    if (replace) S.items = S.items.filter((i) => i.k === "f");
+    const take = Math.min(n, cells.length);
+    const made = [];
+    for (let i = 0; i < take; i++) {
+      const t = makeTable(stockKey, cells[i].x, cells[i].y);
+      S.items.push(t); made.push(t.id);
+    }
+    renumber();
+    SEL.clear(); made.forEach((id) => SEL.add(id));
+    render();
+    return take;
+  }
+
+  /* --------------------------------------------------------------- numbering
+     Banquet tables have to carry the numbers the seating plan uses, so the order
+     is a choice, not an accident.                                              */
+  function renumber() {
+    const ts = tables().slice();
+    const R = room();
+    const stage = fixtures().find((f) => f.type === "stage");
+    const band = 1.6;
+    if (UI.numOrder === "stage" && stage) {
+      ts.sort((a, b) => Math.hypot(a.x - stage.x, a.y - stage.y) -
+                        Math.hypot(b.x - stage.x, b.y - stage.y));
+    } else {
+      const rowOf = (t) => Math.round(t.y / band);
+      ts.sort(function (a, b) {
+        const ra = rowOf(a), rb = rowOf(b);
+        if (ra !== rb) return ra - rb;
+        const dir = UI.numOrder === "serpent" && ra % 2 === 1 ? -1 : 1;
+        return dir * (a.x - b.x);
+      });
+    }
+    ts.forEach((t, i) => { t.num = i + 1; });
+  }
+
+  /* ================================================================== panels */
+  const rowHTML = (k, v) => '<div class="row"><dt>' + k + '</dt><dd>' + v + '</dd></div>';
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function render() {
+    A = analyse();
+    draw();
+    renderChips();
+    if (UI.tab === "plan")   { renderRoomInfo(); renderArrangeHint(); }
+    renderLive();
+    if (UI.tab === "tables") { renderSelected(); renderList(); }
+    if (UI.tab === "robot")  renderRobot();
+    if (UI.tab === "checks") { renderIssues(); renderOps(); renderEnv(); }
+    renderFlags();
+    syncTools();
+    setReadout();
+    autosave();
+    $("doDelete").disabled = SEL.size === 0;
+    $("undo").disabled = !HIST.past.length;
+    $("redo").disabled = !HIST.future.length;
+    $("roomTag").textContent = room().name + "  ·  " + fmt(room().w, 1) + " x " +
+                               fmt(room().h, 1) + " m";
+  }
+
+  function chip(value, label, tone) {
+    return '<div class="chip' + (tone ? " " + tone : "") + '"><b>' + value +
+           '</b><span>' + label + "</span></div>";
+  }
+  function renderChips() {
+    const g = A.gap, n = tables().length;
+    const tight = n > 1 && g.gap < MIN_AISLE - EPS;
+    let html = chip(n, "tables") + chip(A.covers, "covers");
+    const pax = +S.event.pax || 0;
+    if (pax > 0) {
+      const d = A.covers - pax;
+      html += chip((d >= 0 ? "+" : "") + d, d >= 0 ? "spare seats" : "seats short",
+                   d >= 0 ? "good" : "bad");
+    }
+    html += chip(A.blocked, "unreachable", A.blocked > 0 ? "bad" : "");
+    html += chip(n > 1 ? fmt(Math.max(g.gap, 0)) + " m" : "—", "tightest",
+                 tight ? "bad" : "");
+    $("chips").innerHTML = html;
+  }
+
+  // The dot on the Checks tab and the list inside it have to agree, so both read
+  // the same function. They drifted apart once already: a room short of covers was
+  // listed as a problem but never flagged.
+  function renderFlags() {
+    $("tabChecks").classList.toggle("flag", issueList().some((i) => i[0] === ""));
+  }
+
+  // Rebuilt only when the room changes: the custom size boxes are typed into, and
+  // replacing the panel's HTML on every render tears the caret out of them.
+  let roomSig = null;
+  function renderRoomInfo() {
+    const R = room();
+    if (R.id !== roomSig) {
+      $("roomInfo").innerHTML = (R.id === "custom"
+        ? '<div class="two" style="margin-bottom:8px">' +
+          '<label class="field">Width (m)<input type="number" data-act="roomw" ' +
+          'step="0.1" min="1" max="60"></label>' +
+          '<label class="field">Depth (m)<input type="number" data-act="roomh" ' +
+          'step="0.1" min="1" max="60"></label></div>' +
+          '<p class="hint" style="margin:0 0 8px">Measure the space the camera looks ' +
+          'at, corner to corner. The four corners you click on a still are mapped onto ' +
+          'exactly this rectangle.</p>'
+        : "") + '<div id="roomRows"></div>';
+      roomSig = R.id;
+    }
+    const used = tables().reduce(function (a, t) {
+      const s = specOf(t);
+      return a + (s.shape === "round" ? Math.PI * Math.pow(s.d / 2, 2) : s.w * s.h);
+    }, 0);
+    $("roomRows").innerHTML =
+      rowHTML("Floor", fmt(R.w, 1) + " x " + fmt(R.h, 1) + " m") +
+      rowHTML("Seats laid", A.covers) +
+      rowHTML("Tables cover", (100 * used / (R.w * R.h)).toFixed(0) + "% of the floor");
+    ["roomw", "roomh"].forEach(function (k, i) {
+      const n = $("roomInfo").querySelector('[data-act="' + k + '"]');
+      if (n && n !== document.activeElement) n.value = fmt(i ? R.h : R.w, 2);
+    });
+  }
+
+  function renderArrangeHint() {
+    const key = $("arrStock").value;
+    const gap = +$("arrGap").value;
+    const cells = arrangeCells(key, gap, $("arrStagger").checked);
+    const s = STOCK.find((x) => x.key === key);
+    const seats = cells.length * s.covers;
+    $("arrHint").innerHTML = cells.length
+      ? "The room takes <b>" + cells.length + "</b> of these at a " + fmt(gap) +
+        " m aisle — " + seats + " covers."
+      : "Nothing fits at that aisle. Try a smaller table or a tighter gap.";
+  }
+
+  /* --------------------------------------------------------- selected item
+     Rebuilt only when the selection changes identity. Rebuilding it on every
+     render would tear the slider out from under the pointer mid-drag.          */
+  let selSig = null;
+  function renderSelected() {
+    const box = $("sel");
+    const one = SEL.size === 1 ? byId(Array.from(SEL)[0]) : null;
+    const sig = one ? one.k + one.id : (SEL.size > 1 ? "multi" + SEL.size : "none");
+    if (sig !== selSig) { box.innerHTML = selHTML(one); selSig = sig; }
+    if (one) updateSelValues(one);
+  }
+  function selHTML(it) {
+    if (!it) {
+      if (SEL.size > 1) {
+        return '<div class="rows">' + rowHTML("Selected", SEL.size + " items") + "</div>" +
+          '<div class="btn-row" style="margin-top:11px">' +
+          '<button data-act="dup">Duplicate</button>' +
+          '<button data-act="rot">Rotate 15°</button>' +
+          '<button data-act="del" class="danger">Delete</button></div>' +
+          '<p class="hint">Arrow keys nudge the whole group by 0.1 m, or 0.5 m with Shift.</p>';
+      }
+      return '<p class="empty">Click something on the plan to edit it. Drag across empty ' +
+             "floor to pick up several at once.</p>";
+    }
+    if (it.k === "f") {
+      const spec = fixSpec(it.type);
+      if (it.shape === "circle") {
+        return '<div class="rows" id="selRows"></div>' +
+          '<label class="field" style="margin-top:11px">Diameter (m)' +
+          '<input type="number" data-act="fw" step="0.1" min="0.2" max="30"></label>' +
+          '<div class="btn-row"><button data-act="dup">Duplicate</button>' +
+          '<button data-act="del" class="danger">Delete</button></div>';
+      }
+      return '<div class="rows" id="selRows"></div>' +
+        '<div class="two" style="margin-top:11px">' +
+        '<label class="field">Width (m)<input type="number" data-act="fw" step="0.1" min="0.2" max="30"></label>' +
+        '<label class="field">Depth (m)<input type="number" data-act="fh" step="0.1" min="0.2" max="30"></label>' +
+        "</div>" +
+        '<label class="field">Rotation: <b id="rotVal"></b>' +
+        '<input type="range" data-act="rot-range" min="0" max="345" step="15"></label>' +
+        '<div class="btn-row"><button data-act="dup">Duplicate</button>' +
+        '<button data-act="del" class="danger">Delete</button></div>' +
+        '<p class="hint">' + (spec.nav === "obstacle"
+          ? "The robot treats this as solid."
+          : spec.nav === "zone"
+            ? "The robot may cross this, but the export asks it not to during service."
+            : "Exported as a point the robot uses, not as an obstacle.") + "</p>";
+    }
+    const s = specOf(it);
+    return '<div class="rows" id="selRows"></div>' +
+      '<label class="field" style="margin:11px 0 0">Guests at this table</label>' +
+      '<div class="stepper"><button data-act="cv-" aria-label="One fewer">−</button>' +
+      '<input type="number" data-act="covers" min="0" max="' + MAX_AT_TABLE + '" step="1" ' +
+      'aria-label="Guests at this table">' +
+      '<button data-act="cv+" aria-label="One more">+</button></div>' +
+      '<p class="hint" id="cvHint" style="margin:6px 0 10px"></p>' +
+      (s.shape === "rect"
+        ? '<label class="field">Rotation: <b id="rotVal"></b>' +
+          '<input type="range" data-act="rot-range" min="0" max="345" step="15"></label>' : "") +
+      '<div class="btn-row"><button data-act="dup">Duplicate</button>' +
+      '<button data-act="del" class="danger">Delete</button></div>';
+  }
+  function updateSelValues(it) {
+    const rows = $("selRows");
+    if (rows) {
+      if (it.k === "f") {
+        rows.innerHTML = rowHTML("Fixture", esc(fixSpec(it.type).label)) +
+          rowHTML("Position", fmt(it.x) + ", " + fmt(it.y) + " m") +
+          rowHTML("Footprint", it.shape === "circle"
+            ? fmt(it.w) + " m across" : fmt(it.w) + " x " + fmt(it.h) + " m");
+      } else {
+        const blocked = coversFor(it).filter((x) => x.bad).length;
+        rows.innerHTML = rowHTML("Table", tagOf(it) + " · " + esc(specOf(it).label)) +
+          rowHTML("Position", fmt(it.x) + ", " + fmt(it.y) + " m") +
+          rowHTML("Places the robot can't reach", blocked + " of " + it.covers);
+      }
+    }
+    const set = function (sel, v) {
+      const n = $("sel").querySelector(sel);
+      if (n && n !== document.activeElement) n.value = v;
+    };
+    set('[data-act="covers"]', it.covers);
+    set('[data-act="rot-range"]', it.rot);
+    set('[data-act="fw"]', fmt(it.w, 2));
+    set('[data-act="fh"]', fmt(it.h, 2));
+    if ($("cvHint") && it.k === "t") {
+      const sp = specOf(it);
+      $("cvHint").textContent = "A " + sp.label.toLowerCase() + " seats " + sp.covers +
+        " comfortably." + (it.covers > sp.covers ? " This one is squeezed." : "") +
+        (it.src === "cam" ? " Placed by the hall camera." : "");
+    }
+    if ($("rotVal")) $("rotVal").textContent = it.rot + "°";
+  }
+
+  function renderList() {
+    const items = S.items.slice().sort(function (a, b) {
+      if (a.k !== b.k) return a.k === "t" ? -1 : 1;
+      return a.k === "t" ? a.num - b.num : 0;
+    });
+    const struct = fixtures().filter(function (f) {
+      return f.type === "wall" || f.type === "obst";
+    }).length;
+    $("listCount").textContent = tables().length + " tables, " +
+      (fixtures().length - struct) + " fixtures" +
+      (struct ? ", " + struct + " traced" : "");
+    if (!items.length) {
+      $("tlist").innerHTML = '<p class="empty">Nothing placed yet.</p>';
+      return;
+    }
+    $("tlist").innerHTML = items.map(function (it) {
+      const sel = SEL.has(it.id) ? " sel" : "";
+      if (it.k === "f" && (it.type === "wall" || it.type === "obst")) return "";
+      if (it.k === "f") {
+        return '<div class="titem' + sel + '" data-act="pick" data-id="' + it.id + '">' +
+          '<span class="tag">—</span><span class="desc">' + esc(fixSpec(it.type).label) +
+          "</span></div>";
+      }
+      const bad = coversFor(it).filter((x) => x.bad).length;
+      return '<div class="titem' + sel + '" data-act="pick" data-id="' + it.id + '">' +
+        '<span class="tag">' + tagOf(it) + "</span>" +
+        '<span class="desc">' + esc(specOf(it).label) + " · " + it.covers + " covers</span>" +
+        (bad ? '<span class="bad">' + bad + " blocked</span>" : "") + "</div>";
+    }).join("");
+  }
+
+  // Each entry is [severity, html]: "" is a problem, "note" is worth knowing.
+  function issueList() {
+    const list = [], g = A.gap, n = tables().length;
+    if (n > 1) {
+      if (g.gap < MIN_AISLE - EPS) {
+        list.push(["", "<b>" + g.pair[0] + " and " + g.pair[1] + " are " +
+          fmt(Math.max(g.gap, 0)) + " m apart.</b> The robot needs " + fmt(MIN_AISLE) +
+          " m of clear floor to pass between tables."]);
+      } else if (g.gap < TRADE_AISLE - EPS) {
+        list.push(["note", "Tightest gap is " + fmt(g.gap) + " m. The robot fits, but " +
+          "banquet service normally wants " + fmt(TRADE_AISLE) + " m between table edges."]);
+      }
+    }
+    if (A.blocked) {
+      list.push(["", "<b>" + A.blocked + " service station" + (A.blocked > 1 ? "s" : "") +
+        " unreachable.</b> The robot cannot stand there — a wall, a table or a " +
+        "fixture is in the way. Move the table, or drop those covers."]);
+    }
+    A.clash.forEach((c) => list.push(["", "<b>" + esc(c) + ".</b>"]));
+    A.overhang.forEach((t) => list.push(["", "<b>" + esc(t) + "</b> overhangs the room."]));
+    const pax = +S.event.pax || 0;
+    if (pax > 0 && A.covers < pax) {
+      list.push(["", "<b>" + (pax - A.covers) + " covers short of " + pax + ".</b> " +
+        "Add tables, or raise the covers on the ones you have."]);
+    }
+    if (!fixtures().some((f) => f.type === "door")) {
+      list.push(["note", "No service door marked. The nav stack has nowhere to enter " +
+        "from, and the export has no access point."]);
+    }
+    if (!n) list.push(["note", "Empty room. Use <b>Fill the room</b> to lay a full set in one go."]);
+    return list;
+  }
+
+  function renderIssues() {
+    const list = issueList();
+    $("issues").innerHTML = list.length
+      ? list.map((i) => '<li class="' + i[0] + '">' + i[1] + "</li>").join("")
+      : '<li class="ok">Every station is reachable, the aisles are wide enough and the ' +
+        "cover count meets the sheet.</li>";
+  }
+
+  function renderOps() {
+    const courses = +S.event.courses || 3;
+    const perTable = tables().length ? (A.covers / tables().length) : 0;
+    $("opsInfo").innerHTML =
+      rowHTML("Covers laid", A.covers) +
+      rowHTML("Average per table", perTable ? perTable.toFixed(1) : "—") +
+      '<label class="field" style="margin:4px 0 0">Courses served' +
+      '<select data-act="courses">' +
+      [1, 2, 3, 4, 5, 6].map((c) => '<option value="' + c + '"' +
+        (c === courses ? " selected" : "") + ">" + c + "</option>").join("") +
+      "</select></label>" +
+      rowHTML("Plates per course", A.covers) +
+      rowHTML("Back to the wash-up", A.covers * courses + " covers");
+  }
+
+  function renderEnv() {
+    $("envInfo").innerHTML =
+      rowHTML("Footprint radius", fmt(ROBOT_RADIUS) + " m") +
+      rowHTML("Stand-off from the edge", fmt(STAND_OFF) + " m") +
+      rowHTML("Aisle it needs", fmt(MIN_AISLE) + " m") +
+      rowHTML("Aisle service wants", fmt(TRADE_AISLE) + " m") +
+      rowHTML("Plate it handles", (PLATE_D * 1000).toFixed(0) + " mm") +
+      rowHTML("Table height", fmt(TABLE_HEIGHT, 3) + " m");
+  }
+
+  function syncTools() {
+    const on = (id, v) => $(id).classList.toggle("on", !!v);
+    on("tSnap", UI.snap); on("tChairs", UI.chairs); on("tCovers", UI.covers);
+    on("tClear", UI.clearance); on("tRuler", UI.ruler);
+  }
+  function syncEventFields() {
+    $("evName").value = S.event.name || "";
+    $("evDate").value = S.event.date || "";
+    $("evPax").value = S.event.pax || 0;
+    $("room").value = S.roomId;
+  }
+
+  /* ================================================================== export */
+  function buildMap() {
+    const R = room();
+    const map = {
+      schema: "banquet-static-map/0.1",
+      generated_at: new Date().toISOString(),
+      event: { name: S.event.name || null, date: S.event.date || null,
+               guests_expected: +S.event.pax || null },
+      room: { id: R.id, name: R.name, width_m: R.w, height_m: R.h,
+              origin: "north-west corner, x east, y south" },
+      table_height_m: TABLE_HEIGHT,
+      robot: { footprint_radius_m: ROBOT_RADIUS, stand_off_m: STAND_OFF,
+               min_aisle_m: MIN_AISLE },
+      note: "Static prior confirmed by the banquet manager. Obstacle footprints and " +
+            "named goals only. Metric positions are a starting point for localisation, " +
+            "not a substitute for it, and are far too coarse for anything the arms do.",
+      obstacles: [], zones: [], access_points: [], stations: []
+    };
+    // where the room's south-west corner sits in the robot's own map (Settings)
+    map.map_frame = { origin_m: [+S.setup.map.ox || 0, +S.setup.map.oy || 0],
+                      resolution_m: +S.setup.map.res || 0.05 };
+    tables().forEach(function (t) {
+      const s = specOf(t);
+      map.obstacles.push(s.shape === "round"
+        ? { id: tagOf(t), kind: "table", shape: "circle",
+            centre_m: [+fmt(t.x), +fmt(t.y)], radius_m: +fmt(s.d / 2) }
+        : { id: tagOf(t), kind: "table", shape: "rect",
+            centre_m: [+fmt(t.x), +fmt(t.y)], size_m: [+fmt(s.w), +fmt(s.h)],
+            rotation_deg: t.rot });
+      coversOf(t).forEach(function (c, i) {
+        const bad = standBlocked(t, c);
+        map.stations.push({
+          goal: tagOf(t) + "/cover" + String(i + 1).padStart(2, "0"),
+          stand_m: [+fmt(c.stand.x), +fmt(c.stand.y)],
+          heading_deg: +(c.heading * 180 / Math.PI).toFixed(1),
+          reachable: !bad, blocked_by: bad || undefined
+        });
+      });
+    });
+    fixtures().forEach(function (f) {
+      const spec = fixSpec(f.type);
+      const body = f.shape === "circle"
+        ? { id: spec.label, kind: f.type, shape: "circle",
+            centre_m: [+fmt(f.x), +fmt(f.y)], radius_m: +fmt(f.w / 2),
+            solid: spec.solid }
+        : { id: spec.label, kind: f.type, shape: "rect",
+            centre_m: [+fmt(f.x), +fmt(f.y)],
+            size_m: [+fmt(f.w), +fmt(f.h)], rotation_deg: f.rot,
+            solid: spec.solid };
+      if (spec.nav === "obstacle") map.obstacles.push(body);
+      else if (spec.nav === "zone")
+        map.zones.push(Object.assign({ traversable: true, avoid_during_service: true }, body));
+      else map.access_points.push(body);
+    });
+    map.totals = { tables: tables().length, stations: map.stations.length,
+                   covers: A.covers,
+                   unreachable: map.stations.filter((s) => !s.reachable).length };
+    return map;
+  }
+  const mapJSON = () => JSON.stringify(buildMap(), null, 2);
+
+  /* ============================================ writing the map out as a ROS map
+
+     The same thing export_ros_map.py does, in the browser, so a manager never has to
+     open a terminal. map.pgm + map.yaml + map_goals.yaml, which is what map_server
+     loads.
+
+     The frame is the part that bites. This app measures y SOUTH from the north-west
+     corner, the way you read a floor plan and the way an image is rastered. A ROS map
+     measures y NORTH from the south-west, with the yaml's origin giving the pose of the
+     image's LOWER-left pixel. They are mirror images:
+
+         X_ros   = origin_x + x
+         Y_ros   = origin_y + (height_m - y)
+         yaw_ros = -heading
+
+     Rows go out top-down, which is what map_server wants because it flips the image back
+     on load. Get it wrong and nothing looks wrong -- right size, right tables -- the
+     robot just drives to the wrong side of the room.
+  */
+  const PGM_OCC = 0, PGM_FREE = 254;
+
+  function buildOccupancyGrid(res) {
+    const R = room();
+    const W = Math.max(1, Math.round(R.w / res)), H = Math.max(1, Math.round(R.h / res));
+    const g = new Uint8Array(W * H).fill(PGM_FREE);
+
+    const stampRect = function (cx, cy, w, h, rotDeg) {
+      const a = -rotDeg * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+      const rad = Math.hypot(w, h) / 2 + res;
+      const c0 = Math.max(0, Math.floor((cx - rad) / res));
+      const c1 = Math.min(W - 1, Math.ceil((cx + rad) / res));
+      const r0 = Math.max(0, Math.floor((cy - rad) / res));
+      const r1 = Math.min(H - 1, Math.ceil((cy + rad) / res));
+      for (let r = r0; r <= r1; r++) {
+        const py = (r + 0.5) * res;
+        for (let c = c0; c <= c1; c++) {
+          const px = (c + 0.5) * res, dx = px - cx, dy = py - cy;
+          const u = dx * ca - dy * sa, v = dx * sa + dy * ca;
+          if (Math.abs(u) <= w / 2 && Math.abs(v) <= h / 2) g[r * W + c] = PGM_OCC;
+        }
+      }
+    };
+    const stampCircle = function (cx, cy, rad) {
+      const c0 = Math.max(0, Math.floor((cx - rad) / res));
+      const c1 = Math.min(W - 1, Math.ceil((cx + rad) / res));
+      const r0 = Math.max(0, Math.floor((cy - rad) / res));
+      const r1 = Math.min(H - 1, Math.ceil((cy + rad) / res));
+      for (let r = r0; r <= r1; r++) {
+        const py = (r + 0.5) * res;
+        for (let c = c0; c <= c1; c++) {
+          const px = (c + 0.5) * res;
+          if (Math.hypot(px - cx, py - cy) <= rad) g[r * W + c] = PGM_OCC;
+        }
+      }
+    };
+
+    // A traced room already HAS its walls as objects; drawing a rectangle round the
+    // outside as well would wall off the corridor it opens on to.
+    const traced = fixtures().some(function (f) { return f.type === "wall"; });
+    if (!traced) {
+      const t = Math.max(1, Math.round(0.10 / res));
+      for (let c = 0; c < W; c++)
+        for (let k = 0; k < t; k++) { g[k * W + c] = PGM_OCC; g[(H - 1 - k) * W + c] = PGM_OCC; }
+      for (let r = 0; r < H; r++)
+        for (let k = 0; k < t; k++) { g[r * W + k] = PGM_OCC; g[r * W + W - 1 - k] = PGM_OCC; }
+    }
+
+    tables().forEach(function (t) {
+      const s = specOf(t);
+      if (s.shape === "round") stampCircle(t.x, t.y, s.d / 2);
+      else stampRect(t.x, t.y, s.w, s.h, t.rot);
+    });
+    fixtures().forEach(function (f) {
+      if (!blocksNav(f)) return;
+      if (f.shape === "circle") stampCircle(f.x, f.y, f.w / 2);
+      else stampRect(f.x, f.y, f.w, f.h, f.rot);
+    });
+    return { g: g, W: W, H: H, w_m: W * res, h_m: H * res };
+  }
+
+  function pgmBytes(grid) {
+    const head = "P5\n# VATEL floor planner -- a prior for navigation, not a survey\n" +
+                 grid.W + " " + grid.H + "\n255\n";
+    const hb = new TextEncoder().encode(head);
+    const out = new Uint8Array(hb.length + grid.g.length);
+    out.set(hb); out.set(grid.g, hb.length);
+    return out;
+  }
+
+  // The three files map_server loads: the image, its yaml, and the named goals.
+  function buildRosFiles() {
+    const res = clamp(+S.setup.map.res || 0.05, 0.01, 0.5);
+    const org = [+S.setup.map.ox || 0, +S.setup.map.oy || 0, 0];
+    const grid = buildOccupancyGrid(res);
+    const name = slug(S.event.name);
+
+    const yaml =
+      "image: " + name + ".pgm\n" +
+      "resolution: " + res.toFixed(6) + "\n" +
+      "origin: [" + (+org[0]).toFixed(6) + ", " + (+org[1]).toFixed(6) + ", 0.000000]\n" +
+      "negate: 0\noccupied_thresh: 0.65\nfree_thresh: 0.196\nmode: trinary\n";
+
+    const map = buildMap();
+    const lines = [
+      "# Service stations from the VATEL floor planner.",
+      "# Same frame as the yaml: x east, y north, origin at the map's lower-left pixel.",
+      "frame_id: map",
+      "room: " + JSON.stringify(room().name),
+      "generated_at: " + JSON.stringify(new Date().toISOString()),
+      "goals:"
+    ];
+    let kept = 0;
+    map.stations.forEach(function (st) {
+      if (!st.reachable) return;      // the planner already knows it cannot stand there
+      lines.push("  - name: " + JSON.stringify(st.goal));
+      lines.push("    x: " + (org[0] + st.stand_m[0]).toFixed(3));
+      lines.push("    y: " + (org[1] + grid.h_m - st.stand_m[1]).toFixed(3));
+      lines.push("    yaw_deg: " + (-st.heading_deg).toFixed(1));
+      kept++;
+    });
+    const blocked = map.stations.length - kept;
+    if (blocked) lines.push("# " + blocked + " station(s) left out: unreachable.");
+    return { name: name, res: res, grid: grid, pgm: pgmBytes(grid), yaml: yaml,
+             goals: lines.join("\n") + "\n", kept: kept, map: map };
+  }
+
+  function downloadRosMap() {
+    const f = buildRosFiles(), grid = f.grid;
+    download(f.name + ".pgm", f.pgm, "image/x-portable-graymap");
+    setTimeout(function () { download(f.name + ".yaml", f.yaml, "text/yaml"); }, 350);
+    setTimeout(function () {
+      download(f.name + "_goals.yaml", f.goals, "text/yaml");
+      let occ = 0;
+      for (let i = 0; i < grid.g.length; i++) if (grid.g[i] === PGM_OCC) occ++;
+      toast(grid.W + "x" + grid.H + " at " + f.res + " m/px, " +
+            Math.round(100 * occ / grid.g.length) + "% occupied, " + f.kept + " goals");
+    }, 700);
+  }
+
+
+  // Two homes, two ways of handing over a file. Opened off the disk, an anchor with
+  // a download attribute is all it takes. Published as a hosted page, that anchor is
+  // ignored outright and the button would look like it worked, so the save goes
+  // through the host, which asks the viewer first.
+  let downloadsCap;
+  function downloads() {
+    if (downloadsCap === undefined) {
+      downloadsCap = (window.claude && window.claude.use)
+        ? Promise.resolve(window.claude.use("downloads")).catch(function () { return null; })
+        : Promise.resolve(null);
+    }
+    return downloadsCap;
+  }
+  const hosted = () => !!(window.claude && window.claude.use);
+
+  function anchorDownload(name, text, mime) {
+    const blob = new Blob([text], { type: mime || "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function download(name, text, mime) {
+    downloads().then(function (dl) {
+      if (!dl) {
+        if (hosted()) {
+          toast("Saving files is off here — use Copy and paste it instead");
+          return;
+        }
+        return anchorDownload(name, text, mime);
+      }
+      dl.save({ filename: name, data: text }).then(
+        function () { toast("Saved " + name); },
+        function (e) {
+          const code = e && e.code;
+          if (code === "declined" || code === "rate_limited") return;
+          toast("Could not save that file — use Copy instead");
+        });
+    });
+  }
+  const slug = (s) => (s || "plan").toLowerCase().replace(/[^a-z0-9]+/g, "-")
+                        .replace(/^-|-$/g, "").slice(0, 40) || "plan";
+
+  /* ---------------------------------------------------------- printed sheet */
+  function buildSheet() {
+    const R = room(), ts = tables().slice().sort((a, b) => a.num - b.num);
+    const meta = [S.event.date || "", R.name, A.covers + " covers on " + ts.length + " tables",
+                  (+S.event.pax ? "booked for " + S.event.pax : "")].filter(Boolean).join("  ·  ");
+    $("sheet").innerHTML =
+      "<h2>" + esc(S.event.name || "Untitled function") + "</h2>" +
+      '<p class="meta">' + esc(meta) + "</p>" +
+      "<table><thead><tr><th>Table</th><th>Type</th><th>Covers</th>" +
+      "<th>Position (m)</th><th>Stations blocked</th></tr></thead><tbody>" +
+      ts.map(function (t) {
+        const bad = coversFor(t).filter((x) => x.bad).length;
+        return "<tr><td>" + tagOf(t) + "</td><td>" + esc(specOf(t).label) + "</td><td>" +
+          t.covers + "</td><td>" + fmt(t.x, 1) + ", " + fmt(t.y, 1) + "</td><td>" +
+          (bad || "—") + "</td></tr>";
+      }).join("") +
+      "</tbody></table>";
+  }
+
+  /* ================================================================= storage
+     file:// pages get an opaque origin in some browsers, so every localStorage
+     call can throw. Everything here degrades to the file export instead.        */
+  const KEY_PLANS = "banquet.plans.v1";
+  const KEY_LAST  = "banquet.current.v1";
+  function storeOK() {
+    try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); return true; }
+    catch (e) { return false; }
+  }
+  function readPlans() {
+    try { return JSON.parse(localStorage.getItem(KEY_PLANS) || "[]"); } catch (e) { return []; }
+  }
+  function writePlans(a) {
+    try { localStorage.setItem(KEY_PLANS, JSON.stringify(a)); return true; }
+    catch (e) { return false; }
+  }
+  let autosaveTimer = null;
+  function autosave() {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(function () {
+      try { localStorage.setItem(KEY_LAST, snap()); } catch (e) {}
+    }, 600);
+  }
+  function saveLayout() {
+    const name = (S.event.name || "Untitled function").trim();
+    const plans = readPlans().filter((p) => p.name !== name);
+    plans.unshift({ name: name, at: Date.now(), data: fileDoc() });
+    if (writePlans(plans.slice(0, 40)))
+      toast('Saved as "' + name + '"', "Open", openSaves);
+    else
+      toast("This browser will not keep saved layouts here", "Export a file",
+            function () { download(slug(name) + ".plan.json", JSON.stringify(fileDoc(), null, 2)); });
+  }
+  function openSaves() {
+    const plans = readPlans();
+    $("savesList").innerHTML = plans.length
+      ? plans.map(function (p, i) {
+          const d = new Date(p.at);
+          return '<div class="save-it"><span class="nm">' + esc(p.name) + "</span>" +
+            '<span class="mt">' + d.toLocaleDateString() + " " +
+            d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) + "</span>" +
+            '<button data-act="load-plan" data-i="' + i + '">Open</button>' +
+            '<button data-act="drop-plan" data-i="' + i + '" class="danger">Delete</button></div>';
+        }).join("")
+      : '<p class="empty">Nothing saved yet. <b>Save</b> in the top bar keeps a layout here ' +
+        "in this browser; <b>Export file</b> gives you one you can send on.</p>";
+    $("dlgSaves").showModal();
+  }
+  function loadPlan(o) {
+    mark();
+    S.roomId = o.roomId || ROOMS[0].id;
+    if (o.custom) S.custom = o.custom;
+    S.floor = o.floor || null;
+    FLOOR = null;
+    if (o.setup || o.mapRef) { S.setup = mergeSetup(o.setup || S.setup, o.mapRef); persistSetup(); }
+    S.event = Object.assign({ name: "", date: "", pax: 0, courses: 3 }, o.event || {});
+    S.items = o.items || [];
+    S.nextId = o.nextId || (Math.max(0, ...S.items.map((i) => i.id)) + 1);
+    SEL.clear(); selSig = null; touchStructure();
+    syncEventFields(); fitView(); render();
+  }
+
+  /* ================================================================== camera
+     Nothing is installed yet. This is the seam: a still, four clicked corners,
+     and a homography that turns the detector's pixels into metres on this plan.
+     Detection itself is a Python service; it hands back JSON.                   */
+  function solve(Ain, bin) {
+    const n = bin.length;
+    const M = Ain.map((r, i) => r.concat([bin[i]]));
+    for (let c = 0; c < n; c++) {
+      let p = c;
+      for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      if (Math.abs(M[p][c]) < 1e-12) return null;
+      const tmp = M[c]; M[c] = M[p]; M[p] = tmp;
+      for (let r = 0; r < n; r++) {
+        if (r === c) continue;
+        const f = M[r][c] / M[c][c];
+        for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k];
+      }
+    }
+    const x = [];
+    for (let i = 0; i < n; i++) x.push(M[i][n] / M[i][i]);
+    return x;
+  }
+  // Four floor points: where each is in the picture (u, v) and on the plan (x, y). The
+  // plan position defaults to the room's corners, NW, NE, SE, SW.
+  const cornerDefault = (i) => { const R = room();
+    return [[0, 0], [R.w, 0], [R.w, R.h], [0, R.h]][i]; };
+  function homography(corners) {
+    if (!corners || corners.length !== 4) return null;
+    const dst = corners.map((c, i) => (isFinite(c.x) && isFinite(c.y) && c.x !== null && c.y !== null)
+                                        ? [+c.x, +c.y] : cornerDefault(i));
+    const Aro = [], b = [];
+    for (let i = 0; i < 4; i++) {
+      const u = corners[i].u, v = corners[i].v, x = dst[i][0], y = dst[i][1];
+      Aro.push([u, v, 1, 0, 0, 0, -x * u, -x * v]); b.push(x);
+      Aro.push([0, 0, 0, u, v, 1, -y * u, -y * v]); b.push(y);
+    }
+    const h = solve(Aro, b);
+    if (!h || !h.every(isFinite)) return null;   // four bad corners solve to nonsense
+    return h.concat([1]);
+  }
+  function pixToRoom(h, u, v) {
+    const w = h[6] * u + h[7] * v + 1;
+    return { x: (h[0] * u + h[1] * v + h[2]) / w, y: (h[3] * u + h[4] * v + h[5]) / w };
+  }
+  function pixScaleAt(h, u, v) {
+    // Local metres-per-pixel, so a detected diameter in pixels becomes a real one.
+    const a = pixToRoom(h, u, v), b = pixToRoom(h, u + 20, v), c = pixToRoom(h, u, v + 20);
+    return (Math.hypot(b.x - a.x, b.y - a.y) + Math.hypot(c.x - a.x, c.y - a.y)) / 40;
+  }
+  // A tabletop is TABLE_HEIGHT above the plane the four corners calibrated, so a ray
+  // through its rim overshoots to a floor point further from the camera. The whole
+  // effect is a scaling about the nadir -- the floor point directly below the camera --
+  // by (H - h) / H, which is exact, not an approximation.
+  function parallaxK() {
+    const H = +S.setup.cam.height || 0;
+    return H > TABLE_HEIGHT + 0.2 ? (H - TABLE_HEIGHT) / H : 1;
+  }
+  function deparallax(p) {
+    const k = parallaxK();
+    if (k === 1) return p;
+    const R = room();
+    const n = S.setup.cam.nadir || { x: R.w / 2, y: R.h / 2 };
+    return { x: n.x + (p.x - n.x) * k, y: n.y + (p.y - n.y) * k };
+  }
+
+  // Least-squares circle through points already on the floor plane (Kasa): solve
+  // x^2 + y^2 + Dx + Ey + F = 0, then centre = (-D/2, -E/2).
+  function circleFit(pts) {
+    if (!pts || pts.length < 3) return null;
+    const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], v = [0, 0, 0];
+    for (const p of pts) {
+      if (!isFinite(p[0]) || !isFinite(p[1])) return null;
+      const row = [p[0], p[1], 1], rhs = -(p[0] * p[0] + p[1] * p[1]);
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) M[i][j] += row[i] * row[j];
+        v[i] += row[i] * rhs;
+      }
+    }
+    const sol = solve(M, v);
+    if (!sol) return null;
+    const cx = -sol[0] / 2, cy = -sol[1] / 2;
+    const r2 = cx * cx + cy * cy - sol[2];
+    if (!(r2 > 0)) return null;
+    return { x: cx, y: cy, r: Math.sqrt(r2) };
+  }
+
+  const CORNER_NAMES = ["north-west", "north-east", "south-east", "south-west"];
+
+  function openCalib() {
+    const d = $("dlgCal");
+    $("calImg").src = camera.img;
+    $("calImg").alt = "Hall camera picture, " + camera.name;
+    $("calAuto").hidden = !(LIVE.status && LIVE.status.calibration &&
+                            (LIVE.status.calibration.points || []).length === 4);
+    paintCorners();
+    if (!d.open) d.showModal();
+  }
+  function paintCorners() {
+    const cs = S.setup.cam.corners;
+    $("calMarks").innerHTML = cs.map(function (c, i) {
+      return '<span style="position:absolute;left:' + (c.fx * 100) + "%;top:" + (c.fy * 100) +
+        '%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;' +
+        'border:2px solid #fff;background:var(--accent);color:#fff;font-family:var(--sans);' +
+        'font-size:11px;font-weight:600;display:flex;align-items:center;' +
+        'justify-content:center;pointer-events:none">' + (i + 1) + "</span>";
+    }).join("");
+    const done = cs.length === 4;
+    $("calStep").innerHTML = done
+      ? "All four points marked. Check each one's plan position below, then use them."
+      : "Click point " + (cs.length + 1) + " on the floor &mdash; by default the <b>" +
+        CORNER_NAMES[cs.length] + "</b> corner of the room.";
+    $("calPts").innerHTML = cs.length
+      ? '<span></span><span>x (m), east</span><span>y (m), south</span>' + cs.map(function (c, i) {
+          const d = cornerDefault(i);
+          return "<span>Point " + (i + 1) + "</span>" +
+            '<input type="number" step="0.05" data-act="calx" data-i="' + i + '" value="' +
+            fmt(c.x === undefined || c.x === null ? d[0] : c.x) + '">' +
+            '<input type="number" step="0.05" data-act="caly" data-i="' + i + '" value="' +
+            fmt(c.y === undefined || c.y === null ? d[1] : c.y) + '">';
+        }).join("")
+      : "";
+    $("calDone").disabled = !done || !homography(cs);
+    renderCamInfo();
+  }
+  function renderCamInfo() {
+    const cal = S.setup.cam;
+    const h = cal.corners.length === 4 ? homography(cal.corners) : null;
+    const k = parallaxK();
+    const R = room();
+    const n = cal.nadir || { x: R.w / 2, y: R.h / 2 };
+    if (!$("camInfo")) return;
+    $("camInfo").innerHTML =
+      rowHTML("Points marked", cal.corners.length + " of 4" +
+              (cal.size ? " on a " + cal.size.w + " x " + cal.size.h + " picture" : "")) +
+      rowHTML("Pixel to metre", h ? "ready" : "not calibrated") +
+      rowHTML("Table-height correction", k === 1
+        ? "off: give the camera height"
+        : "x" + k.toFixed(3) + " about " + fmt(n.x) + ", " + fmt(n.y) + " m");
+  }
+
+  // One detection document (pixels or metres) onto this plan: centre, diameter and the
+  // nearest table in the hall's stock. Shared by the review dialog and the live camera.
+  // null when there is no calibration to map pixels with.
+  function mapDetections(doc) {
+    const list = (doc && doc.tables) || [];
+    const metres = doc && doc.units === "metres";
+    const cal = S.setup.cam;
+    const h = cal.corners.length === 4 ? homography(cal.corners) : null;
+    if (!metres && !h) return null;
+    // The detector's frame and the picture the points were clicked on may differ in size.
+    const fw = doc.frame && doc.frame.width, fh = doc.frame && doc.frame.height;
+    const sx = cal.size && fw ? cal.size.w / fw : 1, sy = cal.size && fh ? cal.size.h / fh : 1;
+    const R = room();
+    const rounds = STOCK.filter((s) => s.shape === "round");
+    return list.map(function (d, i) {
+      let x, y, dia, how = "centre";
+      if (metres) {
+        x = d.centre_m[0]; y = d.centre_m[1]; dia = d.diameter_m; how = "metres";
+      } else {
+        const ring = d.outline_px && d.outline_px.length >= 8
+          ? circleFit(d.outline_px.map(function (p) {
+              const q = deparallax(pixToRoom(h, p[0] * sx, p[1] * sy)); return [q.x, q.y];
+            }))
+          : null;
+        if (ring) {
+          // The rim mapped onto the floor, where a table is a circle again. Taking the
+          // detector's CENTRE instead would inherit the projective offset: the centre of
+          // a projected ellipse is not the projection of the circle's centre, and on
+          // something table-sized that is about 10 cm -- the planner's whole accuracy.
+          x = ring.x; y = ring.y; dia = 2 * ring.r; how = "rim";
+        } else {
+          const u = d.centre_px[0] * sx, v = d.centre_px[1] * sy;
+          const p = deparallax(pixToRoom(h, u, v));
+          x = p.x; y = p.y;
+          dia = d.diameter_px * sx * pixScaleAt(h, u, v) * parallaxK();
+        }
+      }
+      // Nearest thing in the hall's own stock -- the camera measures a diameter,
+      // the floor only has six tables.
+      const best = rounds.reduce((a, s) =>
+        Math.abs(s.d - dia) < Math.abs(a.d - dia) ? s : a, rounds[0]);
+      const inside = isFinite(x) && isFinite(y) && isFinite(dia) &&
+                     x > 0 && y > 0 && x < R.w && y < R.h;
+      return { i: i, id: d.id || "d" + (i + 1), x: x, y: y, dia: dia, stock: best,
+               conf: d.confidence, inside: inside, how: how };
+    });
+  }
+
+  const SAMPLE_DET = {
+    schema: "banquet-detections/0.1",
+    source: "ceiling-cam-1",
+    captured_at: new Date().toISOString(),
+    frame: { width: 1920, height: 1080 },
+    units: "pixels",
+    tables: [
+      { id: "d1", shape: "round", centre_px: [520, 360], diameter_px: 196, confidence: 0.94 },
+      { id: "d2", shape: "round", centre_px: [880, 352], diameter_px: 190, confidence: 0.91 },
+      { id: "d3", shape: "round", centre_px: [1240, 366], diameter_px: 201, confidence: 0.88 },
+      { id: "d4", shape: "round", centre_px: [700, 640], diameter_px: 193, confidence: 0.83 },
+      { id: "d5", shape: "round", centre_px: [1060, 648], diameter_px: 188, confidence: 0.61 }
+    ]
+  };
+
+  let review = [];
+  function openReview() {
+    let doc;
+    try { doc = JSON.parse($("detText").value); }
+    catch (e) { toast("That is not valid JSON"); return; }
+    if (!((doc && doc.tables) || []).length) { toast("No tables in that file"); return; }
+    const mapped = mapDetections(doc);
+    if (!mapped) {
+      toast("Calibrate the camera first, or send metres instead of pixels");
+      return;
+    }
+    review = mapped.map(function (r) {
+      const near = tables().find((t) => Math.hypot(t.x - r.x, t.y - r.y) < 0.8);
+      return Object.assign(r, { near: near,
+        keep: r.inside && !near && (r.conf === undefined || r.conf >= 0.5) });
+    });
+
+    $("reviewBody").innerHTML =
+      '<p class="hint" style="margin:0 0 12px">' + review.length + " detections. " +
+      "Anything outside the room, already on the plan, or under 50% confident is " +
+      "unticked to start with.</p>" +
+      review.map(function (r) {
+        const why = !r.inside ? "outside the room"
+                  : r.near ? "looks like " + tagOf(r.near) + ", already placed"
+                  : r.conf !== undefined && r.conf < 0.5 ? "low confidence" : "";
+        return '<label class="save-it" style="cursor:pointer">' +
+          '<input type="checkbox" data-act="rev" data-i="' + r.i + '"' +
+          (r.keep ? " checked" : "") + ">" +
+          '<span class="nm">' + esc(r.id) + " → " + esc(r.stock.label) + "</span>" +
+          '<span class="mt">' + fmt(r.x) + ", " + fmt(r.y) + " m · " +
+          (r.dia * 100).toFixed(0) + " cm" +
+          (r.conf !== undefined ? " · " + Math.round(r.conf * 100) + "%" : "") +
+          (r.how === "rim" ? " · rim" : "") +
+          (why ? " · " + esc(why) : "") + "</span></label>";
+      }).join("");
+    $("dlgReview").showModal();
+  }
+  function acceptReview() {
+    const keep = review.filter((r) => r.keep);
+    if (!keep.length) { toast("Nothing ticked"); $("dlgReview").close(); return; }
+    mark();
+    const made = [];
+    keep.forEach(function (r) {
+      const t = makeTable(r.stock.key, clamp(r.x, 0.5, room().w - 0.5),
+                                       clamp(r.y, 0.5, room().h - 0.5));
+      S.items.push(t); made.push(t.id);
+    });
+    renumber();
+    SEL.clear(); made.forEach((id) => SEL.add(id));
+    $("dlgReview").close();
+    render();
+    toast("Placed " + keep.length + " table" + (keep.length > 1 ? "s" : ""), "Undo", undo);
+  }
+
+  /* ============================================================== seat guests
+     One button next to the guest count. With nothing on the floor it lays out just enough
+     tables; with tables already there -- laid by hand or placed by the hall camera -- it
+     asks whether to spread the guests across them or to plan afresh.                  */
+  const MAX_AT_TABLE = 14;
+
+  // Fill the tables as evenly as they allow, never past what each seats comfortably.
+  // Returns the number of guests still without a seat.
+  function spread(pax, ts) {
+    ts = ts.slice().sort((a, b) => a.num - b.num);
+    const cap = ts.map((t) => specOf(t).covers);
+    const give = ts.map(() => 0);
+    let left = pax, open = ts.map((t, i) => i);
+    while (left > 0 && open.length) {
+      const share = Math.floor(left / open.length);
+      if (share === 0) {
+        for (let k = 0; k < left; k++) give[open[k]]++;
+        left = 0; break;
+      }
+      open.forEach(function (i) {
+        const g = Math.min(share, cap[i] - give[i]); give[i] += g; left -= g;
+      });
+      open = open.filter((i) => give[i] < cap[i]);
+    }
+    ts.forEach(function (t, i) { t.covers = give[i]; });
+    return left;
+  }
+  function spreadGuests() {
+    const pax = +S.event.pax || 0, ts = tables();
+    mark();
+    const left = spread(pax, ts);
+    selSig = null; render();
+    toast(left ? "Seated " + (pax - left) + " — " + left + " guests still need a seat. Add tables."
+               : pax + " guests spread across " + ts.length + " tables", "Undo", undo);
+  }
+  function planForGuests() {
+    const pax = +S.event.pax || 0;
+    const aisle = +$("arrGap").value, stag = $("arrStagger").checked;
+    const first = $("arrStock").value;
+    // the table chosen under Fill the room, then the bigger rounds if it will not fit
+    const order = [first].concat(STOCK.filter((x) => x.shape === "round" && x.key !== first)
+                  .sort((a, b) => b.covers - a.covers).map((x) => x.key));
+    let pick = null, best = null;
+    for (const key of order) {
+      const sp = STOCK.find((x) => x.key === key);
+      const cells = arrangeCells(key, aisle, stag);
+      const need = Math.ceil(pax / sp.covers);
+      if (cells.length >= need) { pick = { key: key, n: need }; break; }
+      const cap = cells.length * sp.covers;
+      if (!best || cap > best.cap) best = { key: key, n: cells.length, cap: cap };
+    }
+    const use = pick || best;
+    if (!use || !use.n) { toast("No table fits this room at that aisle"); return; }
+    const got = doArrange(use.n, use.key, aisle, stag, true);
+    if (!got) return;
+    const left = spread(pax, tables());
+    $("arrStock").value = use.key; $("arrCount").value = got;
+    SEL.clear(); selSig = null; render();
+    const sp = STOCK.find((x) => x.key === use.key);
+    toast("Laid " + got + " " + sp.label + " tables for " + pax + " guests" +
+          (left ? " — the room only seats " + (pax - left) + " at this aisle" : ""), "Undo", undo);
+  }
+  function seatGuests() {
+    const pax = +S.event.pax || 0;
+    if (!pax) {
+      toast("Type how many guests are coming first");
+      $("evPax").focus(); $("evPax").select();
+      return;
+    }
+    if (!tables().length) { planForGuests(); return; }
+    const n = tables().length;
+    const cap = tables().reduce((a, t) => a + specOf(t).covers, 0);
+    const each = Math.floor(pax / n), more = pax % n;
+    const stockLbl = STOCK.find((x) => x.key === $("arrStock").value).label.toLowerCase();
+    const m = $("seatMenu");
+    m.innerHTML =
+      '<button data-seat="spread"><b>Spread across the ' + n + " tables</b><span>" +
+      (pax > cap
+        ? "They seat " + cap + " at most, so " + (pax - cap) + " guests would be left without a seat."
+        : (more ? each + " or " + (each + 1) : each) + " guests at each table.") +
+      "</span></button>" +
+      '<button data-seat="plan"' + (LIVE.on ? " disabled" : "") + "><b>Plan new tables for " +
+      pax + "</b><span>" + (LIVE.on
+        ? "The hall camera is placing the tables. Pause live first."
+        : "Replaces the tables with just enough " + stockLbl + "s, keeping the stage and fixtures.") +
+      "</span></button>";
+    m.hidden = false;
+  }
+
+  /* ============================================================== live camera
+     The hall's CCTV, through cctv_bridge.py: it grabs frames, finds the tables and serves
+     them as detections. Here they are mapped through the calibration and kept on the plan
+     as tables marked src: "cam" -- moved when the camera sees them move, added when a new
+     one appears, and dropped after three updates without it, so one missed frame does not
+     make a table blink. Guests set on a table stay with it through all of that.        */
+  const LIVE = { on: false, timer: null, seq: null, at: 0, n: 0, err: "", miss: new Map(),
+                 size: new Map(),
+                 status: null, thumb: true, warnedDrag: false, busy: false };
+  const camBase = () => (S.setup.camUrl || "").trim().replace(/\/+$/, "");
+  const robotBase = () => (S.setup.robotUrl || "").trim().replace(/\/+$/, "");
+  const calibrated = () => S.setup.cam.corners.length === 4 && !!homography(S.setup.cam.corners);
+
+  function fetchJSON(url, opts, ms) {
+    const ctl = window.AbortController ? new AbortController() : null;
+    const t = setTimeout(function () { if (ctl) ctl.abort(); }, ms || 4000);
+    return fetch(url, Object.assign({ cache: "no-store", signal: ctl ? ctl.signal : undefined },
+                                    opts || {}))
+      .then(function (r) {
+        clearTimeout(t);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      }, function (e) { clearTimeout(t); throw e; });
+  }
+
+  function goLive() {
+    if (!camBase()) { openSettings("cam"); toast("Add the hall camera's address first"); return; }
+    fetchJSON(camBase() + "/detections").then(function (doc) {
+      if (doc.units !== "metres" && !calibrated()) {
+        toast("Calibrate the camera once first", "Calibrate", calibrateLive);
+        return;
+      }
+      mark();                       // one undo step: back to before the camera took over
+      // The camera is the truth about what stands in the hall, so tables laid by hand
+      // make way for what it sees. Fixtures stay; a table added by hand while live stays.
+      const hand = tables().filter((t) => t.src !== "cam").length;
+      S.items = S.items.filter((i) => !(i.k === "t" && i.src !== "cam"));
+      SEL.clear(); selSig = null;
+      LIVE.on = true; LIVE.seq = null; LIVE.miss.clear(); LIVE.size.clear(); LIVE.err = "";
+      applyDetections(doc);
+      clearInterval(LIVE.timer);
+      LIVE.timer = setInterval(pollLive, 1500);
+      render();
+      toast("Live: the tables follow the hall camera" +
+            (hand ? " (replaced the " + hand + " laid by hand)" : ""), hand ? "Undo" : null,
+            hand ? function () { pauseLive(); undo(); } : null);
+    }, function () {
+      LIVE.err = "not answering";
+      renderLive();
+      toast("Can't reach the hall camera at " + camBase(), "Settings",
+            function () { openSettings("cam"); });
+    });
+  }
+  function pauseLive(msg) {
+    clearInterval(LIVE.timer); LIVE.timer = null; LIVE.on = false; LIVE.err = "";
+    render();
+    if (msg) toast(msg);
+  }
+  function pollLive() {
+    if (LIVE.busy || !LIVE.on) return;
+    LIVE.busy = true;
+    fetchJSON(camBase() + "/detections").then(function (doc) {
+      LIVE.busy = false; LIVE.err = "";
+      if (LIVE.on) applyDetections(doc);
+    }, function () {
+      LIVE.busy = false; LIVE.err = "camera not answering"; renderLive();
+    });
+  }
+  function applyDetections(doc) {
+    LIVE.at = Date.now();
+    if (doc.seq !== undefined && doc.seq === LIVE.seq) { renderLive(); return; }
+    LIVE.seq = doc.seq;
+    const mapped = mapDetections(doc);
+    if (!mapped) { pauseLive("The camera lost its calibration. Calibrate it again in Settings."); return; }
+    const found = mapped.filter((r) => r.inside && (r.conf === undefined || r.conf >= 0.5));
+    LIVE.n = found.length;
+    const R = room();
+    const cams = tables().filter((t) => t.src === "cam");
+    const pairs = [];
+    found.forEach(function (r, i) {
+      cams.forEach(function (t) {
+        const d = Math.hypot(t.x - r.x, t.y - r.y);
+        if (d < 1.2) pairs.push([d, i, t]);
+      });
+    });
+    pairs.sort((a, b) => a[0] - b[0]);
+    const used = new Set(), taken = new Set();
+    let changed = false;
+    const place = function (t, r) {
+      const e = halfExtent(t);
+      t.x = clamp(r.x, e.hx, R.w - e.hx); t.y = clamp(r.y, e.hy, R.h - e.hy);
+    };
+    pairs.forEach(function (p) {
+      const r = found[p[1]], t = p[2];
+      if (used.has(p[1]) || taken.has(t.id)) return;
+      used.add(p[1]); taken.add(t.id); LIVE.miss.delete(t.id);
+      // a deadband, so a few centimetres of detector jitter do not shuffle the plan
+      if (p[0] > 0.05) { place(t, r); changed = true; }
+      // A size changes only after three frames in a row agree on another stock: a far
+      // table is a few dozen pixels across, and one noisy rim can read it a size up.
+      if (r.stock.key !== t.stock) {
+        const run = LIVE.size.get(t.id);
+        const n = run && run.key === r.stock.key ? run.n + 1 : 1;
+        LIVE.size.set(t.id, { key: r.stock.key, n: n });
+        if (n >= 3) {
+          const was = specOf(t);
+          t.stock = r.stock.key;
+          if (t.covers === was.covers) t.covers = r.stock.covers;   // unless someone set it
+          LIVE.size.delete(t.id); place(t, r); changed = true;
+        }
+      } else LIVE.size.delete(t.id);
+    });
+    found.forEach(function (r, i) {
+      if (used.has(i)) return;
+      // a table somebody placed by hand already stands here: leave it to them
+      if (tables().some((t) => t.src !== "cam" && Math.hypot(t.x - r.x, t.y - r.y) < 1.0)) return;
+      const t = makeTable(r.stock.key, r.x, r.y);
+      t.src = "cam"; place(t, r);
+      S.items.push(t); changed = true;
+    });
+    cams.forEach(function (t) {
+      if (taken.has(t.id)) return;
+      const m = (LIVE.miss.get(t.id) || 0) + 1;
+      if (m >= 3) {
+        S.items = S.items.filter((it) => it !== t);
+        SEL.delete(t.id); LIVE.miss.delete(t.id); changed = true;
+      } else LIVE.miss.set(t.id, m);
+    });
+    if (LIVE.thumb) $("camThumbImg").src = camBase() + "/frame.jpg?seq=" + encodeURIComponent(doc.seq);
+    if (changed) render(); else renderLive();
+  }
+  function renderLive() {
+    $("livePill").classList.toggle("on", LIVE.on);
+    if (LIVE.on) $("livePillText").textContent = LIVE.err ? "Live · " + LIVE.err
+                                                          : "Live · " + LIVE.n + " tables seen";
+    $("camThumb").hidden = !(LIVE.on && LIVE.thumb);
+    if (LIVE.on) $("camThumbCap").textContent = "Hall camera · " + LIVE.n + " tables";
+    if (UI.tab !== "plan") return;
+    const go = $("liveGo"), show = $("liveShow");
+    if (!camBase()) {
+      $("liveState").textContent = "not set up";
+      $("liveHint").textContent = "Connect the hall's CCTV once in Settings, and the tables it " +
+        "sees appear on the plan where they stand.";
+      go.textContent = "Set up"; go.className = ""; show.hidden = true;
+    } else if (LIVE.on) {
+      $("liveState").textContent = LIVE.err ? LIVE.err : "live";
+      $("liveHint").textContent = "The tables follow the camera. Click one to set its guests, " +
+        "or use Seat guests to spread everyone across them.";
+      go.textContent = "Pause"; go.className = ""; show.hidden = false;
+      show.textContent = LIVE.thumb ? "Hide camera view" : "Show camera view";
+    } else {
+      $("liveState").textContent = calibrated() ? "ready" : "not calibrated";
+      $("liveHint").textContent = calibrated()
+        ? "Go live to place every table the hall camera can see, where it stands."
+        : "The camera needs calibrating once: four floor points it can see. In Settings.";
+      go.textContent = calibrated() ? "Go live" : "Calibrate";
+      go.className = "primary"; show.hidden = true;
+    }
+  }
+  function calibrateLive() {
+    if (!camBase()) { openSettings("cam"); return; }
+    fetchJSON(camBase() + "/status").then(function (st) {
+      LIVE.status = st;
+      camera.img = camBase() + "/frame.jpg?t=" + Date.now();
+      camera.name = st.source || "live view";
+      openCalib();
+    }, function () {
+      toast("Can't reach the hall camera at " + camBase(), "Settings",
+            function () { openSettings("cam"); });
+    });
+  }
+  // The camera service can know its own calibration (a simulated hall does exactly).
+  function useCameraPoints() {
+    const c = LIVE.status && LIVE.status.calibration;
+    if (!c || !c.points || c.points.length !== 4) return;
+    const fw = c.frame[0], fh = c.frame[1];
+    S.setup.cam.corners = c.points.map((p) => ({ u: p.px[0], v: p.px[1], fx: p.px[0] / fw,
+                                                 fy: p.px[1] / fh, x: p.m[0], y: p.m[1] }));
+    S.setup.cam.size = { w: fw, h: fh };
+    if (c.camera_height_m) S.setup.cam.height = c.camera_height_m;
+    if (c.nadir_m) S.setup.cam.nadir = { x: c.nadir_m[0], y: c.nadir_m[1] };
+    persistSetup(); syncSetupFields(); paintCorners();
+    toast("Calibrated from the camera's own points");
+  }
+
+  /* ================================================================ the robot
+     Two calls to robot_link.py on the robot: POST /plan with the static map (the same
+     three files map_server loads, plus the JSON), then POST /mission/start. Start sends
+     the plan first if it has changed since. No address, or no answer, and Send falls
+     back to downloading the files, so the plan is never stuck in the browser.          */
+  const ROBOT = { sentSig: null, sentAt: 0, state: "", err: "", busy: false };
+  const planSig = () => JSON.stringify([S.roomId, S.setup.map, S.items.map((i) =>
+    [i.id, i.k, +i.x.toFixed(2), +i.y.toFixed(2), i.rot, i.covers, i.stock, i.type, i.w, i.h])]);
+  function b64(bytes) {
+    let out = "";
+    for (let i = 0; i < bytes.length; i += 0x8000)
+      out += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(out);
+  }
+  function planPayload() {
+    const f = buildRosFiles();
+    return { schema: "vatel-plan/0.1", generated_at: new Date().toISOString(),
+             event: { name: S.event.name || null, date: S.event.date || null,
+                      guests: +S.event.pax || null },
+             static_map: f.map,
+             ros: { name: f.name, pgm_base64: b64(f.pgm), yaml: f.yaml, goals_yaml: f.goals } };
+  }
+  function sendPlan(quiet) {
+    if (!tables().length) { toast("Nothing to send: there are no tables"); return Promise.resolve(false); }
+    if (!robotBase()) {
+      downloadRosMap();
+      toast("No robot connected, so the plan downloaded as files");
+      return Promise.resolve(false);
+    }
+    const sig = planSig();
+    $("robSend").disabled = true;
+    return fetchJSON(robotBase() + "/plan", { method: "POST",
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify(planPayload()) }, 10000)
+      .then(function (r) {
+        ROBOT.sentSig = sig; ROBOT.sentAt = Date.now(); ROBOT.err = "";
+        ROBOT.state = (r && r.state) || "plan received";
+        if (!quiet) toast("Plan sent to the robot");
+        return true;
+      }, function () {
+        ROBOT.err = "not answering";
+        toast("Couldn't reach the robot at " + robotBase(), "Download instead", downloadRosMap);
+        return false;
+      })
+      .then(function (ok) { $("robSend").disabled = false; renderRobot(); return ok; });
+  }
+  function startMission() {
+    if (!tables().length) { toast("Lay out some tables first"); return; }
+    if (!robotBase()) {
+      toast("No robot connected. Add its address in Settings", "Settings",
+            function () { openSettings("robot"); });
+      return;
+    }
+    const skip = A.blocked;
+    confirmBox("Start the mission?",
+      "The robot will set " + (A.covers - skip) + " places at " + tables().length + " tables" +
+      (skip ? ", skipping the " + skip + " it can't reach" : "") +
+      ". Check the floor is clear of trolleys and people first.", "Start mission",
+      function () {
+        const ready = ROBOT.sentSig === planSig() ? Promise.resolve(true) : sendPlan(true);
+        ready.then(function (ok) {
+          if (!ok) return;
+          fetchJSON(robotBase() + "/mission/start", { method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ event: S.event.name || null, sent_at: ROBOT.sentAt }) }, 6000)
+            .then(function (r) {
+              ROBOT.state = (r && r.state) || "running"; renderRobot();
+              toast("Mission started");
+            }, function () {
+              ROBOT.err = "did not start"; renderRobot();
+              toast("The robot didn't accept the start");
+            });
+        });
+      });
+  }
+  function checkRobot(show) {
+    if (!robotBase()) { if (show) $("robTestHint").textContent = "No address set."; return; }
+    fetchJSON(robotBase() + "/status", null, 3000).then(function (st) {
+      ROBOT.err = ""; ROBOT.state = st.state || "connected";
+      if (show) $("robTestHint").textContent = "Connected: " + ROBOT.state +
+        (st.robot ? " (" + st.robot + ")" : "") + ".";
+      renderRobot();
+    }, function () {
+      ROBOT.err = "not answering";
+      if (show) $("robTestHint").textContent = "No answer from " + robotBase() + ".";
+      renderRobot();
+    });
+  }
+  const ago = (t) => { const s2 = Math.round((Date.now() - t) / 1000);
+    return s2 < 60 ? "just now" : Math.round(s2 / 60) + " min ago"; };
+  function renderRobot() {
+    const n = tables().length, pax = +S.event.pax || 0;
+    const sent = ROBOT.sentSig && ROBOT.sentSig === planSig();
+    const li = [];
+    li.push([n ? "" : "bad", n ? n + " tables, " + A.covers + " places to set" : "No tables on the plan yet"]);
+    if (pax) li.push([A.covers >= pax ? "" : "bad", A.covers >= pax
+      ? "A seat for each of the " + pax + " guests" : (pax - A.covers) + " guests without a seat"]);
+    li.push([A.blocked ? "bad" : "", A.blocked
+      ? A.blocked + " places the robot can't reach will be skipped" : "The robot can reach every place"]);
+    li.push([robotBase() ? (ROBOT.err ? "bad" : "") : "off", !robotBase()
+      ? "No robot connected: Send downloads the map files"
+      : ROBOT.err ? "Robot " + ROBOT.err + " at " + robotBase()
+      : "Robot at " + robotBase() + (ROBOT.state ? ": " + ROBOT.state : "")]);
+    li.push([sent ? "" : "off", sent ? "Plan sent " + ago(ROBOT.sentAt)
+      : ROBOT.sentSig ? "The plan changed since it was sent" : "Plan not sent yet"]);
+    $("robotReady").innerHTML = li.map((x) => '<li class="' + x[0] + '">' + esc(x[1]) + "</li>").join("");
+    $("robSend").textContent = robotBase() ? "Send plan to robot" : "Download plan for the robot";
+    $("robHint").textContent = "Start mission sends the latest plan first if it has changed, " +
+      "then tells the robot to begin laying plates.";
+  }
+
+  function confirmBox(title, body, okLabel, fn) {
+    $("cfTitle").textContent = title;
+    $("cfBody").textContent = body;
+    $("cfOk").textContent = okLabel;
+    $("cfOk").onclick = function () { $("dlgConfirm").close(); fn(); };
+    $("dlgConfirm").showModal();
+  }
+
+  /* ================================================================= settings */
+  function persistSetup() {
+    try { localStorage.setItem("vatel.setup", JSON.stringify(S.setup)); } catch (e) {}
+  }
+  function syncSetupFields() {
+    const st = S.setup;
+    $("setRobot").value = st.robotUrl || "";
+    $("setCam").value = st.camUrl || "";
+    $("setOx").value = st.map.ox; $("setOy").value = st.map.oy; $("setRes").value = st.map.res;
+    $("camH").value = st.cam.height || "";
+    $("camNx").value = st.cam.nadir ? st.cam.nadir.x : "";
+    $("camNy").value = st.cam.nadir ? st.cam.nadir.y : "";
+  }
+  function openSettings(focus) {
+    syncSetupFields(); renderCamInfo();
+    $("out").value = mapJSON();
+    const d = $("dlgSettings");
+    if (!d.open) d.showModal();
+    const f = focus === "cam" ? $("setCam") : focus === "robot" ? $("setRobot") : null;
+    if (f) { f.scrollIntoView({ block: "center" }); f.focus(); }
+  }
+
+  /* ================================================================== wiring
+     Everything below is bound once. Panels are rebuilt constantly, so anything
+     inside them is reached by delegation rather than by re-attaching listeners
+     -- that is what used to pile up four fresh handlers on every pointer move.  */
+  let editTimer = null;
+  function markEdit() {
+    if (!editTimer) mark();
+    clearTimeout(editTimer);
+    editTimer = setTimeout(function () { editTimer = null; }, 700);
+  }
+
+  document.addEventListener("click", function (e) {
+    const n = e.target.closest ? e.target.closest("[data-act],[data-close]") : null;
+    if (!n) return;
+    if (n.hasAttribute("data-close")) {
+      const d = n.closest("dialog"); if (d) d.close();
+      return;
+    }
+    const act = n.dataset.act;
+    if (act === "dup") duplicateSel();
+    else if (act === "del") deleteSel();
+    else if (act === "rot") rotateSel(15);
+    else if (act === "pick") {
+      const id = +n.dataset.id;
+      if (e.shiftKey) { SEL.has(id) ? SEL.delete(id) : SEL.add(id); }
+      else { SEL.clear(); SEL.add(id); }
+      render();
+    } else if (act === "load-plan") {
+      const p = readPlans()[+n.dataset.i];
+      if (p) { loadPlan(p.data); $("dlgSaves").close(); toast('Opened "' + p.name + '"'); }
+    } else if (act === "drop-plan") {
+      const plans = readPlans(); plans.splice(+n.dataset.i, 1); writePlans(plans); openSaves();
+    } else if (act === "cv-" || act === "cv+") {
+      const it = SEL.size === 1 ? byId(Array.from(SEL)[0]) : null;
+      if (it && it.k === "t") {
+        markEdit();
+        it.covers = clamp(it.covers + (act === "cv+" ? 1 : -1), 0, MAX_AT_TABLE);
+        render();
+      }
+    }
+  });
+
+  document.addEventListener("input", function (e) {
+    const n = e.target;
+    if (!n.dataset || !n.dataset.act) return;
+    const it = SEL.size === 1 ? byId(Array.from(SEL)[0]) : null;
+    if (n.dataset.act === "covers" && it) {
+      markEdit(); it.covers = clamp(Math.round(+n.value || 0), 0, MAX_AT_TABLE); render();
+    }
+    else if (n.dataset.act === "calx" || n.dataset.act === "caly") {
+      const c = S.setup.cam.corners[+n.dataset.i];
+      if (c && n.value !== "" && isFinite(+n.value)) {
+        c[n.dataset.act === "calx" ? "x" : "y"] = +n.value;
+        persistSetup(); $("calDone").disabled = !homography(S.setup.cam.corners); renderCamInfo();
+      }
+    }
+    else if (n.dataset.act === "rot-range" && it) { markEdit(); it.rot = +n.value; render(); }
+    else if (n.dataset.act === "fw" && it) {
+      markEdit(); it.w = clamp(+n.value || 0.2, 0.2, 30);
+      if (it.shape === "circle") it.h = it.w;     // a disc has one measurement
+      render();
+    }
+    else if (n.dataset.act === "fh" && it) { markEdit(); it.h = clamp(+n.value || 0.2, 0.2, 30); render(); }
+    else if (n.dataset.act === "roomw" || n.dataset.act === "roomh") {
+      markEdit();
+      S.custom[n.dataset.act === "roomw" ? "w" : "h"] = clamp(+n.value || 1, 1, 60);
+      const R = room();
+      S.items.forEach(function (it2) {
+        const e = halfExtent(it2);
+        it2.x = clamp(it2.x, e.hx, Math.max(e.hx, R.w - e.hx));
+        it2.y = clamp(it2.y, e.hy, Math.max(e.hy, R.h - e.hy));
+      });
+      render();
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    const n = e.target;
+    if (!n.dataset || !n.dataset.act) return;
+    if (n.dataset.act === "courses") { S.event.courses = +n.value; renderOps(); autosave(); }
+    else if (n.dataset.act === "rev") {
+      const r = review[+n.dataset.i]; if (r) r.keep = n.checked;
+    }
+  });
+
+  /* ---- top bar ---- */
+  $("evName").addEventListener("input", function () {
+    S.event.name = this.value; autosave();
+  });
+  $("evDate").addEventListener("change", function () { S.event.date = this.value; autosave(); });
+  $("evPax").addEventListener("input", function () {
+    S.event.pax = Math.max(0, +this.value || 0); render(); autosave();
+  });
+  $("evPax").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); seatGuests(); }
+  });
+  $("doSeat").addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (!$("seatMenu").hidden) { $("seatMenu").hidden = true; return; }
+    seatGuests();
+  });
+  $("seatMenu").addEventListener("click", function (e) {
+    const b = e.target.closest("[data-seat]");
+    if (!b || b.disabled) return;
+    $("seatMenu").hidden = true;
+    if (b.dataset.seat === "spread") spreadGuests(); else planForGuests();
+  });
+  document.addEventListener("pointerdown", function (e) {
+    if (!$("seatMenu").hidden && !e.target.closest(".seat")) $("seatMenu").hidden = true;
+  });
+  $("doSettings").addEventListener("click", function () { openSettings(); });
+  $("doSettings2").addEventListener("click", function () { openSettings(); });
+  $("undo").addEventListener("click", undo);
+  $("redo").addEventListener("click", redo);
+  // Save writes a FILE. Browser storage is a convenience that a page opened from disk
+  // does not get at all, and silently not saving is the worst outcome of the three.
+  const saveToFile = function () {
+    download(slug(S.event.name) + ".plan.json", JSON.stringify(fileDoc(), null, 1));
+  };
+  $("doSave").addEventListener("click", saveToFile);
+  $("doSave2").addEventListener("click", saveLayout);
+  $("doOpen").addEventListener("click", openSaves);
+  $("doHelp").addEventListener("click", function () { $("dlgHelp").showModal(); });
+  // Print the whole room, not whatever corner happens to be zoomed in on screen.
+  function beforePrint() { buildSheet(); fitView(); draw(); }
+  $("doPrint").addEventListener("click", function () { beforePrint(); window.print(); });
+  window.addEventListener("beforeprint", beforePrint);
+  $("doTheme").addEventListener("click", function () {
+    const cur = document.documentElement.getAttribute("data-theme");
+    const dark = cur ? cur === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+    try { localStorage.setItem("banquet.theme", dark ? "light" : "dark"); } catch (e) {}
+  });
+
+  /* ---- plan tools ---- */
+  $("doDelete").addEventListener("click", deleteSel);
+  const toggleBtn = function (id, key) {
+    $(id).addEventListener("click", function () {
+      UI[key] = !UI[key];
+      if (key === "ruler" && !UI.ruler) ruler = null;
+      render();
+    });
+  };
+  toggleBtn("tSnap", "snap"); toggleBtn("tChairs", "chairs");
+  toggleBtn("tCovers", "covers"); toggleBtn("tClear", "clearance");
+  toggleBtn("tRuler", "ruler");
+
+  /* ---- tabs ---- */
+  function showTab(name) {
+    UI.tab = name;
+    if (name === "robot") checkRobot(false);
+    document.querySelectorAll('.tabs button').forEach(function (b) {
+      b.setAttribute("aria-selected", b.dataset.pane === name ? "true" : "false");
+    });
+    document.querySelectorAll('.pane').forEach(function (p) {
+      p.classList.toggle("live", p.dataset.pane === name);
+    });
+    render();
+  }
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener("click", function () { showTab(b.dataset.pane); });
+  });
+
+  /* ---- room and stock ---- */
+  const roomSel = $("room");
+  ROOMS.forEach(function (r) {
+    const o = document.createElement("option");
+    o.value = r.id; o.textContent = r.name;
+    roomSel.appendChild(o);
+  });
+  roomSel.addEventListener("change", function () {
+    mark();
+    S.roomId = roomSel.value;
+    const R = room();
+    // Walls and obstacles traced from a lidar map describe THAT room. Carried into
+    // another one they are debris scattered across the floor, and worse, the room extent
+    // that came with them stays in force -- so arranging in the ballroom would be penned
+    // into the shape of the lab. Both go.
+    const before = S.items.length;
+    S.items = S.items.filter(function (it) {
+      if (it.k === "f" && (it.type === "wall" || it.type === "obst")) return false;
+      const e = halfExtent(it);
+      return e.hx < R.w / 2 && e.hy < R.h / 2;
+    });
+    S.floor = null; FLOOR = null;
+    S.items.forEach(function (it) {
+      const e = halfExtent(it);
+      it.x = clamp(it.x, e.hx, R.w - e.hx);
+      it.y = clamp(it.y, e.hy, R.h - e.hy);
+    });
+    if (S.items.length < before) toast((before - S.items.length) + " removed, no room for them");
+    SEL.clear(); selSig = null; roomSig = null; fitView(); render();
+  });
+
+  const addWrap = $("addBtns");
+  STOCK.forEach(function (s) {
+    const b = document.createElement("button");
+    b.innerHTML = "<b>" + s.label + "</b><span>" + stockNote(s) + "</span>";
+    b.addEventListener("click", function () {
+      mark();
+      const t = makeTable(s.key, room().w / 2, room().h / 2);
+      S.items.push(t); SEL.clear(); SEL.add(t.id); selSig = null; render();
+    });
+    addWrap.appendChild(b);
+  });
+  const fixWrap = $("fixBtns");
+  FIXTURES.forEach(function (f) {
+    const b = document.createElement("button");
+    b.innerHTML = "<b>" + f.label + "</b><span>" + fmt(f.w, 1) + " x " + fmt(f.h, 2) + " m</span>";
+    b.addEventListener("click", function () {
+      mark();
+      const it = makeFixture(f.key, room().w / 2, room().h / 2);
+      S.items.unshift(it); SEL.clear(); SEL.add(it.id); selSig = null; render();
+    });
+    fixWrap.appendChild(b);
+  });
+
+  /* ---- arrange ---- */
+  const arrSel = $("arrStock");
+  STOCK.forEach(function (s) {
+    const o = document.createElement("option");
+    o.value = s.key; o.textContent = s.label;
+    arrSel.appendChild(o);
+  });
+  arrSel.value = "r6";
+  $("arrGap").addEventListener("input", function () {
+    $("arrGapVal").textContent = fmt(+this.value);
+    renderArrangeHint();
+  });
+  $("arrStagger").addEventListener("change", renderArrangeHint);
+  $("arrStock").addEventListener("change", renderArrangeHint);
+  $("doArrange").addEventListener("click", function () {
+    const n = Math.max(1, +$("arrCount").value || 0);
+    const got = doArrange(n, $("arrStock").value, +$("arrGap").value,
+                          $("arrStagger").checked, true);
+    if (got) toast("Laid " + got + " tables" + (got < n ? ", which is all that fits" : ""),
+                   "Undo", undo);
+  });
+  $("doFitMax").addEventListener("click", function () {
+    const cells = arrangeCells($("arrStock").value, +$("arrGap").value, $("arrStagger").checked);
+    $("arrCount").value = cells.length;
+    const got = doArrange(cells.length, $("arrStock").value, +$("arrGap").value,
+                          $("arrStagger").checked, true);
+    if (got) toast("Laid " + got + " tables, " + A.covers + " covers", "Undo", undo);
+  });
+
+  /* ---- tables pane ---- */
+  $("numOrder").addEventListener("change", function () {
+    UI.numOrder = this.value; mark(); renumber(); render();
+  });
+  $("doRenumber").addEventListener("click", function () {
+    mark(); renumber(); render(); toast("Renumbered");
+  });
+  $("doClear").addEventListener("click", function () {
+    if (!S.items.length) return;
+    mark();
+    const n = S.items.length;
+    S.items = []; SEL.clear(); selSig = null; touchStructure(); render();
+    toast("Cleared " + n + " items", "Undo", undo);
+  });
+
+  /* ---- export ---- */
+  $("build").addEventListener("click", function () { $("out").value = mapJSON(); });
+  $("copy").addEventListener("click", function () {
+    const ta = $("out");
+    if (!ta.value) ta.value = mapJSON();
+    const self = this;
+    const done = function (m) {
+      self.textContent = m;
+      setTimeout(function () { self.textContent = "Copy"; }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ta.value).then(function () { done("Copied"); },
+        function () { ta.select(); done("Select + copy"); });
+    } else { ta.select(); done("Select + copy"); }
+  });
+  $("dlRos").addEventListener("click", downloadRosMap);
+  $("dlJson").addEventListener("click", function () {
+    download(slug(S.event.name) + ".static-map.json", mapJSON());
+  });
+  $("dlPlan").addEventListener("click", function () {
+    download(slug(S.event.name) + ".plan.json", JSON.stringify(fileDoc(), null, 2));
+  });
+  $("upPlan").addEventListener("click", function () { $("planFile").click(); });
+  $("planFile").addEventListener("change", function () {
+    const f = this.files && this.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = function () {
+      try { loadPlan(JSON.parse(r.result)); toast("Opened " + f.name); }
+      catch (e) { toast("That file is not a saved layout"); }
+    };
+    r.readAsText(f);
+    this.value = "";
+  });
+
+  /* ---- camera ---- */
+  $("camLoad").addEventListener("click", function () { $("camFile").click(); });
+  $("camFile").addEventListener("change", function () {
+    const f = this.files && this.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = function () {
+      camera.img = r.result; camera.name = f.name;
+      S.setup.cam.corners = []; S.setup.cam.size = null; persistSetup();
+      openCalib();
+    };
+    r.readAsDataURL(f);
+    this.value = "";
+  });
+  $("camClearCal").addEventListener("click", function () {
+    S.setup.cam.corners = []; S.setup.cam.size = null; persistSetup();
+    if (camera.img) openCalib(); else renderCamInfo();
+  });
+  $("calStage").addEventListener("click", function (e) {
+    if (S.setup.cam.corners.length >= 4) return;
+    const img = $("calImg"), r = img.getBoundingClientRect();
+    if (!(r.width > 0) || !(r.height > 0)) return;   // hidden or not laid out yet
+    const fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
+    // NaN fails every comparison, so testing the range alone lets it straight through
+    // -- and a NaN corner poisons the homography while the panel still says "ready".
+    if (!isFinite(fx) || !isFinite(fy)) return;
+    if (fx < 0 || fy < 0 || fx > 1 || fy > 1) return;
+    const W = img.naturalWidth || r.width, H = img.naturalHeight || r.height;
+    const i = S.setup.cam.corners.length, d = cornerDefault(i);
+    S.setup.cam.corners.push({ fx: fx, fy: fy, u: fx * W, v: fy * H, x: d[0], y: d[1] });
+    S.setup.cam.size = { w: W, h: H };
+    persistSetup();
+    paintCorners();
+  });
+  $("calReset").addEventListener("click", function () {
+    S.setup.cam.corners = []; persistSetup(); paintCorners();
+  });
+  $("calAuto").addEventListener("click", useCameraPoints);
+  $("calDone").addEventListener("click", function () {
+    $("dlgCal").close(); renderCamInfo(); persistSetup(); render();
+    toast("Calibrated. The camera's pixels now land in metres on the plan.");
+  });
+  $("camH").addEventListener("input", function () {
+    S.setup.cam.height = Math.max(0, +this.value || 0); persistSetup(); renderCamInfo();
+  });
+  ["camNx", "camNy"].forEach(function (id) {
+    $(id).addEventListener("input", function () {
+      const R = room();
+      S.setup.cam.nadir = { x: +$("camNx").value || R.w / 2, y: +$("camNy").value || R.h / 2 };
+      persistSetup(); renderCamInfo();
+    });
+  });
+
+  /* ---- settings, live camera, robot ---- */
+  $("setRobot").addEventListener("input", function () {
+    S.setup.robotUrl = this.value.trim(); ROBOT.err = ""; ROBOT.state = ""; persistSetup();
+  });
+  $("setCam").addEventListener("input", function () {
+    S.setup.camUrl = this.value.trim(); LIVE.status = null; persistSetup();
+    if (LIVE.on) pauseLive("Camera address changed, so live is paused");
+    else renderLive();
+  });
+  [["setOx", "ox"], ["setOy", "oy"], ["setRes", "res"]].forEach(function (p) {
+    $(p[0]).addEventListener("input", function () {
+      if (this.value === "" || !isFinite(+this.value)) return;
+      S.setup.map[p[1]] = p[1] === "res" ? clamp(+this.value, 0.01, 0.5) : +this.value;
+      persistSetup();
+    });
+  });
+  $("robTest").addEventListener("click", function () { checkRobot(true); });
+  $("camTest").addEventListener("click", function () {
+    if (!camBase()) { toast("Type the camera service's address first"); return; }
+    fetchJSON(camBase() + "/status").then(function (st) {
+      LIVE.status = st;
+      toast("Camera answering: " + (st.source || "?") + ", " + (st.tables_seen || 0) + " tables in view");
+    }, function () { toast("No answer from " + camBase()); });
+  });
+  $("camLiveCal").addEventListener("click", calibrateLive);
+  $("liveGo").addEventListener("click", function () {
+    if (!camBase()) { openSettings("cam"); return; }
+    if (LIVE.on) { pauseLive("Paused. The tables stay where they are."); return; }
+    if (!calibrated()) { calibrateLive(); return; }
+    goLive();
+  });
+  $("liveShow").addEventListener("click", function () { LIVE.thumb = !LIVE.thumb; renderLive(); });
+  $("camThumbHide").addEventListener("click", function () { LIVE.thumb = false; renderLive(); });
+  $("robSend").addEventListener("click", function () { sendPlan(false); });
+  $("robStart").addEventListener("click", startMission);
+  $("detFileBtn").addEventListener("click", function () { $("detFile").click(); });
+  $("detFile").addEventListener("change", function () {
+    const f = this.files && this.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = function () { $("detText").value = r.result; toast("Loaded " + f.name); };
+    r.readAsText(f);
+    this.value = "";
+  });
+  $("detSample").addEventListener("click", function () {
+    $("detText").value = JSON.stringify(SAMPLE_DET, null, 2);
+    toast("Sample pasted — this is the shape detect_tables.py should print");
+  });
+  $("detReview").addEventListener("click", openReview);
+  $("revAccept").addEventListener("click", acceptReview);
+
+  /* ---- window ----
+     The viewBox has to keep the element's own aspect or the SVG letterboxes and
+     quietly clips the room. The plan resizes for reasons a window resize never
+     reports -- the pane being dragged, a scrollbar arriving, the web font landing
+     -- so watch the element itself. */
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(function () {
+      // Early layout churn -- the web font landing, a scrollbar arriving -- would
+      // otherwise leave the room fitted to a size it never actually had.
+      render();          // straight away: a stale viewBox aspect clips the room
+    });
+    ro.observe($("plan"));
+  }
+  let resizeTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { scheduleRender(); }, 120);
+  });
+
+  /* ==================================================================== init */
+  (function init() {
+    try {
+      const th = localStorage.getItem("banquet.theme");
+      if (th) document.documentElement.setAttribute("data-theme", th);
+    } catch (e) {}
+    try {
+      const st = localStorage.getItem("vatel.setup");
+      if (st) S.setup = mergeSetup(JSON.parse(st));
+    } catch (e) {}
+
+    let restored = false;
+    try {
+      const last = localStorage.getItem(KEY_LAST);
+      if (last) {
+        const o = JSON.parse(last);
+        if (o && o.items && o.items.length) {
+          S.roomId = o.roomId; S.event = Object.assign(S.event, o.event);
+          if (o.custom) S.custom = o.custom;
+          S.floor = o.floor || null;
+          S.items = o.items; S.nextId = o.nextId;
+          restored = true;
+        }
+      }
+    } catch (e) {}
+
+    if (!restored) {
+      // Opens on a realistic full-room set, so the first thing anyone sees is a
+      // banquet rather than an empty rectangle.
+      const R = room();
+      S.items.push(Object.assign(makeFixture("stage", R.w / 2, 1.9), { w: 8, h: 3 }));
+      S.items.push(Object.assign(makeFixture("door", 0.16, R.h - 4.0), { rot: 90 }));
+      S.items.push(Object.assign(makeFixture("dish", 1.3, R.h - 1.4), {}));
+      S.items.push(Object.assign(makeFixture("dance", R.w / 2, 6.6), { w: 6, h: 4 }));
+      const cells = arrangeCells("r6", 1.5, true);
+      cells.forEach(function (c) { S.items.push(makeTable("r6", c.x, c.y)); });
+      renumber();
+      S.event.date = new Date().toISOString().slice(0, 10);
+    }
+
+    syncEventFields();
+    $("arrCount").value = tables().length || 20;
+    $("arrGapVal").textContent = fmt(+$("arrGap").value);
+    $("storeHint").textContent = storeOK()
+      ? "Kept in this browser, on this machine only."
+      : "Unavailable: a page opened straight from a file gets no browser storage. "
+        + "Save to file instead.";
+    if (!storeOK()) { $("doSave2").disabled = true; $("doOpen").disabled = true; }
+    HIST.past.length = 0; HIST.future.length = 0;
+
+    fitView();
+    render();
+    bindPlan();
+    syncSetupFields();
+    renderCamInfo();
+    // Served by cctv_bridge.py (always on a port), the hall camera is this page's own origin.
+    // A page on a plain https host -- the published site -- skips the probe.
+    if (!S.setup.camUrl && /^https?:$/.test(location.protocol) && location.port) {
+      fetchJSON(location.origin + "/status", null, 2000).then(function (st) {
+        if (st && st.service === "vatel-cctv-bridge") {
+          S.setup.camUrl = location.origin; persistSetup(); syncSetupFields(); renderLive();
+        }
+      }, function () {});
+    }
+    $("out").value = mapJSON();
+    $("plan").setAttribute("tabindex", "0");
+  })();
+})();
+</script>
+
+</body>
+</html>

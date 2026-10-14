@@ -1,0 +1,11 @@
+# Map images, meshes and CAD: never line-ending-normalise or text-diff them.
+# A map or an STL that gets CRLF-converted is a corrupted file.
+*.pgm    binary
+*.npz    binary
+*.stl    binary
+*.STL    binary
+*.step   binary
+*.STEP   binary
+*.stp    binary
+*.SLDPRT binary
+*.dxf    binary

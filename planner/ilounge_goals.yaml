@@ -1,0 +1,7 @@
+# Service stations from the Banquet Hall Planner.
+# Same frame as map.yaml: x east, y north, origin at the map's lower-left
+# pixel. Already converted from the planner's own y-south convention.
+frame_id: map
+room: "Custom \u00e2\u20ac\u201d measure it yourself"
+generated_at: "2026-09-30T09:26:45.175Z"
+goals:
