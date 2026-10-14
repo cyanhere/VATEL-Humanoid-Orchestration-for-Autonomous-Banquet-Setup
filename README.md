@@ -83,23 +83,6 @@ VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup/
 
 Each folder's README covers that subsystem: what it does, how to run it, and its current status.
 
-## Project report
-
-The CDE4301 report is a static website in [`docs/`](docs/), built on the
-[NUS EDIC report template](https://edic-nus.github.io/tutorial/) and published with GitHub Pages
-(Settings → Pages → Deploy from a branch → `main`, folder `/docs`).
-
-| Report | Link |
-|---|---|
-| Interim report, Semester 1 | [cyanhere.github.io/…/interim-report](https://cyanhere.github.io/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup/interim-report/) |
-| Final report, Semester 2 | to be published |
-
-To preview the site locally, serve `docs/` and open <http://localhost:8000/>:
-
-```bash
-python -m http.server 8000 --directory docs
-```
-
 ## Team
 
 | Name | Department |
