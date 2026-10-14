@@ -1,0 +1,198 @@
+/* VATEL additions on top of the EDIC template's index.css. */
+
+:root {
+  --vatel-ink: #111412;
+  --vatel-muted: #5E6B66;
+  --vatel-accent: #1D6152;
+  --vatel-accent-soft: #E1EFE9;
+  --vatel-rule: #D5DDD9;
+  --vatel-todo-bg: #FFF8E1;
+  --vatel-todo-border: #D9A400;
+  --vatel-todo-ink: #5B4500;
+}
+
+body {
+  color: var(--vatel-ink);
+  background: #fff;
+}
+
+a {
+  color: var(--vatel-accent);
+}
+
+/* Justified text opens wide gaps on a phone-width column. */
+@media (max-width: 599px) {
+  p {
+    text-align: left;
+  }
+}
+
+h1 {
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+h2 {
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--vatel-accent);
+}
+
+h4 {
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--vatel-muted);
+  text-align: left;
+}
+
+.doc-meta {
+  margin-top: 12px;
+  font-size: 0.95rem;
+  color: var(--vatel-muted);
+  text-align: left;
+}
+
+/* ---- Placeholders: delete each .todo once its section is written ---- */
+
+.todo {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-left: 4px solid var(--vatel-todo-border);
+  border-radius: 0 6px 6px 0;
+  background: var(--vatel-todo-bg);
+  color: var(--vatel-todo-ink);
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.todo::before {
+  content: "To fill: ";
+  font-weight: 700;
+}
+
+.todo .budget {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.blank {
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--vatel-todo-bg);
+  color: var(--vatel-todo-ink);
+}
+
+/* Who led a subsystem; the course requires individual scope to be visible. */
+.lead-tag {
+  margin: -4px 0 8px;
+  font-size: 0.95rem;
+  color: var(--vatel-muted);
+  text-align: left;
+}
+
+/* ---- Tables (plain HTML tables, captioned by <table-component>) ---- */
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.report-table th,
+.report-table td {
+  padding: 6px 10px;
+  border: 1px solid var(--vatel-rule);
+  vertical-align: top;
+}
+
+.report-table th {
+  background: var(--vatel-accent-soft);
+  font-weight: 600;
+}
+
+.report-table td.id {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* ---- Mermaid diagrams ---- */
+
+.diagram {
+  margin: 16px 0 24px;
+  text-align: center;
+}
+
+.diagram pre.mermaid {
+  margin: 0;
+  padding: 8px;
+  overflow-x: auto;
+  background: transparent;
+}
+
+/* index.css justifies and enlarges every <p>, including Mermaid's labels,
+   which then outgrow the boxes Mermaid measured for them. */
+.diagram pre.mermaid p {
+  margin: 0;
+  font-size: inherit;
+  text-align: center;
+}
+
+.diagram sub {
+  font-size: 1rem;
+  font-style: italic;
+}
+
+/* ---- Landing page ---- */
+
+.pipeline-steps li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.report-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 16px 0 32px;
+}
+
+.report-card {
+  display: block;
+  padding: 16px 18px;
+  border: 1px solid var(--vatel-rule);
+  border-top: 3px solid var(--vatel-accent);
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.report-card:hover {
+  background: var(--vatel-accent-soft);
+}
+
+.report-card strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--vatel-accent);
+}
+
+.report-card span {
+  font-size: 0.95rem;
+  color: var(--vatel-muted);
+}
+
+.report-card.pending {
+  border-top-color: var(--vatel-rule);
+}
+
+.report-card.pending strong {
+  color: var(--vatel-muted);
+}

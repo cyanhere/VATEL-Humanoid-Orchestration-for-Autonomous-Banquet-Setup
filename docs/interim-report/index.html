@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>VATEL Interim Report</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/themes/light.css" />
+  <script type="module"
+    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/shoelace-autoloader.js"></script>
+
+  <link rel="stylesheet" href="../index.css">
+  <link rel="stylesheet" href="../report.css">
+
+  <link rel="stylesheet" href="../components/team-member/team-member.css">
+  <script type="module" src="../components/team-member/team-member.js"></script>
+
+  <link rel="stylesheet" href="../components/table-of-content/table-of-content.css">
+
+  <script type="module" src="../components/image/image-component.js"></script>
+
+  <script type="module" src="../components/video/video.js"></script>
+
+  <script src="../components/table-component/table-component.js"></script>
+
+  <link rel="stylesheet" href="../components/references/references.css">
+
+  <link rel="stylesheet" href="../components/scroll-to-top/scroll-to-top.css">
+  <script src="../components/scroll-to-top/scroll-to-top.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.2.1/dist/mermaid.min.js"></script>
+</head>
+
+<body>
+  <!--
+    HOW TO FILL THIS TEMPLATE
+    - Word limit: 5,000 words for a 3-person group, excluding captions, references and appendices.
+      The budget in each "To fill" box is a suggestion; together they add up to 5,000.
+    - Delete each <p class="todo"> once its section is written. Search for class="todo" and
+      class="blank" to find what is still open.
+    - Figures: put images in docs/assets/interim/ and change the figure's source="..." to point at
+      them. Videos: upload to YouTube (unlisted is fine) and use <video-component>.
+    - Every section in 5 has a "Lead" line. The course assesses each member individually, so keep
+      those and Section 10 accurate.
+  -->
+  <div class="content">
+    <sl-button href="../" size="small">&larr; VATEL home</sl-button>
+
+    <h1>VATEL: Humanoid Orchestration for Autonomous Banquet Setup</h1>
+    <p class="subtitle">Interim Report &middot; CDE4301 Innovation &amp; Design Capstone &middot; AY2026/27 Semester 1</p>
+    <p class="doc-meta">
+      Supervisor: <span class="blank">[name]</span> &middot;
+      Industry partner: <span class="blank">[company]</span> &middot;
+      Project code: <span class="blank">[code]</span>
+    </p>
+
+    <!-- Team members: replace the avatar with a portrait in docs/assets/team/ -->
+    <div class="team-member-wrapper">
+      <team-member avatar="../assets/team/avatar-placeholder.svg" name="Teh Wei Sheng"
+        department="Mechanical Engineering" year="Year 4">
+      </team-member>
+      <team-member avatar="../assets/team/avatar-placeholder.svg" name="Song Cheng Yan"
+        department="Mechanical Engineering" year="Year 4">
+      </team-member>
+      <team-member avatar="../assets/team/avatar-placeholder.svg" name="Soh Sze Juin"
+        department="Electrical Engineering" year="Year 4">
+      </team-member>
+    </div>
+
+    <sl-divider></sl-divider>
+
+    <div class="table-of-content">
+      <h2>Table of Contents</h2>
+      <sl-tree>
+        <sl-tree-item>
+          <a href="#summary">Executive Summary</a>
+        </sl-tree-item>
+
+        <sl-tree-item expanded>
+          <a href="#introduction">1. Introduction</a>
+          <sl-tree-item><a href="#problem">1.1. Problem of Interest</a></sl-tree-item>
+          <sl-tree-item><a href="#context">1.2. Context and Stakeholders</a></sl-tree-item>
+          <sl-tree-item><a href="#value-proposition">1.3. Value Proposition and Novelty</a></sl-tree-item>
+          <sl-tree-item><a href="#objectives-scope">1.4. Objectives and Scope</a></sl-tree-item>
+        </sl-tree-item>
+
+        <sl-tree-item expanded>
+          <a href="#background">2. Background and Literature Review</a>
+          <sl-tree-item><a href="#current-practice">2.1. Current Banquet Setup Practice</a></sl-tree-item>
+          <sl-tree-item><a href="#existing-solutions">2.2. Existing Solutions</a></sl-tree-item>
+          <sl-tree-item><a href="#enabling-tech">2.3. Enabling Technologies</a></sl-tree-item>
+          <sl-tree-item><a href="#gap">2.4. Gap Addressed by This Project</a></sl-tree-item>
+        </sl-tree-item>
+
+        <sl-tree-item expanded>
+          <a href="#specifications">3. Design Requirements and Specifications</a>
+          <sl-tree-item><a href="#stakeholder-needs">3.1. Stakeholder Needs</a></sl-tree-item>
+          <sl-tree-item><a href="#design-specs">3.2. Design Specifications</a></sl-tree-item>
+        </sl-tree-item>
+
+        <sl-tree-item expanded>
+          <a href="#concept">4. Concept Development</a>
+          <sl-tree-item><a href="#functional-decomposition">4.1. Functional Decomposition</a></sl-tree-item>
+          <sl-tree-item><a href="#morphological-matrix">4.2. Morphological Matrix</a></sl-tree-item>
+          <sl-tree-item><a href="#concept-evaluation">4.3. Concept Evaluation and Selection</a></sl-tree-item>
+          <sl-tree-item><a href="#system-architecture">4.4. Selected Concept and System Architecture</a></sl-tree-item>
+        </sl-tree-item>
+
+        <sl-tree-item expanded>
+          <a href="#detailed-design">5. Detailed Design</a>
+          <sl-tree-item><a href="#design-planner">5.1. VATEL Planner</a></sl-tree-item>
+          <sl-tree-item><a href="#design-handoff">5.2. Plan Hand-off to the Robot</a></sl-tree-item>
+          <sl-tree-item><a href="#design-navigation">5.3. Autonomous Navigation and Map Update</a></sl-tree-item>
+          <sl-tree-item><a href="#design-perception">5.4. Plate Perception at the AGV</a></sl-tree-item>
+          <sl-tree-item><a href="#design-manipulation">5.5. Single-Plate Pick and Place</a></sl-tree-item>
+          <sl-tree-item><a href="#design-platform">5.6. Robot Platform and Sensor Integration</a></sl-tree-item>
+          <sl-tree-item><a href="#design-mission">5.7. Mission Orchestration</a></sl-tree-item>
+        </sl-tree-item>
+
+        <sl-tree-item>
+          <a href="#prototyping">6. Prototyping and Fabrication</a>
+        </sl-tree-item>
+
+        <sl-tree-item expanded>
+          <a href="#testing">7. Testing and Preliminary Results</a>
+          <sl-tree-item><a href="#test-plan">7.1. Test Plan</a></sl-tree-item>
+          <sl-tree-item><a href="#test-planner">7.2. Planner and Hand-off Tests</a></sl-tree-item>
+          <sl-tree-item><a href="#test-navigation">7.3. Navigation Tests</a></sl-tree-item>
+          <sl-tree-item><a href="#test-perception">7.4. Plate Perception Tests</a></sl-tree-item>
+          <sl-tree-item><a href="#test-manipulation">7.5. Pick and Place Tests</a></sl-tree-item>
+          <sl-tree-item><a href="#spec-compliance">7.6. Results Against Specifications</a></sl-tree-item>
+        </sl-tree-item>
+
+        <sl-tree-item expanded>
+          <a href="#discussion">8. Problems, Shortcomings and Mitigations</a>
+          <sl-tree-item><a href="#problems">8.1. Problems Encountered and Resolutions</a></sl-tree-item>
+          <sl-tree-item><a href="#shortcomings">8.2. Current Shortcomings and Risks</a></sl-tree-item>
+        </sl-tree-item>
+
+        <sl-tree-item expanded>
+          <a href="#plan">9. Plan for Semester 2</a>
+          <sl-tree-item><a href="#milestones">9.1. Milestones</a></sl-tree-item>
+          <sl-tree-item><a href="#schedule">9.2. Schedule</a></sl-tree-item>
+        </sl-tree-item>
+
+        <sl-tree-item><a href="#contributions">10. Individual Contributions</a></sl-tree-item>
+        <sl-tree-item><a href="#conclusion">11. Conclusion</a></sl-tree-item>
+        <sl-tree-item><a href="#references">References</a></sl-tree-item>
+        <sl-tree-item><a href="#appendices">Appendices</a></sl-tree-item>
+      </sl-tree>
+    </div>
+
+    <sl-divider></sl-divider>
+
+    <!-- ================================================================== -->
+    <section id="summary">
+      <h2>Executive Summary</h2>
+      <p class="todo">
+        The problem, what VATEL does, what has been achieved this semester, and what remains for
+        Semester 2. Write it last. <span class="budget">&asymp; 150 words</span>
+      </p>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="introduction">
+      <h2>1. Introduction</h2>
+
+      <section id="problem">
+        <h3>1.1. Problem of Interest</h3>
+        <p>
+          Banquet table setting requires handling diverse, fragile tableware across an environment
+          purpose-built for human reach and access, where fixed automation is impractical and a
+          separate task-specific robot per item type is uneconomical. This project develops and
+          evaluates an autonomous perception-and-manipulation pipeline for a humanoid robot to
+          transfer and place banquet tableware, using plate transfer from an AGV (a requirement
+          from our industry partner, who is deploying the AGV) as the representative case, with the
+          approach intended to generalise to other tableware handling tasks.
+        </p>
+        <p class="todo">
+          Back the statement with evidence: why setting tables is labour-intensive, why tableware
+          is hard to handle (fragile, varied), and why a hall built for people rules out fixed
+          automation. Use the Five Whys to show you are treating the cause, not a symptom.
+          (Rubric A1) <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="context">
+        <h3>1.2. Context and Stakeholders</h3>
+        <p class="todo">
+          Where the problem sits: manpower in Singapore's hospitality sector, how banquets run at
+          the partner's venue, and the partner's AGV deployment. Name each stakeholder (industry
+          partner, banquet crew, event planners) and what they need. Use recent, authoritative
+          sources such as industry reports and government data. (A1)
+          <span class="budget">&asymp; 200 words</span>
+        </p>
+      </section>
+
+      <section id="value-proposition">
+        <h3>1.3. Value Proposition and Novelty</h3>
+        <p class="todo">
+          Why a humanoid: one general-purpose platform for many tableware types, in a space built
+          for human reach, against fixed automation or one task-specific robot per item. What is
+          new compared with existing service robots, and what it is worth to the partner. (A1)
+          <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="objectives-scope">
+        <h3>1.4. Objectives and Scope</h3>
+        <p>The project's objectives are:</p>
+        <ol>
+          <li>A planner app, used from an iPad or a computer, in which the banquet team sees the
+            whole hall with its tables segmented on a 2-D map, plans the arrangement, and sends the
+            plan to the robot.</li>
+          <li>Autonomous navigation of the hall by the Unitree R1 from the planner's static map, with
+            the onboard Hesai JT128 lidar correcting the table positions so the robot can reach every
+            set position.</li>
+          <li>Autonomous transfer of plates, one at a time, from a stack on an AGV to their
+            designated positions.</li>
+          <li>Evaluation of the complete pipeline against the success criteria in
+            <a href="#design-specs">Section 3.2</a>.</li>
+        </ol>
+
+        <table-component subtitle="Table 1: Project scope">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>In scope</th><th>Out of scope</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Plates, taken one at a time from a stack on an AGV</td>
+                  <td>Other tableware such as cutlery and glassware. The approach is meant to
+                    generalise to them, but only plates are demonstrated.</td>
+                </tr>
+                <tr>
+                  <td>Planning, plan hand-off, navigation, pick and place in one banquet hall</td>
+                  <td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td><span class="blank">[ ]</span></td>
+                  <td><span class="blank">[ ]</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          Confirm the objectives and scope with the supervisor and partner, and say why each
+          boundary is where it is. (A1) <span class="budget">&asymp; 100 words</span>
+        </p>
+      </section>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="background">
+      <h2>2. Background and Literature Review</h2>
+
+      <section id="current-practice">
+        <h3>2.1. Current Banquet Setup Practice</h3>
+        <p class="todo">
+          How tables are set today: crew size, time per banquet, order of work (linen, plates,
+          cutlery, glassware), where the plates come from, breakage. Include primary research,
+          such as a site visit or an interview with the partner, and say what you saw and who you
+          spoke to. (A1) <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="existing-solutions">
+        <h3>2.2. Existing Solutions</h3>
+        <table-component subtitle="Table 2: Existing solutions and their limits for banquet setup">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Solution</th><th>Type</th><th>What it does well</th>
+                  <th>Limitation for banquet setup</th><th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="blank">[ ]</span></td><td>Service and delivery robots</td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td>AGVs and AMRs</td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td>Mobile manipulators</td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td>Humanoid robots</td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          What the table shows: which needs existing solutions already meet and which they leave
+          open. Include commercial products, research systems and patents. (A1)
+          <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="enabling-tech">
+        <h3>2.3. Enabling Technologies</h3>
+
+        <h4>Lidar localisation and mapping in a changing hall</h4>
+        <p class="todo">SLAM and localisation against a prior map, and handling furniture that moves
+          between events.</p>
+
+        <h4>Table and tableware perception</h4>
+        <p class="todo">Segmenting tables from a hall view, and detecting plates and their pose
+          from RGB-D.</p>
+
+        <h4>Grasping thin, fragile objects with dexterous hands</h4>
+        <p class="todo">Grasp strategies for flat, stacked objects, and limits on force and
+          payload. <span class="budget">&asymp; 200 words for 2.3</span></p>
+      </section>
+
+      <section id="gap">
+        <h3>2.4. Gap Addressed by This Project</h3>
+        <p class="todo">
+          From 2.1 to 2.3: what nobody has done yet that VATEL does. This is the novelty claim
+          that 1.3 relies on. (A1) <span class="budget">&asymp; 100 words</span>
+        </p>
+      </section>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="specifications">
+      <h2>3. Design Requirements and Specifications</h2>
+
+      <section id="stakeholder-needs">
+        <h3>3.1. Stakeholder Needs</h3>
+        <table-component subtitle="Table 3: Stakeholder needs">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>Need</th><th>Stakeholder</th><th>Evidence</th><th>Specification</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          Each need comes from someone: the partner, the banquet crew, or what you observed. The
+          last column links it to a specification in 3.2. (A1)
+          <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="design-specs">
+        <h3>3.2. Design Specifications</h3>
+        <table-component subtitle="Table 4: Design specifications">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Requirement</th><th>Metric</th><th>Target</th>
+                  <th>Justification</th><th>Verification</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="id">S1</td>
+                  <td>The banquet team plans the hall from an iPad or a computer</td>
+                  <td>Devices the planner runs on</td>
+                  <td>iPad and desktop browser</td>
+                  <td><span class="blank">[ ]</span></td><td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td class="id">S2</td>
+                  <td>The planner shows the whole hall, with the tables segmented on a 2-D map</td>
+                  <td>Tables segmented out of tables present</td>
+                  <td><span class="blank">[ ] %</span></td>
+                  <td><span class="blank">[ ]</span></td><td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td class="id">S3</td>
+                  <td>The planner sends the plan to the robot: table positions, sets per table and
+                    the position of every set</td>
+                  <td>Plan fields received by the robot</td>
+                  <td>All</td>
+                  <td><span class="blank">[ ]</span></td><td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td class="id">S4</td>
+                  <td>The robot corrects the planner's table positions with its JT128 lidar</td>
+                  <td>Table position error after correction</td>
+                  <td><span class="blank">[ ] m</span></td>
+                  <td><span class="blank">[ ]</span></td><td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td class="id">S5</td>
+                  <td>The robot navigates the hall to the set positions</td>
+                  <td>Share of the required workspace reached</td>
+                  <td>&ge; 80 %</td>
+                  <td>Project success criterion</td><td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td class="id">S6</td>
+                  <td>The robot takes plates off the AGV stack one at a time</td>
+                  <td>Plates per trip</td>
+                  <td>1</td>
+                  <td>Dexterous hand and platform limits</td><td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td class="id">S7</td>
+                  <td>Plates end up at their designated positions</td>
+                  <td>Plates placed correctly out of all plates</td>
+                  <td>&ge; 90 % (up to 10 % may miss)</td>
+                  <td>Project success criterion</td><td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td class="id">S8</td>
+                  <td>A placed plate sits where its set position says</td>
+                  <td>Placement position error</td>
+                  <td><span class="blank">[ ] mm</span></td>
+                  <td><span class="blank">[ ]</span></td><td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td class="id">S9</td>
+                  <td>No plate is broken</td>
+                  <td>Plates broken</td>
+                  <td>0</td>
+                  <td>Project success criterion</td><td><span class="blank">[ ]</span></td>
+                </tr>
+                <tr>
+                  <td class="id">S10</td>
+                  <td><span class="blank">[ ]</span></td><td></td><td></td><td></td><td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          Fill the open targets and justify every number: where it came from (partner, hardware
+          limit, literature) and how it will be verified. Add rows if needed, for example cycle
+          time per plate or safety around guests. (A1)
+          <span class="budget">&asymp; 200 words</span>
+        </p>
+      </section>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="concept">
+      <h2>4. Concept Development</h2>
+
+      <section id="functional-decomposition">
+        <h3>4.1. Functional Decomposition</h3>
+        <image-component tag="fig-functions" source="../assets/placeholder-figure.svg"
+          subtitle="Figure 1: Functional decomposition of banquet plate setting">
+        </image-component>
+        <p class="todo">
+          Break the task into the functions the system must perform, and show which functions
+          existing solutions already cover. (A2) <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="morphological-matrix">
+        <h3>4.2. Morphological Matrix</h3>
+        <table-component subtitle="Table 5: Morphological matrix">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>Function</th><th>Option A</th><th>Option B</th><th>Option C</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Locate the tables in the hall</td><td></td><td></td><td></td></tr>
+                <tr><td>Plan the arrangement and set positions</td><td></td><td></td><td></td></tr>
+                <tr><td>Send the plan to the robot</td><td></td><td></td><td></td></tr>
+                <tr><td>Localise and correct the table positions</td><td></td><td></td><td></td></tr>
+                <tr><td>Move between the AGV and the tables</td><td></td><td></td><td></td></tr>
+                <tr><td>Locate the top plate on the stack</td><td></td><td></td><td></td></tr>
+                <tr><td>Grasp and carry one plate</td><td></td><td></td><td></td></tr>
+                <tr><td>Place the plate at its set position</td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          Two or three real alternatives per function, and how they combine into the candidate
+          concepts that 4.3 compares. (A2) <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="concept-evaluation">
+        <h3>4.3. Concept Evaluation and Selection</h3>
+        <table-component subtitle="Table 6: Evaluation matrix">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>Criterion</th><th>Weight</th><th>Concept A</th><th>Concept B</th><th>Concept C</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td><td></td></tr>
+                <tr><th>Weighted total</th><th></th><th></th><th></th><th></th></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          Criteria taken from the specifications, how the weights were set, the scores, and why
+          the winning concept won. Systematic comparison with alternatives is what separates
+          Competent from Exceptional on A2. <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="system-architecture">
+        <h3>4.4. Selected Concept and System Architecture</h3>
+        <p>VATEL runs in five steps:</p>
+        <ol>
+          <li><strong>Plan.</strong> The banquet team uses the VATEL Planner on an iPad or a computer.
+            It shows the whole hall, segments out the tables and draws them on a 2-D map, where the
+            team plans the arrangement and setup for the event.</li>
+          <li><strong>Hand off.</strong> The planner sends the static map to the R1: where each table
+            is, how many sets of plates and cutlery each table needs, and the calculated position of
+            each set.</li>
+          <li><strong>Navigate.</strong> The R1 navigates the hall from that static map. Its JT128
+            lidar maps the real room to find the exact location of each table, correcting the
+            difference between the plan and the real arrangement, and the map is updated so the
+            robot can reach every set position.</li>
+          <li><strong>Transfer.</strong> Once the robot reaches at least 80 % of the required
+            workspace, it goes to the AGV plate-delivery area and takes one plate at a time off the
+            stack, placing each at its designated position.</li>
+          <li><strong>Done.</strong> At least 90 % of the plates are at their designated positions,
+            and no plate is broken.</li>
+        </ol>
+
+        <div class="diagram" id="fig-architecture">
+          <pre class="mermaid">
+flowchart TB
+  PL["<b>1 · Plan</b> in the VATEL Planner<br/>on an iPad or a computer:<br/>segment tables, plan the layout,<br/>calculate set positions"]
+  subgraph R1["Unitree R1"]
+    NAV["<b>3 · Navigate</b> from the static map<br/>JT128 lidar finds the real tables;<br/>map and set positions updated"]
+    PICK["<b>4 · Pick</b> one plate<br/>off the AGV stack"]
+    PLACE["<b>Place</b> it at its<br/>designated position"]
+  end
+  AGV[("AGV with<br/>stacked plates")]
+  DONE["<b>5 · Done</b>: ≥ 90 % of plates placed, none broken"]
+  PL -- "2 · static map, tables, sets per table, set positions" --> NAV
+  NAV -- "≥ 80 % of the workspace reached" --> PICK
+  AGV -.-> PICK
+  PICK --> PLACE
+  PLACE -- "next plate" --> PICK
+  PLACE --> DONE
+          </pre>
+          <sub>Figure 2: VATEL system overview</sub>
+        </div>
+        <p class="todo">
+          Why this concept follows from the evaluation in 4.3, and how the subsystems divide the
+          work. Section 5 details each one. (A2) <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="detailed-design">
+      <h2>5. Detailed Design</h2>
+
+      <section id="design-planner">
+        <h3>5.1. VATEL Planner</h3>
+        <p class="lead-tag">Pipeline steps 1&ndash;2 &middot; Lead: <span class="blank">[name]</span></p>
+        <image-component tag="fig-planner" source="../assets/placeholder-figure.svg"
+          subtitle="Figure 3: The VATEL Planner on an iPad">
+        </image-component>
+        <p class="todo">
+          How the planner sees the whole hall and segments the tables, how the team plans an
+          arrangement, how set positions are calculated, and why it runs in a browser on iPad and
+          computer. <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="design-handoff">
+        <h3>5.2. Plan Hand-off to the Robot</h3>
+        <p class="lead-tag">Pipeline step 2 &middot; Lead: <span class="blank">[name]</span></p>
+        <table-component subtitle="Table 7: Data the planner sends to the robot">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>Field</th><th>Content</th><th>Format, units and frame</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Static map</td><td>The hall's 2-D map</td><td><span class="blank">[ ]</span></td></tr>
+                <tr><td>Tables</td><td>Where each table is</td><td><span class="blank">[ ]</span></td></tr>
+                <tr><td>Sets per table</td><td>How many sets of plates and cutlery each table needs</td><td><span class="blank">[ ]</span></td></tr>
+                <tr><td>Set positions</td><td>The calculated position of each set</td><td><span class="blank">[ ]</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          The format and coordinate frame, how the robot receives the plan, and what happens when
+          the hand-off fails. <span class="budget">&asymp; 100 words</span>
+        </p>
+      </section>
+
+      <section id="design-navigation">
+        <h3>5.3. Autonomous Navigation and Map Update</h3>
+        <p class="lead-tag">Pipeline step 3 &middot; Lead: <span class="blank">[name]</span></p>
+        <image-component tag="fig-navigation" source="../assets/placeholder-figure.svg"
+          subtitle="Figure 4: Planner map against the JT128 lidar map, before and after table correction">
+        </image-component>
+        <p class="todo">
+          Localisation against the planner's static map with the JT128, finding the real table
+          positions and correcting the plan, updating the map, planning paths to each set position,
+          and how the 80 % workspace figure is measured.
+          <span class="budget">&asymp; 175 words</span>
+        </p>
+      </section>
+
+      <section id="design-perception">
+        <h3>5.4. Plate Perception at the AGV</h3>
+        <p class="lead-tag">Pipeline step 4 &middot; Lead: <span class="blank">[name]</span></p>
+        <image-component tag="fig-perception" source="../assets/placeholder-figure.svg"
+          subtitle="Figure 5: Detecting the top plate of the stack on the AGV">
+        </image-component>
+        <p class="todo">
+          How the top plate on the AGV stack is found and its pose given in the robot frame:
+          sensors, algorithm, and calibration from camera to robot.
+          <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="design-manipulation">
+        <h3>5.5. Single-Plate Pick and Place</h3>
+        <p class="lead-tag">Pipeline step 4 &middot; Lead: <span class="blank">[name]</span></p>
+        <image-component tag="fig-manipulation" source="../assets/placeholder-figure.svg"
+          subtitle="Figure 6: Grasping one plate off the stack">
+        </image-component>
+        <p class="todo">
+          The grasp that takes one plate off a stack with the Revo 2 hand, carrying it, and placing
+          it at its set position without breaking it. Explain the one-plate-per-trip limit (hand,
+          and the R1's payload per arm). <span class="budget">&asymp; 175 words</span>
+        </p>
+      </section>
+
+      <section id="design-platform">
+        <h3>5.6. Robot Platform and Sensor Integration</h3>
+        <p class="lead-tag">Lead: <span class="blank">[name]</span></p>
+        <image-component tag="fig-helmet" source="../assets/placeholder-figure.svg"
+          subtitle="Figure 7: Sensor helmet carrying the JT128 lidar and the RealSense camera on the R1">
+        </image-component>
+        <p class="todo">
+          The Unitree R1, the sensor helmet (design, mounting, materials), onboard compute and
+          networking. <span class="budget">&asymp; 100 words</span>
+        </p>
+      </section>
+
+      <section id="design-mission">
+        <h3>5.7. Mission Orchestration</h3>
+        <p class="lead-tag">Pipeline steps 2&ndash;5 &middot; Lead: <span class="blank">[name]</span></p>
+        <image-component tag="fig-mission" source="../assets/placeholder-figure.svg"
+          subtitle="Figure 8: Mission sequence, from receiving the plan to the last plate placed">
+        </image-component>
+        <p class="todo">
+          How the robot runs the received plan: go to the AGV, pick, go to the set, place, repeat.
+          What happens on a missed grasp or a blocked path, and how placed, missed and broken
+          plates are counted against S5, S7 and S9. <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="prototyping">
+      <h2>6. Prototyping and Fabrication</h2>
+      <table-component subtitle="Table 8: Prototypes built this semester">
+        <div class="table-scroll">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Prototype</th><th>Question it answers</th><th>Fidelity</th>
+                <th>How it was made</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>VATEL Planner app</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>Planner-to-robot link</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>Sensor helmet</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>Plate-stack perception</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>Navigation with the JT128</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>Plate grasp</td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </table-component>
+      <image-component tag="fig-prototypes" source="../assets/placeholder-figure.svg"
+        subtitle="Figure 9: Prototypes built this semester">
+      </image-component>
+      <p class="todo">
+        For each prototype: the assumption it tests, why that fidelity, how it was built, and the
+        principles applied. One row per prototype; delete rows that do not apply. (Rubric A3)
+        <span class="budget">&asymp; 350 words</span>
+      </p>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="testing">
+      <h2>7. Testing and Preliminary Results</h2>
+
+      <section id="test-plan">
+        <h3>7.1. Test Plan</h3>
+        <table-component subtitle="Table 9: Test plan">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>ID</th><th>Test</th><th>Purpose</th><th>Specs</th><th>Method</th><th>Metric</th><th>Trials</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="id">T1</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td class="id">T2</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td class="id">T3</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td class="id">T4</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          Every test traces to a specification in Table 4, with the number of trials and the
+          conditions stated. (A4) <span class="budget">&asymp; 100 words</span>
+        </p>
+      </section>
+
+      <section id="test-planner">
+        <h3>7.2. Planner and Hand-off Tests</h3>
+        <h4>Purpose</h4>
+        <p class="todo">What question this test answers, and which specs it checks.</p>
+        <h4>Setup and procedure</h4>
+        <p class="todo">Equipment, conditions, steps, number of trials.</p>
+        <h4>Results</h4>
+        <p class="todo">Data as a table or a chart with units and error bars.</p>
+        <h4>Analysis</h4>
+        <p class="todo">What the data shows against the target, sources of error, and why the
+          result can be trusted. (A5) <span class="budget">&asymp; 125 words for 7.2</span></p>
+      </section>
+
+      <section id="test-navigation">
+        <h3>7.3. Navigation Tests</h3>
+        <h4>Purpose</h4>
+        <p class="todo">What question this test answers, and which specs it checks.</p>
+        <h4>Setup and procedure</h4>
+        <p class="todo">Equipment, conditions, steps, number of trials.</p>
+        <h4>Results</h4>
+        <p class="todo">Data as a table or a chart with units and error bars.</p>
+        <h4>Analysis</h4>
+        <p class="todo">What the data shows against the target, sources of error, and why the
+          result can be trusted. (A5) <span class="budget">&asymp; 125 words for 7.3</span></p>
+      </section>
+
+      <section id="test-perception">
+        <h3>7.4. Plate Perception Tests</h3>
+        <h4>Purpose</h4>
+        <p class="todo">What question this test answers, and which specs it checks.</p>
+        <h4>Setup and procedure</h4>
+        <p class="todo">Equipment, conditions, steps, number of trials.</p>
+        <h4>Results</h4>
+        <p class="todo">Data as a table or a chart with units and error bars.</p>
+        <h4>Analysis</h4>
+        <p class="todo">What the data shows against the target, sources of error, and why the
+          result can be trusted. (A5) <span class="budget">&asymp; 125 words for 7.4</span></p>
+      </section>
+
+      <section id="test-manipulation">
+        <h3>7.5. Pick and Place Tests</h3>
+        <h4>Purpose</h4>
+        <p class="todo">What question this test answers, and which specs it checks.</p>
+        <h4>Setup and procedure</h4>
+        <p class="todo">Equipment, conditions, steps, number of trials.</p>
+        <h4>Results</h4>
+        <p class="todo">Data as a table or a chart with units and error bars.</p>
+        <h4>Analysis</h4>
+        <p class="todo">What the data shows against the target, sources of error, and why the
+          result can be trusted. (A5) <span class="budget">&asymp; 125 words for 7.5</span></p>
+      </section>
+
+      <section id="spec-compliance">
+        <h3>7.6. Results Against Specifications</h3>
+        <table-component subtitle="Table 10: Results to date against the design specifications">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>ID</th><th>Target</th><th>Result to date</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="id">S1</td><td>iPad and desktop browser</td><td></td><td></td></tr>
+                <tr><td class="id">S2</td><td><span class="blank">[ ] %</span></td><td></td><td></td></tr>
+                <tr><td class="id">S3</td><td>All plan fields</td><td></td><td></td></tr>
+                <tr><td class="id">S4</td><td><span class="blank">[ ] m</span></td><td></td><td></td></tr>
+                <tr><td class="id">S5</td><td>&ge; 80 % of the required workspace</td><td></td><td></td></tr>
+                <tr><td class="id">S6</td><td>1 plate per trip</td><td></td><td></td></tr>
+                <tr><td class="id">S7</td><td>&ge; 90 % of plates placed</td><td></td><td></td></tr>
+                <tr><td class="id">S8</td><td><span class="blank">[ ] mm</span></td><td></td><td></td></tr>
+                <tr><td class="id">S9</td><td>0 plates broken</td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          Status as Met, Partly met, Not yet met or Not tested. One or two sentences on what this
+          means for the deliverables. <span class="budget">&asymp; 50 words</span>
+        </p>
+      </section>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="discussion">
+      <h2>8. Problems, Shortcomings and Mitigations</h2>
+
+      <section id="problems">
+        <h3>8.1. Problems Encountered and Resolutions</h3>
+        <table-component subtitle="Table 11: Problems encountered this semester">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>Problem</th><th>Root cause</th><th>Resolution</th><th>Outcome</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          How each problem was found and resolved, in detail. (Rubric A6)
+          <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+
+      <section id="shortcomings">
+        <h3>8.2. Current Shortcomings and Risks</h3>
+        <table-component subtitle="Table 12: Open shortcomings and risks">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>Shortcoming or risk</th><th>Impact</th><th>Mitigation</th><th>Owner</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td></tr>
+                <tr><td><span class="blank">[ ]</span></td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          The major gaps in the work so far, each with a sound and justified plan to close it.
+          (A6) <span class="budget">&asymp; 150 words</span>
+        </p>
+      </section>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="plan">
+      <h2>9. Plan for Semester 2</h2>
+
+      <section id="milestones">
+        <h3>9.1. Milestones</h3>
+        <table-component subtitle="Table 13: Semester 2 milestones">
+          <div class="table-scroll">
+            <table class="report-table">
+              <thead>
+                <tr><th>ID</th><th>Milestone</th><th>Success criterion</th><th>Target week</th><th>Lead</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="id">M1</td><td>Plan hand-off</td>
+                  <td>The robot receives the static map, tables, sets per table and every set
+                    position from the planner</td>
+                  <td></td><td></td>
+                </tr>
+                <tr>
+                  <td class="id">M2</td><td>Hall navigation</td>
+                  <td>The robot reaches &ge; 80 % of the required workspace</td>
+                  <td></td><td></td>
+                </tr>
+                <tr>
+                  <td class="id">M3</td><td>Plate pick</td>
+                  <td>The robot takes one plate off the AGV stack</td>
+                  <td></td><td></td>
+                </tr>
+                <tr>
+                  <td class="id">M4</td><td>Plate placement</td>
+                  <td>The robot places a plate at its designated position without breaking it</td>
+                  <td></td><td></td>
+                </tr>
+                <tr>
+                  <td class="id">M5</td><td>Full banquet run</td>
+                  <td>&ge; 90 % of plates at their designated positions, none broken</td>
+                  <td></td><td></td>
+                </tr>
+                <tr><td></td><td>Final report</td><td>Submitted</td><td>Week 11</td><td>All</td></tr>
+                <tr><td></td><td>Final presentation</td><td>Delivered</td><td>Week 13</td><td>All</td></tr>
+                <tr><td></td><td>Project Showcase</td><td>16 April 2027</td><td>Week 13</td><td>All</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </table-component>
+        <p class="todo">
+          Concrete steps to each milestone, and what is done if one slips. Detailed, viable plans
+          with clear milestones are what A6 rewards. <span class="budget">&asymp; 120 words</span>
+        </p>
+      </section>
+
+      <section id="schedule">
+        <h3>9.2. Schedule</h3>
+        <image-component tag="fig-schedule" source="../assets/placeholder-figure.svg"
+          subtitle="Figure 10: Semester 2 schedule">
+        </image-component>
+        <p class="todo">
+          A Gantt chart of Semester 2 (Weeks 1&ndash;13) showing the milestones above. A Mermaid
+          <code>gantt</code> block works here the same way as Figure 2.
+          <span class="budget">&asymp; 80 words</span>
+        </p>
+      </section>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="contributions">
+      <h2>10. Individual Contributions</h2>
+      <table-component subtitle="Table 14: Individual areas of work">
+        <div class="table-scroll">
+          <table class="report-table">
+            <thead>
+              <tr><th>Member</th><th>Areas of work</th><th>Report sections written</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Teh Wei Sheng</td><td><span class="blank">[ ]</span></td><td><span class="blank">[ ]</span></td></tr>
+              <tr><td>Song Cheng Yan</td><td><span class="blank">[ ]</span></td><td><span class="blank">[ ]</span></td></tr>
+              <tr><td>Soh Sze Juin</td><td><span class="blank">[ ]</span></td><td><span class="blank">[ ]</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </table-component>
+      <p class="todo">
+        Each member is assessed individually, so each person's own scope has to be clear here and
+        in the Lead lines of Section 5. <span class="budget">&asymp; 100 words</span>
+      </p>
+    </section>
+
+    <!-- ================================================================== -->
+    <section id="conclusion">
+      <h2>11. Conclusion</h2>
+      <p class="todo">
+        What has been shown so far, and why it points to the deliverables being met in Semester 2.
+        <span class="budget">&asymp; 100 words</span>
+      </p>
+    </section>
+
+    <!-- ================================================================== -->
+    <div id="references" class="references">
+      <sl-divider></sl-divider>
+      <h2>References</h2>
+      <p class="todo">APA 7th edition, sorted by author. Cite in the text as (Author, Year).</p>
+      <ul>
+        <li><span class="blank">[Author, A. A. (Year). Title of work. Source. https://doi.org/...]</span></li>
+        <li><span class="blank">[Author, A. A. (Year). Title of work. Source. https://doi.org/...]</span></li>
+        <li><span class="blank">[Author, A. A. (Year). Title of work. Source. https://doi.org/...]</span></li>
+      </ul>
+    </div>
+
+    <!-- ================================================================== -->
+    <section id="appendices">
+      <sl-divider></sl-divider>
+      <h2>Appendices</h2>
+
+      <h3 id="appendix-a">Appendix A: Risk Assessment</h3>
+      <p class="todo">Project risk evaluation and activity RAs, reference
+        RA/CDE4301/<span class="blank">[project code]</span>/2026.</p>
+
+      <h3 id="appendix-b">Appendix B: Bill of Materials</h3>
+      <p class="todo">Parts, quantities and costs, including the sensor helmet.</p>
+
+      <h3 id="appendix-c">Appendix C: Additional Test Data</h3>
+      <p class="todo">Raw data and extra plots that support Section 7.</p>
+
+      <h3 id="appendix-d">Appendix D: Source Code</h3>
+      <p>
+        All code is in this project's
+        <a href="https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup"
+          target="_blank">GitHub repository</a>.
+      </p>
+    </section>
+  </div>
+
+  <sl-button class="scroll-to-top" variant="primary" size="medium" circle onclick="scrollToTop()">
+    <sl-icon name="arrow-up" label="Back to top"></sl-icon>
+  </sl-button>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      themeVariables: {
+        primaryColor: "#E1EFE9",
+        primaryBorderColor: "#1D6152",
+        primaryTextColor: "#111412",
+        lineColor: "#1D6152",
+        clusterBkg: "#F7FAF8",
+        clusterBorder: "#9DBFB3",
+        edgeLabelBackground: "#FFFFFF",
+        fontSize: "15px",
+      },
+      flowchart: { htmlLabels: true, curve: "basis", wrappingWidth: 360 },
+    });
+  </script>
+</body>
+
+</html>

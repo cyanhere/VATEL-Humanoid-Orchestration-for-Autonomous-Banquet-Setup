@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>VATEL Banquet Humanoid</title>
+  <meta name="description"
+    content="VATEL: Humanoid Orchestration for Autonomous Banquet Setup. A CDE4301 capstone project at the National University of Singapore.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/themes/light.css" />
+  <script type="module"
+    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/shoelace-autoloader.js"></script>
+
+  <link rel="stylesheet" href="./index.css">
+  <link rel="stylesheet" href="./report.css">
+
+  <link rel="stylesheet" href="./components/team-member/team-member.css">
+  <script type="module" src="./components/team-member/team-member.js"></script>
+</head>
+
+<body>
+  <div class="content">
+    <h1>VATEL</h1>
+    <p class="subtitle">Humanoid Orchestration for Autonomous Banquet Setup</p>
+    <p class="doc-meta">CDE4301 Innovation &amp; Design Capstone &middot; College of Design and Engineering,
+      National University of Singapore &middot; AY2026/27</p>
+
+    <div class="team-member-wrapper">
+      <team-member avatar="./assets/team/avatar-placeholder.svg" name="Teh Wei Sheng"
+        department="Mechanical Engineering" year="Year 4">
+      </team-member>
+      <team-member avatar="./assets/team/avatar-placeholder.svg" name="Song Cheng Yan"
+        department="Mechanical Engineering" year="Year 4">
+      </team-member>
+      <team-member avatar="./assets/team/avatar-placeholder.svg" name="Soh Sze Juin"
+        department="Electrical Engineering" year="Year 4">
+      </team-member>
+    </div>
+
+    <sl-divider></sl-divider>
+
+    <h2>The problem</h2>
+    <p>
+      Banquet table setting requires handling diverse, fragile tableware across an environment
+      purpose-built for human reach and access, where fixed automation is impractical and a separate
+      task-specific robot per item type is uneconomical. VATEL develops and evaluates an autonomous
+      perception-and-manipulation pipeline for a humanoid robot to transfer and place banquet
+      tableware, using plate transfer from an AGV as the representative case, with the approach
+      intended to generalise to other tableware handling tasks.
+    </p>
+
+    <h2>How it works</h2>
+    <ol class="pipeline-steps">
+      <li><strong>Plan.</strong> The banquet team opens the VATEL Planner on an iPad or a computer.
+        It shows the whole hall with the tables segmented on a 2-D map, and the team plans the
+        event's arrangement there.</li>
+      <li><strong>Hand off.</strong> The planner sends the Unitree R1 humanoid the static map: where
+        each table is, how many sets each table needs, and the position of every set.</li>
+      <li><strong>Navigate.</strong> The R1 navigates the hall from that map, using its Hesai JT128
+        lidar to find where the tables really are and update the map.</li>
+      <li><strong>Transfer.</strong> It takes plates one at a time off a stack delivered by an AGV
+        and places each at its designated position.</li>
+      <li><strong>Done.</strong> At least 90 % of the plates are in place, and none are broken.</li>
+    </ol>
+
+    <h2>Reports</h2>
+    <div class="report-cards">
+      <a class="report-card" href="./interim-report/">
+        <strong>Interim Report</strong>
+        <span>Semester 1: problem, specifications, concept, detailed design and first results</span>
+      </a>
+      <div class="report-card pending">
+        <strong>Final Report</strong>
+        <span>Semester 2: to be published</span>
+      </div>
+      <a class="report-card"
+        href="https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup"
+        target="_blank">
+        <strong>Source Code</strong>
+        <span>Planner, navigation, perception, manipulation and hardware on GitHub</span>
+      </a>
+    </div>
+  </div>
+</body>
+
+</html>
