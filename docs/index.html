@@ -124,9 +124,9 @@ flowchart TB
     PLACE["<b>Place</b> it at its<br/>designated position"]
   end
   AGV[("AGV with<br/>stacked plates")]
-  DONE["<b>5 · Done</b>: ≥ 90 % of plates placed, none broken"]
-  PL -- "2 · static map, tables, sets per table, set positions" --> NAV
-  NAV -- "≥ 80 % of the workspace reached" --> PICK
+  DONE["<b>5 · Done</b><br/>≥ 90 % of plates placed, none broken"]
+  PL -- "2 · static map, tables,<br/>sets per table,<br/>set positions" --> NAV
+  NAV -- "≥ 80 % of the<br/>workspace reached" --> PICK
   AGV -.-> PICK
   PICK --> PLACE
   PLACE -- "next plate" --> PICK

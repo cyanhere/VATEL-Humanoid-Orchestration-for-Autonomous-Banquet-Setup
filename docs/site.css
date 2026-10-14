@@ -532,15 +532,52 @@ a.report-card:hover {
 
 /* --------------------------------------------------------------- reports */
 
+/* Header and report text share one column; the contents sit beside both on wide
+   screens, and between them (header, contents, text) on narrow ones. */
 .doc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "header"
+    "toc"
+    "main";
   max-width: var(--wrap);
   margin: 0 auto;
   padding: 56px 24px 72px;
 }
 
 .doc-header {
-  max-width: 820px;
+  grid-area: header;
+  max-width: 760px;
   margin-bottom: 48px;
+}
+
+.doc > .table-of-content {
+  grid-area: toc;
+  margin-bottom: 48px;
+}
+
+.doc > .content {
+  grid-area: main;
+}
+
+@media (min-width: 1100px) {
+  .doc {
+    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-areas:
+      "toc header"
+      "toc main";
+    column-gap: 56px;
+  }
+
+  .doc > .table-of-content {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    margin-bottom: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
 }
 
 .doc-header h1 {
@@ -564,25 +601,6 @@ a.report-card:hover {
   justify-content: flex-start;
   gap: 32px;
   margin: 32px 0 0;
-}
-
-.doc-layout {
-  display: grid;
-  gap: 40px;
-}
-
-@media (min-width: 1100px) {
-  .doc-layout {
-    grid-template-columns: 260px minmax(0, 1fr);
-    gap: 56px;
-  }
-
-  .doc-layout > .table-of-content {
-    position: sticky;
-    top: 24px;
-    max-height: calc(100vh - 48px);
-    overflow-y: auto;
-  }
 }
 
 .table-of-content {
@@ -769,6 +787,13 @@ a.report-card:hover {
 /* Hide the diagram source until Mermaid has drawn it. */
 .diagram pre.mermaid:not([data-processed]) {
   visibility: hidden;
+}
+
+/* Mermaid sizes each label box from a measurement that browser zoom can round down;
+   let the text show past the box rather than be cut off. Keep label lines under 200px
+   (break them with <br/>): Mermaid's own wrapping at 200px fails under zoom. */
+.diagram svg foreignObject {
+  overflow: visible;
 }
 
 /* Mermaid draws its labels as <p>; keep page paragraph styles out of them. */
