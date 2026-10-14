@@ -18,9 +18,10 @@
   <link rel="stylesheet" href="./site.css">
 
   <script type="module" src="./components/pipeline/pipeline.js"></script>
+  <script type="module" src="./components/hall-demo/hall-demo.js"></script>
 </head>
 
-<body>
+<body class="home">
   <header class="site-bar">
     <div class="site-bar-inner">
       <a class="brand" href="./"><img src="./favicon.svg" alt="">VATEL</a>
@@ -37,7 +38,8 @@
   </header>
 
   <section class="hero">
-    <div class="hero-inner">
+    <div class="hero-inner has-visual">
+      <div class="hero-copy">
       <p class="eyebrow">CDE4301 Innovation &amp; Design Capstone &middot; NUS</p>
       <h1>VATEL</h1>
       <p class="hero-subtitle">Humanoid Orchestration for Autonomous Banquet Setup</p>
@@ -52,6 +54,10 @@
         <a class="btn btn-ghost"
           href="https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup"
           target="_blank">Source code on GitHub</a>
+      </div>
+      </div>
+      <div class="hero-visual">
+        <hall-demo></hall-demo>
       </div>
     </div>
   </section>
@@ -116,7 +122,7 @@
           </ol>
 
           <div class="diagram-panel">
-            <pipeline-diagram subtitle="The VATEL pipeline"></pipeline-diagram>
+            <pipeline-diagram interactive subtitle="The VATEL pipeline"></pipeline-diagram>
           </div>
         </div>
       </div>
@@ -128,12 +134,14 @@
         <h2>Success criteria</h2>
         <div class="stats">
           <div class="stat">
-            <p class="stat-value">&ge; 80 %</p>
+            <p class="stat-value" data-count="80" data-prefix="&ge; " data-suffix=" %">&ge; 80 %</p>
             <p class="stat-label">of the required workspace reached by navigation</p>
+            <span class="stat-bar" style="--v: 0.8"><i></i></span>
           </div>
           <div class="stat">
-            <p class="stat-value">&ge; 90 %</p>
+            <p class="stat-value" data-count="90" data-prefix="&ge; " data-suffix=" %">&ge; 90 %</p>
             <p class="stat-label">of plates at their designated positions; up to 10 % may miss</p>
+            <span class="stat-bar" style="--v: 0.9"><i></i></span>
           </div>
           <div class="stat">
             <p class="stat-value">0</p>
@@ -218,6 +226,7 @@
     </div>
   </footer>
 
+  <script src="./components/home/home.js"></script>
 </body>
 
 </html>

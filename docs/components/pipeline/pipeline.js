@@ -1,6 +1,10 @@
 // The VATEL pipeline figure: <pipeline-diagram tag="fig-id" subtitle="Figure N: ..."></pipeline-diagram>
 // Plain HTML and CSS rather than a Mermaid chart, so it stays sharp and readable at any width or zoom.
 // Colours repeat site.css's palette; the shadow DOM keeps the page's own styles out.
+//
+// With the `interactive` attribute, pointing at, tapping or tabbing to a step highlights it and
+// fires a bubbling "step-hover" event (detail: the step number, or null when it is left), and
+// highlight(n) lets the page highlight a step from outside. The report uses the plain figure.
 
 const ICONS = {
   tablet:
@@ -14,7 +18,7 @@ const ICONS = {
 };
 
 const step = (num, title, text, extra = "") => `
-  <div class="step">
+  <div class="step" data-step="${num}">
     <span class="num">${num}</span>
     <div>
       <p class="title">${title}</p>
@@ -281,6 +285,35 @@ class PipelineDiagram extends HTMLElement {
         color: #fff;
       }
 
+      /* interactive (home page only): the highlighted step lifts and takes a green edge */
+      :host([interactive]) .step {
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      }
+
+      :host([interactive]) .step:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .step.hl {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(29, 97, 82, 0.12), 0 8px 20px rgba(17, 20, 18, 0.08);
+        transform: translateY(-2px);
+      }
+
+      .done .step.hl {
+        box-shadow: 0 0 0 3px rgba(29, 97, 82, 0.25), 0 10px 26px rgba(29, 97, 82, 0.32);
+      }
+
+      .step.hl .num {
+        box-shadow: 0 0 0 4px rgba(29, 97, 82, 0.15);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        :host([interactive]) .step { transition: none; }
+        .step.hl { transform: none; }
+      }
+
       figcaption {
         margin-top: 14px;
         font-size: 0.9rem;
@@ -292,6 +325,25 @@ class PipelineDiagram extends HTMLElement {
   `;
 
     this.shadowRoot.appendChild(figure);
+    if (this.hasAttribute("interactive")) this.bindSteps();
+  }
+
+  bindSteps() {
+    const tell = (n) =>
+      this.dispatchEvent(new CustomEvent("step-hover", { detail: n, bubbles: true, composed: true }));
+    this.shadowRoot.querySelectorAll(".step").forEach((card) => {
+      const n = Number(card.dataset.step);
+      card.tabIndex = 0;
+      card.addEventListener("pointerenter", () => { this.highlight(n); tell(n); });
+      card.addEventListener("pointerleave", () => tell(null));
+      card.addEventListener("focus", () => { this.highlight(n); tell(n); });
+      card.addEventListener("blur", () => tell(null));
+    });
+  }
+
+  highlight(n) {
+    this.shadowRoot.querySelectorAll(".step").forEach((card) =>
+      card.classList.toggle("hl", Number(card.dataset.step) === n));
   }
 }
 
