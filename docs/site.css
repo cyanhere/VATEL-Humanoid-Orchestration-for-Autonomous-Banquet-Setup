@@ -326,6 +326,7 @@ sl-divider {
   margin: 0;
   font-family: var(--font-serif);
   font-size: 1.3rem;
+  font-weight: 400;
   line-height: 1.6;
   color: var(--ink-2);
 }
