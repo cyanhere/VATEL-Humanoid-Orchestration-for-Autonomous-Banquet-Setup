@@ -8,7 +8,7 @@ tableware. The representative case is **plate transfer from an AGV**, a requirem
 industry partner, who is deploying the AGV. The approach is intended to generalise to other
 tableware handling tasks.
 
-**Project report:** [cyanhere.github.io/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup](https://cyanhere.github.io/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup/)
+**Project report:** [Interim report (Semester 1)](https://cyanhere.github.io/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup/interim-report/) · [Project site](https://cyanhere.github.io/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup/)
 
 ## How it works
 
@@ -91,7 +91,7 @@ The CDE4301 report is a static website in [`docs/`](docs/), built on the
 
 | Report | Link |
 |---|---|
-| Interim report, Semester 1 | [`docs/interim-report/`](https://cyanhere.github.io/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup/interim-report/) |
+| Interim report, Semester 1 | [cyanhere.github.io/…/interim-report](https://cyanhere.github.io/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup/interim-report/) |
 | Final report, Semester 2 | to be published |
 
 To preview the site locally, serve `docs/` and open <http://localhost:8000/>:
