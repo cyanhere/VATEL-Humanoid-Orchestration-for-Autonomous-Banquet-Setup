@@ -305,6 +305,7 @@
   .stepper { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
   .stepper button { width: 34px; justify-content: center; font-size: 16px; padding: 3px 0; }
   .stepper input { width: 64px; margin: 0; text-align: center; font-size: 16px; }
+  label.check.fixed { margin: 2px 0 10px; color: var(--ink); }
   .ready { list-style: none; margin: 0 0 12px; padding: 0; display: flex;
            flex-direction: column; gap: 4px; font-family: var(--sans); font-size: 12px; }
   .ready li { display: flex; align-items: center; gap: 7px; }
@@ -1373,7 +1374,14 @@
     }
     txt(g, t.x, t.y + 0.19, tagOf(t), { fill: "var(--ink)", "font-size": 0.6,
       "font-weight": 700 });
-    if (t.covers !== specOf(t).covers)      // a table set for a different number than its stock
+    if (t.fixed) {
+      // set by hand: a filled pill, so it reads as "this one is decided"
+      const lbl = t.covers + " pax", pw = 0.2 + 0.16 * lbl.length;
+      el("rect", { x: t.x - pw / 2, y: t.y + 0.3, width: pw, height: 0.34, rx: 0.17,
+        fill: "var(--accent)", "pointer-events": "none" }, g);
+      txt(g, t.x, t.y + 0.55, lbl, { fill: "var(--on-accent)", "font-size": 0.27,
+        "font-family": "Inter, sans-serif", "font-weight": 600 });
+    } else if (t.covers !== specOf(t).covers)      // spread to a number other than its stock
       txt(g, t.x, t.y + 0.55, t.covers + " pax", { fill: "var(--accent)", "font-size": 0.3,
         "font-family": "Inter, sans-serif", "font-weight": 600 });
 
@@ -1843,8 +1851,11 @@
     return FLOOR;
   }
 
+  // Tables whose guests were set by hand stay where they are when a layout is laid around
+  // them, so the new grid has to keep an aisle clear of them too.
   function arrangeCells(stockKey, aisle, stagger) {
     const s = STOCK.find((x) => x.key === stockKey), R = room();
+    const kept = tables().filter((t) => t.fixed);
     const w = s.shape === "round" ? s.d : Math.hypot(s.w, s.h);
     const pitchX = w + aisle;
     const pitchY = stagger ? (w + aisle) * 0.87 : w + aisle;
@@ -1862,6 +1873,9 @@
       const near = idx.near(x, y, w / 2 + 0.4);
       for (let i = 0; i < near.length; i++)
         if (keepClear(near[i]) && rectDist(near[i], x, y) <= w / 2 + 0.4) return false;
+      for (let i = 0; i < kept.length; i++)
+        if (Math.hypot(kept[i].x - x, kept[i].y - y) < w / 2 + boundRadius(kept[i]) + aisle - EPS)
+          return false;
       // the whole table has to be inside the room, not just its centre
       return !inside || (inside.at(x, y) &&
         inside.at(x - w / 2, y) && inside.at(x + w / 2, y) &&
@@ -1906,7 +1920,7 @@
     const cells = arrangeCells(stockKey, aisle, stagger);
     if (!cells.length) { toast("No room for that table at that aisle"); return 0; }
     mark();
-    if (replace) S.items = S.items.filter((i) => i.k === "f");
+    if (replace) S.items = S.items.filter((i) => i.k === "f" || i.fixed);
     const take = Math.min(n, cells.length);
     const made = [];
     for (let i = 0; i < take; i++) {
@@ -2063,11 +2077,25 @@
     const sig = one ? one.k + one.id : (SEL.size > 1 ? "multi" + SEL.size : "none");
     if (sig !== selSig) { box.innerHTML = selHTML(one); selSig = sig; }
     if (one) updateSelValues(one);
+    else if (SEL.size > 1) {
+      const inp = box.querySelector('[data-act="covers-multi"]');
+      const cs = selectedItems().filter((i) => i.k === "t").map((t) => t.covers);
+      if (inp && inp !== document.activeElement)
+        inp.value = cs.length && cs.every((c) => c === cs[0]) ? cs[0] : "";
+    }
   }
   function selHTML(it) {
     if (!it) {
       if (SEL.size > 1) {
+        const nt = selectedItems().filter((i) => i.k === "t").length;
         return '<div class="rows">' + rowHTML("Selected", SEL.size + " items") + "</div>" +
+          (nt ? '<label class="field" style="margin:11px 0 0">Guests at each of the ' + nt +
+                ' tables</label>' +
+                '<div class="stepper"><button data-act="cvm-" aria-label="One fewer at each">\u2212</button>' +
+                '<input type="number" data-act="covers-multi" min="0" max="' + MAX_AT_TABLE +
+                '" step="1" placeholder="mixed" aria-label="Guests at each selected table">' +
+                '<button data-act="cvm+" aria-label="One more at each">+</button></div>' +
+                '<p class="hint" style="margin:6px 0 4px">Setting a number here fixes it on all of them.</p>' : "") +
           '<div class="btn-row" style="margin-top:11px">' +
           '<button data-act="dup">Duplicate</button>' +
           '<button data-act="rot">Rotate 15°</button>' +
@@ -2108,7 +2136,9 @@
       '<input type="number" data-act="covers" min="0" max="' + MAX_AT_TABLE + '" step="1" ' +
       'aria-label="Guests at this table">' +
       '<button data-act="cv+" aria-label="One more">+</button></div>' +
-      '<p class="hint" id="cvHint" style="margin:6px 0 10px"></p>' +
+      '<label class="check fixed"><input type="checkbox" data-act="fixed"> ' +
+      'Keep this number when seating guests</label>' +
+      '<p class="hint" id="cvHint" style="margin:0 0 10px"></p>' +
       (s.shape === "rect"
         ? '<label class="field">Rotation: <b id="rotVal"></b>' +
           '<input type="range" data-act="rot-range" min="0" max="345" step="15"></label>' : "") +
@@ -2140,8 +2170,13 @@
     set('[data-act="fh"]', fmt(it.h, 2));
     if ($("cvHint") && it.k === "t") {
       const sp = specOf(it);
-      $("cvHint").textContent = "A " + sp.label.toLowerCase() + " seats " + sp.covers +
-        " comfortably." + (it.covers > sp.covers ? " This one is squeezed." : "") +
+      const box = $("sel").querySelector('[data-act="fixed"]');
+      if (box) box.checked = !!it.fixed;
+      $("cvHint").textContent = (it.fixed
+          ? "Seat guests and Arrange leave this table and its number alone. "
+          : "Seat guests may change this number. ") +
+        "A " + sp.label.toLowerCase() + " seats " + sp.covers + " comfortably." +
+        (it.covers > sp.covers ? " This one is squeezed." : "") +
         (it.src === "cam" ? " Placed by the hall camera." : "");
     }
     if ($("rotVal")) $("rotVal").textContent = it.rot + "°";
@@ -2174,7 +2209,8 @@
       const hov = HOVER === it.id && !sel ? " hov" : "";
       return '<div class="titem' + sel + hov + '" data-act="pick" data-id="' + it.id + '">' +
         '<span class="tag">' + tagOf(it) + "</span>" +
-        '<span class="desc">' + esc(specOf(it).label) + " · " + it.covers + " covers</span>" +
+        '<span class="desc">' + esc(specOf(it).label) + " · " + it.covers + " covers" +
+        (it.fixed ? " · fixed" : "") + "</span>" +
         (bad ? '<span class="bad">' + bad + " blocked</span>" : "") + "</div>";
     }).join("");
   }
@@ -2847,10 +2883,16 @@
      asks whether to spread the guests across them or to plan afresh.                  */
   const MAX_AT_TABLE = 14;
 
+  // Guests at tables someone set by hand, and the tables left for Seat guests to fill.
+  const fixedOf = () => { const f = tables().filter((t) => t.fixed);
+    return { tables: f, guests: f.reduce((a, t) => a + t.covers, 0) }; };
+
   // Fill the tables as evenly as they allow, never past what each seats comfortably.
-  // Returns the number of guests still without a seat.
+  // Tables with a number set by hand are not touched: only the guests left over after
+  // them are spread, over the other tables. Returns the guests still without a seat.
   function spread(pax, ts) {
-    ts = ts.slice().sort((a, b) => a.num - b.num);
+    ts = ts.filter((t) => !t.fixed).sort((a, b) => a.num - b.num);
+    pax = Math.max(0, pax - fixedOf().guests);
     const cap = ts.map((t) => specOf(t).covers);
     const give = ts.map(() => 0);
     let left = pax, open = ts.map((t, i) => i);
@@ -2869,15 +2911,30 @@
     return left;
   }
   function spreadGuests() {
-    const pax = +S.event.pax || 0, ts = tables();
+    const pax = +S.event.pax || 0, fx = fixedOf();
+    const free = tables().length - fx.tables.length, rest = pax - fx.guests;
     mark();
-    const left = spread(pax, ts);
+    const left = spread(pax, tables());
     selSig = null; render();
     toast(left ? "Seated " + (pax - left) + " — " + left + " guests still need a seat. Add tables."
-               : pax + " guests spread across " + ts.length + " tables", "Undo", undo);
+          : !fx.tables.length ? pax + " guests spread across " + free + " tables"
+          : rest <= 0 ? "The " + fx.tables.length + " tables you set seat " + fx.guests +
+                        "; the other " + free + " are left empty"
+          : "The other " + rest + " guests spread across " + free + " tables; your " +
+            fx.tables.length + " stay as set", "Undo", undo);
   }
   function planForGuests() {
-    const pax = +S.event.pax || 0;
+    const total = +S.event.pax || 0, fx = fixedOf();
+    // the tables someone set by hand stay, with their guests; plan for everyone else
+    const pax = Math.max(0, total - fx.guests);
+    if (!pax) {
+      mark();
+      S.items = S.items.filter((i) => i.k === "f" || i.fixed);
+      renumber(); SEL.clear(); selSig = null; render();
+      toast("The " + fx.tables.length + " tables you set already seat " + fx.guests +
+            " — no others needed", "Undo", undo);
+      return;
+    }
     const aisle = +$("arrGap").value, stag = $("arrStagger").checked;
     const first = $("arrStock").value;
     // the table chosen under Fill the room, then the bigger rounds if it will not fit
@@ -2896,12 +2953,13 @@
     if (!use || !use.n) { toast("No table fits this room at that aisle"); return; }
     const got = doArrange(use.n, use.key, aisle, stag, true);
     if (!got) return;
-    const left = spread(pax, tables());
+    const left = spread(total, tables());
     $("arrStock").value = use.key; $("arrCount").value = got;
     SEL.clear(); selSig = null; render();
     const sp = STOCK.find((x) => x.key === use.key);
-    toast("Laid " + got + " " + sp.label + " tables for " + pax + " guests" +
-          (left ? " — the room only seats " + (pax - left) + " at this aisle" : ""), "Undo", undo);
+    toast("Laid " + got + " " + sp.label + " tables for " + (fx.tables.length ? "the other " : "") +
+          pax + " guests" + (fx.tables.length ? ", around the " + fx.tables.length + " you set" : "") +
+          (left ? " — the room only seats " + (pax - left) + " more at this aisle" : ""), "Undo", undo);
   }
   function seatGuests() {
     const pax = +S.event.pax || 0;
@@ -2911,22 +2969,33 @@
       return;
     }
     if (!tables().length) { planForGuests(); return; }
-    const n = tables().length;
-    const cap = tables().reduce((a, t) => a + specOf(t).covers, 0);
-    const each = Math.floor(pax / n), more = pax % n;
+    const fx = fixedOf(), nf = fx.tables.length;
+    const free = tables().filter((t) => !t.fixed);
+    const n = free.length, rest = pax - fx.guests;
+    const cap = free.reduce((a, t) => a + specOf(t).covers, 0);
+    const each = n ? Math.floor(Math.max(rest, 0) / n) : 0, more = n ? Math.max(rest, 0) % n : 0;
     const stockLbl = STOCK.find((x) => x.key === $("arrStock").value).label.toLowerCase();
+    const yours = nf ? "The " + nf + " table" + (nf > 1 ? "s" : "") + " you set keep" +
+                       (nf > 1 ? "" : "s") + " " + (nf > 1 ? "their" : "its") + " " + fx.guests + ". " : "";
     const m = $("seatMenu");
     m.innerHTML =
-      '<button data-seat="spread"><b>Spread across the ' + n + " tables</b><span>" +
-      (pax > cap
-        ? "They seat " + cap + " at most, so " + (pax - cap) + " guests would be left without a seat."
-        : (more ? each + " or " + (each + 1) : each) + " guests at each table.") +
+      '<button data-seat="spread"' + (n ? "" : " disabled") + "><b>" +
+      (nf ? "Spread the other " + Math.max(rest, 0) + " across " + n + " tables"
+          : "Spread across the " + n + " tables") + "</b><span>" + yours +
+      (!n ? "Every table has a number you set: untick one to let Seat guests fill it."
+        : rest < 0 ? "Those already seat more than the " + pax + " guests; the others would stay empty."
+        : rest > cap ? "They seat " + cap + " at most, so " + (rest - cap) + " guests would be left without a seat."
+        : (more ? each + " or " + (each + 1) : each) + " guests at each" + (nf ? " of the others." : " table.")) +
       "</span></button>" +
       '<button data-seat="plan"' + (LIVE.on ? " disabled" : "") + "><b>Plan new tables for " +
-      pax + "</b><span>" + (LIVE.on
+      (nf ? "the other " + Math.max(rest, 0) : pax) + "</b><span>" + (LIVE.on
         ? "The hall camera is placing the tables. Pause live first."
-        : "Replaces the tables with just enough " + stockLbl + "s, keeping the stage and fixtures.") +
-      "</span></button>";
+        : (nf ? "Keeps the tables you set, the stage and fixtures; replaces the rest with just enough "
+              : "Replaces the tables with just enough ") + stockLbl + "s" +
+          (nf ? "." : ", keeping the stage and fixtures.")) +
+      "</span></button>" +
+      (nf ? '<button data-seat="unfix"><b>Clear the numbers you set</b><span>Lets Seat guests ' +
+            "fill all " + tables().length + " tables again.</span></button>" : "");
     m.hidden = false;
   }
 
@@ -3037,7 +3106,7 @@
         if (n >= 3) {
           const was = specOf(t);
           t.stock = r.stock.key;
-          if (t.covers === was.covers) t.covers = r.stock.covers;   // unless someone set it
+          if (!t.fixed && t.covers === was.covers) t.covers = r.stock.covers;   // unless someone set it
           LIVE.size.delete(t.id); place(t, r); changed = true;
         }
       } else LIVE.size.delete(t.id);
@@ -3292,6 +3361,15 @@
       if (it && it.k === "t") {
         markEdit();
         it.covers = clamp(it.covers + (act === "cv+" ? 1 : -1), 0, MAX_AT_TABLE);
+        it.fixed = true;                 // a number set by hand is kept by Seat guests
+        render();
+      }
+    } else if (act === "cvm-" || act === "cvm+") {
+      const ts = selectedItems().filter((i) => i.k === "t");
+      if (ts.length) {
+        markEdit();
+        ts.forEach((t) => { t.covers = clamp(t.covers + (act === "cvm+" ? 1 : -1), 0, MAX_AT_TABLE);
+                            t.fixed = true; });
         render();
       }
     }
@@ -3302,7 +3380,17 @@
     if (!n.dataset || !n.dataset.act) return;
     const it = SEL.size === 1 ? byId(Array.from(SEL)[0]) : null;
     if (n.dataset.act === "covers" && it) {
-      markEdit(); it.covers = clamp(Math.round(+n.value || 0), 0, MAX_AT_TABLE); render();
+      markEdit(); it.covers = clamp(Math.round(+n.value || 0), 0, MAX_AT_TABLE);
+      it.fixed = true; render();
+    }
+    else if (n.dataset.act === "covers-multi" && n.value !== "") {
+      const ts = selectedItems().filter((i) => i.k === "t");
+      if (ts.length) {
+        markEdit();
+        const v = clamp(Math.round(+n.value || 0), 0, MAX_AT_TABLE);
+        ts.forEach((t) => { t.covers = v; t.fixed = true; });
+        render();
+      }
     }
     else if (n.dataset.act === "calx" || n.dataset.act === "caly") {
       const c = S.setup.cam.corners[+n.dataset.i];
@@ -3335,6 +3423,14 @@
     const n = e.target;
     if (!n.dataset || !n.dataset.act) return;
     if (n.dataset.act === "courses") { S.event.courses = +n.value; renderOps(); autosave(); }
+    else if (n.dataset.act === "fixed") {
+      const it = SEL.size === 1 ? byId(Array.from(SEL)[0]) : null;
+      if (it && it.k === "t") {
+        mark();
+        if (n.checked) it.fixed = true; else delete it.fixed;
+        render();
+      }
+    }
     else if (n.dataset.act === "rev") {
       const r = review[+n.dataset.i]; if (r) r.keep = n.checked;
     }
@@ -3360,7 +3456,15 @@
     const b = e.target.closest("[data-seat]");
     if (!b || b.disabled) return;
     $("seatMenu").hidden = true;
-    if (b.dataset.seat === "spread") spreadGuests(); else planForGuests();
+    if (b.dataset.seat === "spread") spreadGuests();
+    else if (b.dataset.seat === "unfix") {
+      mark();
+      const n = tables().filter((t) => t.fixed).length;
+      tables().forEach((t) => { delete t.fixed; });
+      selSig = null; render();
+      toast("Cleared " + n + " fixed number" + (n > 1 ? "s" : ""), "Undo", undo);
+    }
+    else planForGuests();
   });
   document.addEventListener("pointerdown", function (e) {
     if (!$("seatMenu").hidden && !e.target.closest(".seat")) $("seatMenu").hidden = true;
