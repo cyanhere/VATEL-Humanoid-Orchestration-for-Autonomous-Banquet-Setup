@@ -337,9 +337,23 @@ sl-divider {
   align-items: start;
 }
 
+/* the step illustrations: above the list on narrow screens, where they play through on
+   their own, and beside it on wide ones, where they follow the step being read */
+.how-visual {
+  order: -1;
+  width: 100%;
+  max-width: 560px;
+}
+
 @media (min-width: 1100px) {
   .how-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
+  }
+
+  .how-visual {
+    order: 0;
+    position: sticky;
+    top: 96px;          /* clear of the sticky top bar */
   }
 
   .how-grid .diagram-panel {

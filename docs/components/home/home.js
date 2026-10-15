@@ -30,7 +30,7 @@
 
   /* ---------------------------------------------------------------- reveal */
   if (!still) {
-    const pieces = [".section .eyebrow", ".section h2", ".lead", ".steps li", ".diagram-panel",
+    const pieces = [".section .eyebrow", ".section h2", ".lead", ".steps li", ".how-visual",
                     ".stat", ".spec", ".report-card"].join(",");
     const items = Array.from(document.querySelectorAll(pieces));
     items.forEach((el) => {
@@ -50,7 +50,8 @@
   }
 
   /* ---------------------------------------------------- steps <-> figure */
-  const figure = document.querySelector("pipeline-diagram[interactive]");
+  // The figure beside the steps: the step illustrations, or the interactive diagram.
+  const figure = document.querySelector("pipeline-scenes, pipeline-diagram[interactive]");
   const steps = Array.from(document.querySelectorAll(".steps li"));
   let pointed = null, reading = null;
 
@@ -71,6 +72,22 @@
     light();
   }, { rootMargin: "-40% 0px -55% 0px" });
   steps.forEach((li) => readSpy.observe(li));
+
+  // Beside the steps (wide screens) the illustrations follow the reading; above them (narrow
+  // screens) they play through on their own. Pressing a step's dot on a wide screen scrolls
+  // to that step.
+  if (figure && figure.localName === "pipeline-scenes") {
+    const wide = window.matchMedia("(min-width: 1100px)");
+    customElements.whenDefined("pipeline-scenes").then(() => {
+      const mode = () => figure.autoplay(!wide.matches);
+      mode();
+      wide.addEventListener("change", mode);
+    });
+    figure.addEventListener("step-select", (e) => {
+      if (!wide.matches) return;
+      steps[e.detail - 1].scrollIntoView({ behavior: still ? "auto" : "smooth", block: "center" });
+    });
+  }
 
   /* --------------------------------------------------- success criteria */
   const stats = document.querySelector(".stats");
