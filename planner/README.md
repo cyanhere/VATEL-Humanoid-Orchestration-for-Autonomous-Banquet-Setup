@@ -275,8 +275,32 @@ Whatever the model, take the **mask outline** and send it as `outline_px`. A bou
 throws away the shape the planner needs, and a centre carries the projective bias.
 
 `detect_tables.py` (Hough circles) is a placeholder that fixes the JSON format, and what
-`cctv_bridge.py --source ...` uses until a model replaces `detect_frame()`. It will find
-chair backs and ceiling lights on a real ceiling view. **Do not ship it.**
+`cctv_bridge.py --source ...` still uses. It will find chair backs and ceiling lights on a
+real ceiling view. **Do not ship it** — use `--venue` (below) on real cameras.
+
+### Real CCTV: several cameras, mapped to metres before the planner sees them
+
+Four clicked corners are a homography: right for one pinhole camera over a flat floor,
+wrong for wall-mounted CCTV with ~80° lenses that bend straight lines, tables whose tops
+stand 0.75 m off the floor, and rooms that need two cameras. For those the bridge does the
+mapping itself and sends **metres**:
+
+```bash
+python cctv_bridge.py --venue venue.json --room "Ballroom"
+```
+
+| File | Does |
+|---|---|
+| `cctv_segment.py` | Clean plate (per-pixel median of the last minute, so staff walking through vanish), then Grounding DINO + SAM from a text prompt. No training data. |
+| `cctv_camera.py` | One camera as geometry: focal length, lens distortion and pose, solved once from a few landmarks with known plan positions (column edges, a wall's foot, a counter edge), plus two things any room has: **plumb edges** (door frames, columns — found automatically) and **tabletops being rectangles**. The overlay draws the plan back onto the frame to check it. |
+| `cctv_map.py` | Masks → tables in metres. A table is fitted to the *far* edge of its mask as seen from the point under the camera: legs, skirts and chairs only ever smear toward the camera, so that edge is always the top's. Then: drop what is outside the room or is listed fixed furniture, merge one camera's pieces of one table, keep the better of two cameras' views, and convert to the room's frame. |
+| venue file | Rooms (position, size, wall direction), which cameras watch which room, prompts, fixed furniture to ignore. A new hall is a new file, not new code. |
+
+The planner then needs no calibration: it takes the room's size and name from the camera,
+snaps each table to the nearest stock item, and keeps the measured size for anything the
+stock does not have. `python cctv_map.py venue.json --review out/` writes the same result
+as pictures (each camera with its tables drawn back in, and the room from above) for
+checking a new installation.
 
 ### Choosing the model without waiting for the hardware
 

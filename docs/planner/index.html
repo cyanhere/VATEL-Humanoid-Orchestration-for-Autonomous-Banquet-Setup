@@ -939,7 +939,8 @@
 
   function room() {
     const r = ROOMS.find((x) => x.id === S.roomId) || ROOMS[0];
-    return r.id === "custom" ? { id: "custom", name: r.name, w: S.custom.w, h: S.custom.h } : r;
+    return r.id === "custom" ? { id: "custom", name: S.custom.name || r.name, w: S.custom.w,
+                                 h: S.custom.h, floor: S.custom.floor || null } : r;
   }
   const tables = () => S.items.filter((i) => i.k === "t");
   const fixtures = () => S.items.filter((i) => i.k === "f");
@@ -947,18 +948,33 @@
   const $ = (id) => document.getElementById(id);
   const fmt = (n, d) => Number(n).toFixed(d === undefined ? 2 : d);
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  const specOf = (t) => STOCK.find((s) => s.key === t.stock);
+  // A table the hall camera measured that matches nothing in the stock carries its own
+  // size (t.dims) and is described from it, so everything downstream treats it alike.
+  const specOf = (t) => t.dims ? dimsSpec(t.dims) : STOCK.find((s) => s.key === t.stock);
+  function dimsSpec(d) {
+    if (d.d) return { key: "seen", label: "Seen, " + fmt(d.d, 1) + " m round", shape: "round",
+                      d: d.d, covers: Math.max(2, Math.floor((Math.PI * d.d) / 0.6)) };
+    const both = d.h >= 0.75;           // deep enough to seat both long sides, as an oblong
+    return { key: "seen", label: "Seen, " + fmt(d.w, 1) + " x " + fmt(d.h, 1) + " m",
+             shape: "rect", w: d.w, h: d.h, sides: both ? "both" : "one",
+             covers: Math.max(1, Math.floor(d.w / 0.6)) * (both ? 2 : 1) };
+  }
   const tagOf = (t) => t.k === "t" ? "T" + String(t.num).padStart(2, "0")
                                    : fixSpec(t.type).label;
 
-  function makeTable(stockKey, x, y) {
-    const s = STOCK.find((t) => t.key === stockKey);
-    return { k: "t", id: S.nextId++, num: nextNum(), stock: s.key,
-             x: x, y: y, rot: 0, covers: s.covers, sides: s.sides || null };
+  function makeTable(stockKey, x, y, dims) {
+    const s = dims ? dimsSpec(dims) : STOCK.find((t) => t.key === stockKey);
+    const t = { k: "t", id: S.nextId++, num: nextNum(), stock: s.key,
+                x: x, y: y, rot: 0, covers: s.covers, sides: s.sides || null };
+    if (dims) t.dims = dims;
+    return t;
   }
   function makeFixture(type, x, y) {
     const f = fixSpec(type);
-    return { k: "f", id: S.nextId++, type: type, x: x, y: y, w: f.w, h: f.h, rot: 0 };
+    const it = { k: "f", id: S.nextId++, type: type, x: x, y: y, w: f.w, h: f.h, rot: 0 };
+    // laid in a room a hall camera named: it belongs to that room (see goLive)
+    if (S.roomId === "custom" && S.custom.name) it.room = S.custom.name;
+    return it;
   }
   function nextNum() {
     const used = tables().map((t) => t.num);
@@ -1431,10 +1447,24 @@
 
     if (UI.clearance) drawClearance(frag);
 
-    // the walls
-    el("rect", { x: 0, y: 0, width: R.w, height: R.h, fill: "none", stroke: "var(--ink)",
-      "stroke-width": 2.4, "vector-effect": "non-scaling-stroke",
-      "pointer-events": "none" }, frag);
+    // the walls: the room's own outline where the camera knows it (a room need not be a
+    // rectangle -- this one has diagonal walls), with the rest of the box greyed out as
+    // not floor; otherwise the box itself
+    if (R.floor && R.floor.length >= 3) {
+      const pts = R.floor.map((q) => q[0] + " " + q[1]).join(" L");
+      el("path", { d: "M0 0H" + R.w + "V" + R.h + "H0Z M" + pts + "Z", "fill-rule": "evenodd",
+        fill: "var(--ink)", "fill-opacity": .07, "pointer-events": "none" }, frag);
+      el("rect", { x: 0, y: 0, width: R.w, height: R.h, fill: "none", stroke: "var(--ink-faint)",
+        "stroke-width": 1, "stroke-dasharray": "4 4", "vector-effect": "non-scaling-stroke",
+        "pointer-events": "none" }, frag);
+      el("path", { d: "M" + pts + "Z", fill: "none", stroke: "var(--ink)", "stroke-width": 2.4,
+        "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke",
+        "pointer-events": "none" }, frag);
+    } else {
+      el("rect", { x: 0, y: 0, width: R.w, height: R.h, fill: "none", stroke: "var(--ink)",
+        "stroke-width": 2.4, "vector-effect": "non-scaling-stroke",
+        "pointer-events": "none" }, frag);
+    }
 
     // the traced structure, built once and kept
     const struct = fixtures().filter(isStruct);
@@ -1447,7 +1477,37 @@
       frag.appendChild(STRUCT_LAYER);
     }
     fixtures().forEach((f) => { if (!isStruct(f)) drawFixture(frag, f); });
+    // The floor each hall camera sees, under the tables: which way the picture faces,
+    // and so which tables on the plan it can vouch for.
+    const camOn = LIVE.on && LIVE.cameras.length;
+    if (camOn) {
+      const vg = el("g", { "pointer-events": "none" }, frag);
+      LIVE.cameras.forEach((c) => {
+        if (!c.view_m || c.view_m.length < 3) return;
+        el("polygon", { points: c.view_m.map((q) => q[0] + "," + q[1]).join(" "),
+          fill: "var(--accent)", "fill-opacity": .06, stroke: "var(--accent)",
+          "stroke-width": 1, "stroke-dasharray": "5 4", "stroke-opacity": .6,
+          "vector-effect": "non-scaling-stroke" }, vg);
+      });
+    }
     tables().forEach((t) => drawTable(frag, t));
+    if (camOn) {
+      // the camera itself: where it hangs, a fan the width of its view, and its name
+      const cg = el("g", { "pointer-events": "none" }, frag);
+      LIVE.cameras.forEach((c) => {
+        const x = c.at_m[0], y = c.at_m[1], r = 1.4;
+        const a = (c.heading_deg * Math.PI) / 180, h = ((c.hfov_deg || 80) * Math.PI) / 360;
+        const p1 = [x + r * Math.cos(a - h), y + r * Math.sin(a - h)];
+        const p2 = [x + r * Math.cos(a + h), y + r * Math.sin(a + h)];
+        el("path", { d: "M" + x + " " + y + "L" + p1[0] + " " + p1[1] + "A" + r + " " + r +
+          " 0 0 1 " + p2[0] + " " + p2[1] + "Z", fill: "var(--accent)", "fill-opacity": .28,
+          stroke: "var(--accent)", "stroke-width": 1.5, "vector-effect": "non-scaling-stroke" }, cg);
+        el("circle", { cx: x, cy: y, r: 0.2, fill: "var(--accent)" }, cg);
+        txt(cg, x, y - 0.38, (c.label || c.name) + (c.height_m ? " · " + fmt(c.height_m, 1) + " m up" : ""),
+            { fill: "var(--accent)", "font-size": 0.36, "font-family": "Inter, sans-serif",
+              "font-weight": 600 });
+      });
+    }
 
     // dimensions, and the origin the export is measured from
     const dimCol = { fill: "var(--ink-faint)", "font-size": 0.44 };
@@ -2774,10 +2834,16 @@
     const sx = cal.size && fw ? cal.size.w / fw : 1, sy = cal.size && fh ? cal.size.h / fh : 1;
     const R = room();
     const rounds = STOCK.filter((s) => s.shape === "round");
+    const rects = STOCK.filter((s) => s.shape === "rect");
+    const r05 = (v) => Math.round(v / 0.05) * 0.05;
     return list.map(function (d, i) {
-      let x, y, dia, how = "centre";
+      let x, y, dia, how = "centre", box = null;
       if (metres) {
         x = d.centre_m[0]; y = d.centre_m[1]; dia = d.diameter_m; how = "metres";
+        if (d.shape === "rect" && d.size_m)
+          box = { w: Math.max(d.size_m[0], d.size_m[1]), h: Math.min(d.size_m[0], d.size_m[1]),
+                  rot: d.size_m[0] >= d.size_m[1] ? (d.rotation_deg || 0)
+                                                  : (d.rotation_deg || 0) + 90 };
       } else {
         const ring = d.outline_px && d.outline_px.length >= 8
           ? circleFit(d.outline_px.map(function (p) {
@@ -2797,14 +2863,34 @@
           dia = d.diameter_px * sx * pixScaleAt(h, u, v) * parallaxK();
         }
       }
-      // Nearest thing in the hall's own stock -- the camera measures a diameter,
-      // the floor only has six tables.
-      const best = rounds.reduce((a, s) =>
-        Math.abs(s.d - dia) < Math.abs(a.d - dia) ? s : a, rounds[0]);
+      // Nearest thing in the hall's own stock -- the camera measures a size, the floor
+      // only has six kinds of table. A camera sending metres may also see tables the
+      // stock does not have (a training room's desks): those keep the size it measured.
+      let best, dims = null, rot = 0;
+      if (box) {
+        rot = ((box.rot % 180) + 180) % 180;
+        best = rects.reduce((a, s) => (Math.abs(s.w - box.w) + Math.abs(s.h - box.h) <
+                                       Math.abs(a.w - box.w) + Math.abs(a.h - box.h) ? s : a), rects[0]);
+        if (Math.abs(best.w - box.w) > 0.15 * best.w || Math.abs(best.h - box.h) > 0.2 * best.h) {
+          dims = { w: r05(box.w), h: Math.max(0.3, r05(box.h)) };
+          best = dimsSpec(dims);
+        }
+        dia = box.w;
+      } else {
+        best = rounds.reduce((a, s) =>
+          Math.abs(s.d - dia) < Math.abs(a.d - dia) ? s : a, rounds[0]);
+        if (metres && Math.abs(best.d - dia) > 0.15 * best.d) {
+          dims = { d: r05(dia) };
+          best = dimsSpec(dims);
+        }
+      }
       const inside = isFinite(x) && isFinite(y) && isFinite(dia) &&
                      x > 0 && y > 0 && x < R.w && y < R.h;
-      return { i: i, id: d.id || "d" + (i + 1), x: x, y: y, dia: dia, stock: best,
-               conf: d.confidence, inside: inside, how: how };
+      return { i: i, id: d.id || "d" + (i + 1), x: x, y: y, dia: dia, stock: best, dims: dims,
+               rot: rot, conf: d.confidence, inside: inside, how: how,
+               // a bridge sending metres has already judged what is a table (size, room,
+               // fixed furniture); its score is the detector's, not a probability
+               vetted: metres };
     });
   }
 
@@ -2837,7 +2923,7 @@
     review = mapped.map(function (r) {
       const near = tables().find((t) => Math.hypot(t.x - r.x, t.y - r.y) < 0.8);
       return Object.assign(r, { near: near,
-        keep: r.inside && !near && (r.conf === undefined || r.conf >= 0.5) });
+        keep: r.inside && !near && (r.vetted || r.conf === undefined || r.conf >= 0.5) });
     });
 
     $("reviewBody").innerHTML =
@@ -2867,7 +2953,8 @@
     const made = [];
     keep.forEach(function (r) {
       const t = makeTable(r.stock.key, clamp(r.x, 0.5, room().w - 0.5),
-                                       clamp(r.y, 0.5, room().h - 0.5));
+                                       clamp(r.y, 0.5, room().h - 0.5), r.dims);
+      t.rot = r.rot || 0;
       S.items.push(t); made.push(t.id);
     });
     renumber();
@@ -3006,7 +3093,7 @@
      one appears, and dropped after three updates without it, so one missed frame does not
      make a table blink. Guests set on a table stay with it through all of that.        */
   const LIVE = { on: false, timer: null, seq: null, at: 0, n: 0, err: "", miss: new Map(),
-                 size: new Map(),
+                 size: new Map(), metres: false, cameras: [],
                  status: null, thumb: true, warnedDrag: false, busy: false };
   const camBase = () => (S.setup.camUrl || "").trim().replace(/\/+$/, "");
   const robotBase = () => (S.setup.robotUrl || "").trim().replace(/\/+$/, "");
@@ -3027,13 +3114,42 @@
   function goLive() {
     if (!camBase()) { openSettings("cam"); toast("Add the hall camera's address first"); return; }
     fetchJSON(camBase() + "/detections").then(function (doc) {
+      LIVE.metres = doc.units === "metres";
       if (doc.units !== "metres" && !calibrated()) {
         toast("Calibrate the camera once first", "Calibrate", calibrateLive);
         return;
       }
       mark();                       // one undo step: back to before the camera took over
+      // A camera that maps its own tables knows which room it watches and how big it is:
+      // the plan takes that room, or every table would land against the wrong walls.
+      const cr = doc.room, R0 = room();
+      const sameWalls = JSON.stringify(R0.floor || null) === JSON.stringify(cr && cr.floor_m || null);
+      const news = [];
+      if (cr && cr.w > 0 && cr.h > 0) {
+        const moved = Math.abs(R0.w - cr.w) > 0.05 || Math.abs(R0.h - cr.h) > 0.05 || !sameWalls ||
+                      (S.roomId === "custom" && (S.custom.name || "") !== (cr.name || ""));
+        if (moved) {
+          S.roomId = "custom";
+          S.custom = { w: +cr.w, h: +cr.h, name: cr.name || "" };
+          if (cr.floor_m && cr.floor_m.length >= 3) S.custom.floor = cr.floor_m;
+          if ($("room")) $("room").value = "custom";
+          news.push("room set to " + (cr.name || "the camera's room"));
+        }
+        // Fixtures belong to the room they were laid in. The starter set (a stage, a dance
+        // floor, a door drawn for a ballroom) and anything from another room do not belong
+        // in the one this camera watches, and would sit across its walls. A traced map's
+        // structure stays while the room does.
+        const before = fixtures().length;
+        S.items = S.items.filter((i) => i.k !== "f" || (cr.name && i.room === cr.name) ||
+                                        (!moved && isStruct(i)));
+        const gone = before - fixtures().length;
+        if (gone) {
+          touchStructure();
+          news.push("cleared " + gone + " fixture" + (gone > 1 ? "s" : "") + " from the old plan");
+        }
+      }
       // The camera is the truth about what stands in the hall, so tables laid by hand
-      // make way for what it sees. Fixtures stay; a table added by hand while live stays.
+      // make way for what it sees. A table added by hand while live stays.
       const hand = tables().filter((t) => t.src !== "cam").length;
       S.items = S.items.filter((i) => !(i.k === "t" && i.src !== "cam"));
       SEL.clear(); selSig = null;
@@ -3042,9 +3158,9 @@
       clearInterval(LIVE.timer);
       LIVE.timer = setInterval(pollLive, 1500);
       render();
-      toast("Live: the tables follow the hall camera" +
-            (hand ? " (replaced the " + hand + " laid by hand)" : ""), hand ? "Undo" : null,
-            hand ? function () { pauseLive(); undo(); } : null);
+      if (hand) news.push("replaced the " + hand + " tables laid by hand");
+      toast("Live: the tables follow the hall camera" + (news.length ? " (" + news.join(", ") + ")" : ""),
+            news.length ? "Undo" : null, news.length ? function () { pauseLive(); undo(); } : null);
     }, function () {
       LIVE.err = "not answering";
       renderLive();
@@ -3071,9 +3187,13 @@
     LIVE.at = Date.now();
     if (doc.seq !== undefined && doc.seq === LIVE.seq) { renderLive(); return; }
     LIVE.seq = doc.seq;
+    const views = (doc.units === "metres" && doc.cameras) || [];
+    const camsMoved = JSON.stringify(views) !== JSON.stringify(LIVE.cameras);
+    LIVE.cameras = views;
     const mapped = mapDetections(doc);
     if (!mapped) { pauseLive("The camera lost its calibration. Calibrate it again in Settings."); return; }
-    const found = mapped.filter((r) => r.inside && (r.conf === undefined || r.conf >= 0.5));
+    const found = mapped.filter((r) => r.inside &&
+                                       (r.vetted || r.conf === undefined || r.conf >= 0.5));
     LIVE.n = found.length;
     const R = room();
     const cams = tables().filter((t) => t.src === "cam");
@@ -3097,15 +3217,23 @@
       used.add(p[1]); taken.add(t.id); LIVE.miss.delete(t.id);
       // a deadband, so a few centimetres of detector jitter do not shuffle the plan
       if (p[0] > 0.05) { place(t, r); changed = true; }
-      // A size changes only after three frames in a row agree on another stock: a far
+      if (r.stock.shape === "rect") {
+        const dr = Math.abs((((r.rot - t.rot) % 180) + 270) % 180 - 90);
+        if (dr > 3) { t.rot = r.rot; place(t, r); changed = true; }
+      }
+      // A size changes only after three frames in a row agree on another one: a far
       // table is a few dozen pixels across, and one noisy rim can read it a size up.
-      if (r.stock.key !== t.stock) {
+      const want = r.dims ? JSON.stringify(r.dims) : r.stock.key;
+      const have = t.dims ? JSON.stringify(t.dims) : t.stock;
+      if (want !== have) {
         const run = LIVE.size.get(t.id);
-        const n = run && run.key === r.stock.key ? run.n + 1 : 1;
-        LIVE.size.set(t.id, { key: r.stock.key, n: n });
+        const n = run && run.key === want ? run.n + 1 : 1;
+        LIVE.size.set(t.id, { key: want, n: n });
         if (n >= 3) {
           const was = specOf(t);
           t.stock = r.stock.key;
+          if (r.dims) t.dims = r.dims; else delete t.dims;
+          t.sides = r.stock.sides || null;
           if (!t.fixed && t.covers === was.covers) t.covers = r.stock.covers;   // unless someone set it
           LIVE.size.delete(t.id); place(t, r); changed = true;
         }
@@ -3115,7 +3243,8 @@
       if (used.has(i)) return;
       // a table somebody placed by hand already stands here: leave it to them
       if (tables().some((t) => t.src !== "cam" && Math.hypot(t.x - r.x, t.y - r.y) < 1.0)) return;
-      const t = makeTable(r.stock.key, r.x, r.y);
+      const t = makeTable(r.stock.key, r.x, r.y, r.dims);
+      t.rot = r.rot || 0;
       t.src = "cam"; place(t, r);
       S.items.push(t); changed = true;
     });
@@ -3128,7 +3257,7 @@
       } else LIVE.miss.set(t.id, m);
     });
     if (LIVE.thumb) $("camThumbImg").src = camBase() + "/frame.jpg?seq=" + encodeURIComponent(doc.seq);
-    if (changed) render(); else renderLive();
+    if (changed || camsMoved) render(); else renderLive();
   }
   function renderLive() {
     $("livePill").classList.toggle("on", LIVE.on);
@@ -3150,11 +3279,12 @@
       go.textContent = "Pause"; go.className = ""; show.hidden = false;
       show.textContent = LIVE.thumb ? "Hide camera view" : "Show camera view";
     } else {
-      $("liveState").textContent = calibrated() ? "ready" : "not calibrated";
-      $("liveHint").textContent = calibrated()
+      const ready = calibrated() || LIVE.metres;
+      $("liveState").textContent = ready ? "ready" : "not calibrated";
+      $("liveHint").textContent = ready
         ? "Go live to place every table the hall camera can see, where it stands."
         : "The camera needs calibrating once: four floor points it can see. In Settings.";
-      go.textContent = calibrated() ? "Go live" : "Calibrate";
+      go.textContent = ready ? "Go live" : "Calibrate";
       go.className = "primary"; show.hidden = true;
     }
   }
@@ -3191,7 +3321,8 @@
      back to downloading the files, so the plan is never stuck in the browser.          */
   const ROBOT = { sentSig: null, sentAt: 0, state: "", err: "", busy: false };
   const planSig = () => JSON.stringify([S.roomId, S.setup.map, S.items.map((i) =>
-    [i.id, i.k, +i.x.toFixed(2), +i.y.toFixed(2), i.rot, i.covers, i.stock, i.type, i.w, i.h])]);
+    [i.id, i.k, +i.x.toFixed(2), +i.y.toFixed(2), i.rot, i.covers, i.stock, i.type, i.w, i.h,
+     i.dims ? [i.dims.w, i.dims.h, i.dims.d] : null])]);
   function b64(bytes) {
     let out = "";
     for (let i = 0; i < bytes.length; i += 0x8000)
@@ -3409,6 +3540,7 @@
     else if (n.dataset.act === "roomw" || n.dataset.act === "roomh") {
       markEdit();
       S.custom[n.dataset.act === "roomw" ? "w" : "h"] = clamp(+n.value || 1, 1, 60);
+      delete S.custom.floor;
       const R = room();
       S.items.forEach(function (it2) {
         const e = halfExtent(it2);
@@ -3752,7 +3884,7 @@
   $("camTest").addEventListener("click", function () {
     if (!camBase()) { toast("Type the camera service's address first"); return; }
     fetchJSON(camBase() + "/status").then(function (st) {
-      LIVE.status = st;
+      LIVE.status = st; LIVE.metres = st.units === "metres"; renderLive();
       toast("Camera answering: " + (st.source || "?") + ", " + (st.tables_seen || 0) + " tables in view");
     }, function () { toast("No answer from " + camBase()); });
   });
@@ -3760,7 +3892,13 @@
   $("liveGo").addEventListener("click", function () {
     if (!camBase()) { openSettings("cam"); return; }
     if (LIVE.on) { pauseLive("Paused. The tables stay where they are."); return; }
-    if (!calibrated()) { calibrateLive(); return; }
+    if (!calibrated() && !LIVE.metres) {
+      // a camera that sends metres needs no corners clicked: ask it which kind it is
+      fetchJSON(camBase() + "/detections").then(function (doc) {
+        if (doc.units === "metres") { LIVE.metres = true; goLive(); } else calibrateLive();
+      }, function () { calibrateLive(); });
+      return;
+    }
     goLive();
   });
   $("liveShow").addEventListener("click", function () { LIVE.thumb = !LIVE.thumb; renderLive(); });

@@ -5,6 +5,8 @@ The hall camera's side of VATEL: grab CCTV frames, find the tables, serve them t
     python cctv_bridge.py --source rtsp://user:pw@10.0.0.20/stream1
     python cctv_bridge.py --source 0                      # a USB camera
     python cctv_bridge.py --source hall.mp4               # a recording, looped
+    python cctv_bridge.py --venue venue.json --room "Ballroom"   # every camera on a room,
+                                                          # tables found and mapped here
 
 Then open the planner at http://localhost:8765/ -- this serves it too, so the page and the
 camera share an origin -- and in Settings, "Calibrate on the live view" once; close
@@ -23,6 +25,15 @@ WHERE THE MAPPING HAPPENS
     onto the floor through four points clicked once on the live view, then corrects for
     the 0.762 m the tabletop stands above that floor. So the camera can be mounted in a
     corner, re-aimed, or swapped without touching this file.
+
+A ROOM'S CAMERAS (--venue / --room)
+    With a venue file (see cctv_map.py) the bridge watches every camera on one room, keeps
+    a people-free clean plate of each, segments it with Grounded-SAM every --every seconds
+    (15 by default: tables move a few times an hour, and a frame costs a GPU a few
+    seconds), puts each table on the floor through that camera's solved model, merges what
+    two cameras both see, and serves banquet-detections/0.2 in the ROOM's metres, with the
+    room's name and size. The planner needs no clicked corners for that: it takes the room
+    and the tables as they are. /frame.jpg is then the room's cameras side by side.
 
 THE DETECTOR
     --demo knows exactly where its tables are, so it reports them (rims projected from
@@ -300,20 +311,26 @@ class Capture:
             sys.exit("cannot open camera source %r" % (source,))
         self.lock = threading.Lock()
         self.frame = None
+        self.file = isinstance(self.source, str) and not self.source.startswith(("rtsp", "http"))
+        fps = self.cap.get(cv2.CAP_PROP_FPS) if self.file else 0
+        self.period = 1.0 / fps if fps and fps > 1 else 0.0
         threading.Thread(target=self._pump, daemon=True).start()
 
     def _pump(self):
         # Read continuously: an RTSP stream buffers, and detecting on a frame from ten
         # seconds ago is worse than detecting less often.
         while True:
+            t0 = time.time()
             ok, f = self.cap.read()
             if not ok:
-                if isinstance(self.source, str) and not self.source.startswith(("rtsp", "http")):
+                if self.file:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)      # a file: loop it
                 time.sleep(0.05)
                 continue
             with self.lock:
                 self.frame = f
+            if self.period:                                      # a file: play it in real time
+                time.sleep(max(0.0, self.period - (time.time() - t0)))
 
     def read(self):
         with self.lock:
@@ -367,6 +384,91 @@ def run_worker(state, args, hall, cap):
         time.sleep(max(0.0, args.every - (time.time() - t0)))
 
 
+def run_room_worker(state, args):
+    """Every camera on one room -> one list of tables in that room's metres."""
+    import cctv_map as cm
+    import cctv_segment as cs
+    venue = cm.load_venue(args.venue)
+    rooms = [r for r in venue["rooms"] if r["name"] == args.room]
+    if not rooms:
+        sys.exit("no room %r in %s (it has: %s)" % (args.room, args.venue,
+                 ", ".join(r["name"] for r in venue["rooms"])))
+    room = cm.Room(rooms[0])
+    names = room.cameras or list(venue["_cams"])
+    caps, plates = {}, {}
+    for n in names:
+        src = cm.camera_source(venue["_cams"][n])
+        if not src:
+            sys.exit("camera %s has neither a stream nor a video in its config" % n)
+        caps[n] = Capture(src)
+        plates[n] = cs.CleanPlate(keep=31, every=2.0)
+    print("loading the segmentation models ...", flush=True)
+    seg = cs.Segmenter(classes=venue.get("prompts"))
+    print("watching %s with %s" % (room.name, ", ".join(names)), flush=True)
+    cam_views = [cm.camera_view(venue["_cams"][n], room) for n in names]
+    last = 0.0
+    used = {}                # camera -> (thumbnail of the plate last segmented, its masks)
+
+    def thumb(img):
+        g = cv2.cvtColor(cv2.resize(img, (320, 180), interpolation=cv2.INTER_AREA),
+                         cv2.COLOR_BGR2GRAY)
+        return cv2.GaussianBlur(g, (5, 5), 0).astype(np.int16)
+
+    while True:
+        for n in names:
+            f = caps[n].read()
+            if f is not None:
+                plates[n].offer(f)
+        # the first look as soon as every camera has a few samples, then every --every s
+        ready = all(len(plates[n].frames) >= 3 for n in names)
+        if not ready or time.time() - last < args.every:
+            time.sleep(0.2)
+            continue
+        last = time.time()
+        # Segment a camera again only when its clean plate has changed: an empty room's
+        # plate drifts by a few grey levels a minute, and re-asking the detector about the
+        # same room gives a slightly different answer each time -- tables that blink on the
+        # plan for no reason. Measured on the hub: a still plate drifts ~0.01 %; one small far
+        # table moved by its width changes ~0.1 %. The line sits between.
+        per, imgs, fresh = {}, {}, False
+        for n in names:
+            imgs[n] = plates[n].image()
+            th = thumb(imgs[n])
+            if n in used and np.mean(np.abs(th - used[n][0]) > 15) < 0.0003:
+                per[n] = used[n][1]
+                continue
+            per[n] = seg.segment(imgs[n])
+            used[n] = (th, per[n])
+            fresh = True
+        if not fresh:
+            # Same room, same answer -- but still a new update: the planner drops a table
+            # after three updates without it, and that clock must keep ticking.
+            with state.lock:
+                if state.seq:
+                    state.seq += 1
+                    state.doc = dict(state.doc, seq=state.seq, captured_at=datetime.datetime.now()
+                                     .astimezone().isoformat(timespec="seconds"))
+            continue
+        tables, rejected = cm.map_room(room, venue, per)
+        views = []
+        for n in names:
+            cfg = venue["_cams"][n]
+            th = cfg["solved"].get("table_h_m", venue.get("table_height_m", 0.75))
+            mine = [t for t in tables if n in t.get("cameras", [t.get("camera")])]
+            v = cm.draw_on_frame(imgs[n], cfg, per[n], mine, th)
+            views.append(cv2.resize(v, (960, int(round(v.shape[0] * 960 / v.shape[1])))))
+        h = max(v.shape[0] for v in views)
+        mosaic = np.hstack([cv2.copyMakeBorder(v, 0, h - v.shape[0], 0, 0, cv2.BORDER_CONSTANT)
+                            for v in views])
+        ok, jpg = cv2.imencode(".jpg", mosaic, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        with state.lock:
+            state.seq += 1
+            state.jpg = jpg.tobytes() if ok else state.jpg
+            state.doc = cm.room_doc(room, tables, cam_views, source=args.name, seq=state.seq)
+        print("%s  %s: %d tables (%.0f s)"
+              % (time.strftime("%H:%M:%S"), room.name, len(tables), time.time() - last), flush=True)
+
+
 def make_handler(state, hall, args):
     class Handler(BaseHTTPRequestHandler):
         def _head(self, code, ctype, n):
@@ -408,6 +510,7 @@ def make_handler(state, hall, args):
                 self.wfile.write(page)
             elif path == "/status":
                 st = {"service": "vatel-cctv-bridge", "source": args.name, "seq": doc["seq"],
+                      "units": doc.get("units", "pixels"), "room": doc.get("room"),
                       "frame": doc.get("frame"), "tables_seen": len(doc["tables"]),
                       "detector": "simulated hall (exact)" if hall else args.detector,
                       "calibration": hall.calibration() if hall else None}
@@ -430,16 +533,45 @@ def main(argv=None):
     ap.add_argument("--source", help="rtsp://..., a device index, or a video file")
     ap.add_argument("--demo", action="store_true", help="a simulated hall instead of a camera")
     ap.add_argument("--detector", default="hough", help="detector for a real source (default: hough)")
+    ap.add_argument("--venue", help="a venue file: watch every camera on --room, serve metres")
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--host", default="127.0.0.1", help="0.0.0.0 to serve other machines")
-    ap.add_argument("--every", type=float, default=1.0, help="seconds between detections")
+    ap.add_argument("--every", type=float, default=None,
+                    help="seconds between detections (default 1, or 15 with --venue)")
     ap.add_argument("--name", default=None, help="what to call this camera")
-    ap.add_argument("--room", nargs=2, type=float, default=(20.0, 21.0), metavar=("W", "H"),
-                    help="demo: room size in metres (default: the 20 x 21 m Grand Ballroom preset)")
+    ap.add_argument("--room", nargs="+", default=None, metavar="ROOM",
+                    help="with --venue: the room to watch, by name. demo: its size W H in metres "
+                         "(default: the 20 x 21 m Grand Ballroom preset)")
     ap.add_argument("--period", type=float, default=4.0, help="demo: seconds between tables arriving")
     ap.add_argument("--static", action="store_true", help="demo: a finished room that does not change")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args(argv)
+    args.room_name = " ".join(args.room) if args.venue and args.room else None
+    if not args.venue:
+        try:
+            args.room = tuple(float(v) for v in args.room) if args.room else (20.0, 21.0)
+        except ValueError:
+            ap.error("--room takes W H in metres for the demo (a room's name needs --venue)")
+        if len(args.room) != 2:
+            ap.error("--room takes W H in metres for the demo")
+    if args.venue:
+        if not args.room_name:
+            ap.error("--venue needs --room")
+        args.every = 15.0 if args.every is None else args.every
+        args.name = args.name or args.room_name
+        args.room = args.room_name
+        state = State()
+        state.doc["units"] = "metres"
+        threading.Thread(target=run_room_worker, args=(state, args), daemon=True).start()
+        srv = ThreadingHTTPServer((args.host, args.port), make_handler(state, None, args))
+        args.detector = "grounded-sam, " + args.room_name
+        print("VATEL camera bridge: %s -> http://%s:%d" % (args.name, args.host, args.port), flush=True)
+        try:
+            srv.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        return 0
+    args.every = 1.0 if args.every is None else args.every
     if not args.demo and args.source is None:
         ap.error("give --source, or --demo")
 
