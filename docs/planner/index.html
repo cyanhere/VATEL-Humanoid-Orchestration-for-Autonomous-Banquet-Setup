@@ -197,13 +197,29 @@
   .livepill i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
                 animation: pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 50% { opacity: .25; } }
-  .camthumb { position: absolute; left: 10px; top: 10px; width: 232px; z-index: 5;
-              background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
-              overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.14); }
-  .camthumb img { display: block; width: 100%; height: auto; background: #000; }
-  .camthumb .cap { display: flex; align-items: center; justify-content: space-between;
-                   gap: 6px; padding: 3px 4px 3px 8px; font-family: var(--sans);
-                   font-size: 10.5px; color: var(--ink-soft); }
+  /* The hall camera beside the plan: its picture, with what it segmented drawn on it. */
+  .planwrap.withcam { display: grid; grid-template-columns: minmax(300px, 44%) minmax(0, 1fr);
+                      align-items: start; }
+  .planwrap.withcam.camwide { grid-template-columns: minmax(300px, 64%) minmax(0, 1fr); }
+  @media (max-width: 1000px) { .planwrap.withcam, .planwrap.withcam.camwide { grid-template-columns: minmax(0, 1fr); } }
+  .camstage { cursor: zoom-in; }
+  .camwide .camstage { cursor: zoom-out; }
+  .campanel { display: flex; flex-direction: column; gap: 7px; padding: 10px 10px 12px;
+              background: var(--panel); border-right: 1px solid var(--rule-soft); min-width: 0; }
+  .campanel[hidden] { display: none; }
+  @media (max-width: 1000px) { .campanel { border-right: none; border-bottom: 1px solid var(--rule-soft); } }
+  .camhead { display: flex; align-items: center; gap: 8px; font-family: var(--sans);
+             font-size: 11.5px; color: var(--ink-soft); min-width: 0; }
+  .camhead b { font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--ink);
+               white-space: nowrap; }
+  .camhead .src { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .camhead .rec { width: 8px; height: 8px; border-radius: 50%; background: #E0453A; flex: none;
+                  animation: pulse 1.6s ease-in-out infinite; }
+  .camstage { background: #000; border-radius: 6px; overflow: hidden; line-height: 0; }
+  .camstage canvas { display: block; width: 100%; height: auto; }
+  .camfoot { display: flex; justify-content: space-between; gap: 10px; font-family: var(--sans);
+             font-size: 11.5px; color: var(--ink-soft); }
+  .camfoot b { color: var(--accent); font-weight: 600; }
   .plantools .sep { width: 1px; height: 16px; background: var(--rule-soft); margin: 0 5px; }
   .planwrap { position: relative; background: var(--bg); }
   svg.plan { display: block; width: 100%; height: clamp(340px, 74vh, 820px);
@@ -418,7 +434,7 @@
     .topbar, .panel, .plantools, .planfoot, .toasts, dialog, .noprint { display: none !important; }
     .cols { display: block; padding: 0; }
     .board { border: none; border-radius: 0; }
-    .planwrap { background: #fff; }
+    .planwrap { background: #fff; display: block !important; }
     svg.plan { height: 148mm !important; width: 100%; }
     .sheet { display: block; margin-top: 7mm; font-size: 10px; color: #000;
              break-inside: avoid; }
@@ -509,16 +525,21 @@
         <button id="doDelete" class="ghost danger" title="Delete selection (Del)" disabled>Delete</button>
       </div>
 
-      <div class="planwrap">
+      <div class="planwrap" id="planWrap">
+        <div class="campanel noprint" id="camThumb" hidden>
+          <div class="camhead"><i class="rec"></i><b>Hall camera</b>
+            <span class="src" id="camSrc"></span><span style="flex:1 1 auto"></span>
+            <button class="ghost on" id="camSeg" title="Show or hide what the camera segmented">Segmentation</button>
+            <button class="ghost icon" id="camThumbHide" title="Hide the camera view" aria-label="Hide the camera view">
+              <svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </div>
+          <div class="camstage" id="camStage" title="Click to make the picture bigger or smaller"><canvas id="camCanvas" width="960" height="540"
+            aria-label="The hall camera's picture, with each table it segmented outlined"></canvas></div>
+          <div class="camfoot"><span id="camThumbCap">Hall camera</span><span id="camNote"></span></div>
+        </div>
         <svg class="plan" id="plan" role="application"
              aria-label="Floor plan. Click a table to select it, drag to move it."></svg>
         <div class="hovercard noprint" id="hoverCard" aria-hidden="true"></div>
-        <div class="camthumb noprint" id="camThumb" hidden>
-          <img id="camThumbImg" alt="Live view from the hall camera">
-          <div class="cap"><span id="camThumbCap">Hall camera</span>
-            <button class="ghost icon" id="camThumbHide" title="Hide the camera view" aria-label="Hide the camera view">
-              <svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-        </div>
       </div>
 
       <div class="planfoot noprint">
@@ -690,8 +711,9 @@
         <button id="camTest">Test</button>
         <button id="camLiveCal" class="primary">Calibrate on the live view</button>
       </div>
-      <p class="hint" style="margin:7px 0 9px">Four floor points the camera can see, clicked
-        on its picture, turn its pixels into metres on this plan. Or calibrate on a still:</p>
+      <p class="hint" style="margin:7px 0 9px">Leave the address blank and <b>Go live</b> plays the
+        built-in demo camera. Four floor points the camera can see, clicked on its picture, turn its
+        pixels into metres on this plan. Or calibrate on a still:</p>
       <div class="btn-row">
         <button id="camLoad">Load a still</button>
         <button id="camClearCal" class="ghost">Reset points</button>
@@ -1503,9 +1525,11 @@
           " 0 0 1 " + p2[0] + " " + p2[1] + "Z", fill: "var(--accent)", "fill-opacity": .28,
           stroke: "var(--accent)", "stroke-width": 1.5, "vector-effect": "non-scaling-stroke" }, cg);
         el("circle", { cx: x, cy: y, r: 0.2, fill: "var(--accent)" }, cg);
-        txt(cg, x, y - 0.38, (c.label || c.name) + (c.height_m ? " · " + fmt(c.height_m, 1) + " m up" : ""),
+        const R2 = room(), anchor = x < 3 ? "start" : x > R2.w - 3 ? "end" : "middle";
+        txt(cg, anchor === "start" ? x - 0.2 : anchor === "end" ? x + 0.2 : x, y - 0.38,
+            (c.label || c.name) + (c.height_m ? " · " + fmt(c.height_m, 1) + " m up" : ""),
             { fill: "var(--accent)", "font-size": 0.36, "font-family": "Inter, sans-serif",
-              "font-weight": 600 });
+              "font-weight": 600, "text-anchor": anchor });
       });
     }
 
@@ -1540,6 +1564,14 @@
         "vector-effect": "non-scaling-stroke" }, g);
       txt(g, mx, my - .17, fmt(d) + " m", { fill: "var(--accent)", "font-size": .36,
         "font-weight": 700 });
+      if (ruler.done) {
+        // its own close button, for a finger that has no Esc key
+        const x = el("g", { class: "ruler-x", style: "cursor:pointer", "pointer-events": "all" }, frag);
+        el("circle", { cx: mx + .78, cy: my - .29, r: .24, fill: "var(--accent)" }, x);
+        el("path", { d: "M" + (mx + .69) + " " + (my - .38) + "l.18 .18m0 -.18l-.18 .18",
+          stroke: "var(--on-accent)", "stroke-width": 2, "stroke-linecap": "round",
+          "vector-effect": "non-scaling-stroke", "pointer-events": "none" }, x);
+      }
     }
 
     if (STRUCT_LAYER && STRUCT_LAYER.parentNode === plan) plan.removeChild(STRUCT_LAYER);
@@ -1592,6 +1624,7 @@
   }
   function undo() {
     if (!HIST.past.length) return toast("Nothing left to undo");
+    if (LIVE.on && HIST.past.length <= LIVE.markDepth) pauseLive("Live paused: that undid going live");
     HIST.future.push(snap()); restore(HIST.past.pop());
   }
   function redo() {
@@ -1649,12 +1682,17 @@
       $("hoverCard").classList.remove("on");
       const p = screenToRoom(e);
 
+      // Measure: drag from one point to another, or click the two points. A finished
+      // measurement stays until the next tap on the plan, its own x, Esc, or Measure again.
+      if (e.target.closest && e.target.closest(".ruler-x")) { clearRuler(); return; }
       if (UI.ruler) {
-        if (!ruler || ruler.done) ruler = { a: p, b: p, done: false };
-        else { ruler.b = p; ruler.done = true; UI.ruler = false; }
+        if (!ruler || ruler.done) ruler = { a: p, b: p, done: false, down: true };
+        else { ruler.b = p; finishRuler(); }
+        try { plan.setPointerCapture(e.pointerId); } catch (_) {}
         render();
         return;
       }
+      if (ruler) { ruler = null; syncTools(); }
       if (e.button !== 0) return;
 
       const g = e.target.closest ? e.target.closest(".it") : null;
@@ -1714,6 +1752,11 @@
     });
 
     const stop = function (e) {
+      // a measure dragged out finishes when the finger lifts; a click waits for the second
+      if (ruler && !ruler.done && ruler.down) {
+        ruler.down = false;
+        if (Math.hypot(ruler.b.x - ruler.a.x, ruler.b.y - ruler.a.y) > 0.2) finishRuler();
+      }
       if (drag && !drag.moved && !marquee) { /* a plain click: selection already set */ }
       if (drag && drag.moved) HIST.future.length = 0;
       drag = null; marquee = null;
@@ -1786,7 +1829,9 @@
       if (it) parts.push(tagOf(it) + "  " + fmt(it.x) + ", " + fmt(it.y) + " m");
     } else if (SEL.size > 1) parts.push(SEL.size + " selected");
     if (lastCursor) parts.push("cursor " + fmt(lastCursor.x) + ", " + fmt(lastCursor.y) + " m");
-    if (UI.ruler) parts.push("click two points to measure");
+    if (UI.ruler) parts.push(ruler && !ruler.done ? "click the second point"
+                                                  : "drag, or click two points, to measure");
+    else if (ruler && ruler.done) parts.push("tap anywhere on the plan to clear the measurement");
     $("readout").textContent = parts.join("     ");
   }
 
@@ -1826,7 +1871,7 @@
       render(); return;
     }
     if (e.key === "?" ) { $("dlgHelp").showModal(); return; }
-    if (e.key.toLowerCase() === "m") { UI.ruler = !UI.ruler; ruler = null; syncTools(); render(); return; }
+    if (e.key.toLowerCase() === "m") { toggleRuler(); return; }
     if (e.key.toLowerCase() === "r") { rotateSel(15); return; }
   });
 
@@ -1850,12 +1895,21 @@
     SEL.clear(); render();
     toast(n + (n > 1 ? " items removed" : " item removed"), "Undo", undo);
   }
+  // Measure is on while it waits for points or shows a result; pressing it again clears.
+  function toggleRuler() {
+    if (UI.ruler || ruler) { UI.ruler = false; ruler = null; }
+    else UI.ruler = true;
+    syncTools(); render();
+  }
+  function finishRuler() { ruler.done = true; ruler.down = false; UI.ruler = false; syncTools(); }
+  function clearRuler() { UI.ruler = false; ruler = null; syncTools(); render(); }
+
   function duplicateSel() {
     if (!SEL.size) return;
     mark();
     const copies = selectedItems().map(function (it) {
       const c = Object.assign({}, it, { id: S.nextId++ });
-      if (c.k === "t") c.num = 0;
+      if (c.k === "t") { c.num = 0; delete c.src; }
       const e = halfExtent(c);
       c.x = clamp(c.x + 1.0, e.hx, room().w - e.hx);
       c.y = clamp(c.y + 1.0, e.hy, room().h - e.hy);
@@ -2344,7 +2398,7 @@
   function syncTools() {
     const on = (id, v) => $(id).classList.toggle("on", !!v);
     on("tSnap", UI.snap); on("tChairs", UI.chairs); on("tCovers", UI.covers);
-    on("tClear", UI.clearance); on("tRuler", UI.ruler);
+    on("tClear", UI.clearance); on("tRuler", UI.ruler || !!ruler);
   }
   function syncEventFields() {
     $("evName").value = S.event.name || "";
@@ -2733,15 +2787,16 @@
   // through its rim overshoots to a floor point further from the camera. The whole
   // effect is a scaling about the nadir -- the floor point directly below the camera --
   // by (H - h) / H, which is exact, not an approximation.
-  function parallaxK() {
-    const H = +S.setup.cam.height || 0;
+  function parallaxK(cal) {
+    const H = +(cal || S.setup.cam).height || 0;
     return H > TABLE_HEIGHT + 0.2 ? (H - TABLE_HEIGHT) / H : 1;
   }
-  function deparallax(p) {
-    const k = parallaxK();
+  function deparallax(p, cal) {
+    cal = cal || S.setup.cam;
+    const k = parallaxK(cal);
     if (k === 1) return p;
     const R = room();
-    const n = S.setup.cam.nadir || { x: R.w / 2, y: R.h / 2 };
+    const n = cal.nadir || { x: R.w / 2, y: R.h / 2 };
     return { x: n.x + (p.x - n.x) * k, y: n.y + (p.y - n.y) * k };
   }
 
@@ -2826,7 +2881,8 @@
   function mapDetections(doc) {
     const list = (doc && doc.tables) || [];
     const metres = doc && doc.units === "metres";
-    const cal = S.setup.cam;
+    // the demo camera brings its own calibration; a real one uses the points clicked in Settings
+    const cal = LIVE.on && LIVE.demo ? SIM.cal() : S.setup.cam;
     const h = cal.corners.length === 4 ? homography(cal.corners) : null;
     if (!metres && !h) return null;
     // The detector's frame and the picture the points were clicked on may differ in size.
@@ -2847,7 +2903,7 @@
       } else {
         const ring = d.outline_px && d.outline_px.length >= 8
           ? circleFit(d.outline_px.map(function (p) {
-              const q = deparallax(pixToRoom(h, p[0] * sx, p[1] * sy)); return [q.x, q.y];
+              const q = deparallax(pixToRoom(h, p[0] * sx, p[1] * sy), cal); return [q.x, q.y];
             }))
           : null;
         if (ring) {
@@ -2858,9 +2914,9 @@
           x = ring.x; y = ring.y; dia = 2 * ring.r; how = "rim";
         } else {
           const u = d.centre_px[0] * sx, v = d.centre_px[1] * sy;
-          const p = deparallax(pixToRoom(h, u, v));
+          const p = deparallax(pixToRoom(h, u, v), cal);
           x = p.x; y = p.y;
-          dia = d.diameter_px * sx * pixScaleAt(h, u, v) * parallaxK();
+          dia = d.diameter_px * sx * pixScaleAt(h, u, v) * parallaxK(cal);
         }
       }
       // Nearest thing in the hall's own stock -- the camera measures a size, the floor
@@ -3093,7 +3149,8 @@
      one appears, and dropped after three updates without it, so one missed frame does not
      make a table blink. Guests set on a table stay with it through all of that.        */
   const LIVE = { on: false, timer: null, seq: null, at: 0, n: 0, err: "", miss: new Map(),
-                 size: new Map(), metres: false, cameras: [],
+                 size: new Map(), metres: false, cameras: [], demo: false, markDepth: -1,
+                 det: new Map(),      // detection id -> plan table id, for the camera's labels
                  status: null, thumb: true, warnedDrag: false, busy: false };
   const camBase = () => (S.setup.camUrl || "").trim().replace(/\/+$/, "");
   const robotBase = () => (S.setup.robotUrl || "").trim().replace(/\/+$/, "");
@@ -3112,7 +3169,7 @@
   }
 
   function goLive() {
-    if (!camBase()) { openSettings("cam"); toast("Add the hall camera's address first"); return; }
+    if (!camBase()) { goLiveDemo(); return; }
     fetchJSON(camBase() + "/detections").then(function (doc) {
       LIVE.metres = doc.units === "metres";
       if (doc.units !== "metres" && !calibrated()) {
@@ -3120,6 +3177,7 @@
         return;
       }
       mark();                       // one undo step: back to before the camera took over
+      LIVE.markDepth = HIST.past.length; LIVE.demo = false;
       // A camera that maps its own tables knows which room it watches and how big it is:
       // the plan takes that room, or every table would land against the wrong walls.
       const cr = doc.room, R0 = room();
@@ -3154,6 +3212,7 @@
       S.items = S.items.filter((i) => !(i.k === "t" && i.src !== "cam"));
       SEL.clear(); selSig = null;
       LIVE.on = true; LIVE.seq = null; LIVE.miss.clear(); LIVE.size.clear(); LIVE.err = "";
+      LIVE.det.clear(); CAMV.seen.clear();
       applyDetections(doc);
       clearInterval(LIVE.timer);
       LIVE.timer = setInterval(pollLive, 1500);
@@ -3164,12 +3223,32 @@
     }, function () {
       LIVE.err = "not answering";
       renderLive();
-      toast("Can't reach the hall camera at " + camBase(), "Settings",
-            function () { openSettings("cam"); });
+      toast("Can't reach the hall camera at " + camBase(), "Use the demo camera", goLiveDemo);
     });
+  }
+  // No hall camera connected: the built-in one, a simulated corner CCTV over this room.
+  function goLiveDemo() {
+    clearInterval(LIVE.timer);
+    SIM.build();
+    if (!SIM.cal()) { toast("The demo camera cannot see enough of this room's floor"); return; }
+    CAMV.seen.clear();
+    mark();
+    LIVE.markDepth = HIST.past.length;
+    const hand = tables().filter((t) => t.src !== "cam").length;
+    S.items = S.items.filter((i) => !(i.k === "t" && i.src !== "cam"));
+    SEL.clear(); selSig = null;
+    LIVE.on = true; LIVE.demo = true; LIVE.metres = false; LIVE.thumb = true;
+    LIVE.seq = null; LIVE.miss.clear(); LIVE.size.clear(); LIVE.det.clear(); LIVE.err = "";
+    applyDetections(SIM.detections());
+    LIVE.timer = setInterval(function () { if (LIVE.on && LIVE.demo) applyDetections(SIM.detections()); }, 1000);
+    render();
+    toast("Live: the demo hall camera's tables are segmented and placed on the plan" +
+          (hand ? " (replaced the " + hand + " laid by hand)" : ""), "Undo",
+          function () { pauseLive(); undo(); });
   }
   function pauseLive(msg) {
     clearInterval(LIVE.timer); LIVE.timer = null; LIVE.on = false; LIVE.err = "";
+    LIVE.demo = false; LIVE.cameras = [];
     render();
     if (msg) toast(msg);
   }
@@ -3187,7 +3266,7 @@
     LIVE.at = Date.now();
     if (doc.seq !== undefined && doc.seq === LIVE.seq) { renderLive(); return; }
     LIVE.seq = doc.seq;
-    const views = (doc.units === "metres" && doc.cameras) || [];
+    const views = doc.cameras || [];
     const camsMoved = JSON.stringify(views) !== JSON.stringify(LIVE.cameras);
     LIVE.cameras = views;
     const mapped = mapDetections(doc);
@@ -3214,7 +3293,7 @@
     pairs.forEach(function (p) {
       const r = found[p[1]], t = p[2];
       if (used.has(p[1]) || taken.has(t.id)) return;
-      used.add(p[1]); taken.add(t.id); LIVE.miss.delete(t.id);
+      used.add(p[1]); taken.add(t.id); LIVE.miss.delete(t.id); LIVE.det.set(r.id, t.id);
       // a deadband, so a few centimetres of detector jitter do not shuffle the plan
       if (p[0] > 0.05) { place(t, r); changed = true; }
       if (r.stock.shape === "rect") {
@@ -3246,6 +3325,7 @@
       const t = makeTable(r.stock.key, r.x, r.y, r.dims);
       t.rot = r.rot || 0;
       t.src = "cam"; place(t, r);
+      LIVE.det.set(r.id, t.id);
       S.items.push(t); changed = true;
     });
     cams.forEach(function (t) {
@@ -3256,28 +3336,41 @@
         SEL.delete(t.id); LIVE.miss.delete(t.id); changed = true;
       } else LIVE.miss.set(t.id, m);
     });
-    if (LIVE.thumb) $("camThumbImg").src = camBase() + "/frame.jpg?seq=" + encodeURIComponent(doc.seq);
+    CAMV.doc = doc; CAMV.seqAt = performance.now();
+    if (LIVE.thumb && !LIVE.demo) CAMV.img.src = camBase() + "/frame.jpg?seq=" + encodeURIComponent(doc.seq);
     if (changed || camsMoved) render(); else renderLive();
   }
   function renderLive() {
     $("livePill").classList.toggle("on", LIVE.on);
     if (LIVE.on) $("livePillText").textContent = LIVE.err ? "Live · " + LIVE.err
                                                           : "Live · " + LIVE.n + " tables seen";
-    $("camThumb").hidden = !(LIVE.on && LIVE.thumb);
-    if (LIVE.on) $("camThumbCap").textContent = "Hall camera · " + LIVE.n + " tables";
+    const showCam = LIVE.on && LIVE.thumb;
+    if ($("camThumb").hidden === showCam) {
+      $("camThumb").hidden = !showCam;
+      $("planWrap").classList.toggle("withcam", showCam);
+      if (showCam) startCamView();
+    }
+    if (LIVE.on) {
+      $("camSrc").textContent = LIVE.demo ? "demo · simulated corner CCTV" : (camBase() || "");
+      $("camThumbCap").innerHTML = "<b>" + LIVE.n + "</b> tables segmented";
+      $("camNote").textContent = LIVE.demo ? "Click a table on the plan to find it here"
+                                           : (LIVE.err || "");
+    }
     if (UI.tab !== "plan") return;
     const go = $("liveGo"), show = $("liveShow");
-    if (!camBase()) {
-      $("liveState").textContent = "not set up";
-      $("liveHint").textContent = "Connect the hall's CCTV once in Settings, and the tables it " +
-        "sees appear on the plan where they stand.";
-      go.textContent = "Set up"; go.className = ""; show.hidden = true;
-    } else if (LIVE.on) {
-      $("liveState").textContent = LIVE.err ? LIVE.err : "live";
-      $("liveHint").textContent = "The tables follow the camera. Click one to set its guests, " +
+    if (LIVE.on) {
+      $("liveState").textContent = LIVE.err ? LIVE.err : (LIVE.demo ? "live · demo" : "live");
+      $("liveHint").textContent = (LIVE.demo
+        ? "A simulated corner CCTV: each table is segmented from its picture and mapped onto the plan. "
+        : "") + "The tables follow the camera. Click one to set its guests, " +
         "or use Seat guests to spread everyone across them.";
       go.textContent = "Pause"; go.className = ""; show.hidden = false;
       show.textContent = LIVE.thumb ? "Hide camera view" : "Show camera view";
+    } else if (!camBase()) {
+      $("liveState").textContent = "demo camera";
+      $("liveHint").textContent = "No hall camera connected, so Go live plays the built-in demo: " +
+        "a simulated corner CCTV whose picture is segmented, table by table, onto the plan.";
+      go.textContent = "Go live"; go.className = "primary"; show.hidden = true;
     } else {
       const ready = calibrated() || LIVE.metres;
       $("liveState").textContent = ready ? "ready" : "not calibrated";
@@ -3312,6 +3405,423 @@
     if (c.nadir_m) S.setup.cam.nadir = { x: c.nadir_m[0], y: c.nadir_m[1] };
     persistSetup(); syncSetupFields(); paintCorners();
     toast("Calibrated from the camera's own points");
+  }
+
+  /* =============================================================== demo camera
+     A corner CCTV over this room, simulated in the page so the whole path can be shown
+     anywhere, no camera and no Python: the picture is rendered here (floor, walls, the
+     stage and dance floor where the plan has them, tables with their chairs, two staff
+     walking through), each table is "segmented" as the mask of its tabletop, and the
+     masks go through exactly what a real camera's do -- the four-point calibration, the
+     0.762 m table-height correction and the rim fit -- to land on the plan. Tables are
+     rolled in one at a time, then one is nudged now and then. The staff are never
+     segmented: the detector looks for tables, as a real one would be prompted to.     */
+  const SIM = (function () {
+    const FW = 960, FH = 540, HFOV = 100, TH = TABLE_HEIGHT;
+    let W = 20, H = 21, C = [0.25, 0.25, 4.5], M = null, fpx = 1, bg = null, grain = null;
+    let tabs = [], order = [], startN = 0, t0 = 0, seq = 0, cal = null, cam = null;
+    let last = null, lastAt = -1e9, nudge = {}, nudgedAt = 0, walkers = [];
+    let seed = 7, WALL = 6;
+    const rnd = function () {       // small seeded generator: the same hall every time
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const norm = (v) => { const l = Math.hypot(v[0], v[1], v[2]); return [v[0] / l, v[1] / l, v[2] / l]; };
+    const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+
+    function project(x, y, z) {
+      const dx = x - C[0], dy = y - C[1], dz = z - C[2];
+      const qx = M[0][0] * dx + M[0][1] * dy + M[0][2] * dz;
+      const qy = M[1][0] * dx + M[1][1] * dy + M[1][2] * dz;
+      const qz = M[2][0] * dx + M[2][1] * dy + M[2][2] * dz;
+      return [FW / 2 + fpx * qx / qz, FH / 2 + fpx * qy / qz, qz];
+    }
+    function rayOf(u, v) {
+      const a = (u - FW / 2) / fpx, b = (v - FH / 2) / fpx;
+      return [a * M[0][0] + b * M[1][0] + M[2][0], a * M[0][1] + b * M[1][1] + M[2][1],
+              a * M[0][2] + b * M[1][2] + M[2][2]];
+    }
+    function floorAt(u, v) {
+      const d = rayOf(u, v);
+      if (d[2] >= -1e-6) return null;
+      const t = -C[2] / d[2];
+      return [C[0] + t * d[0], C[1] + t * d[1]];
+    }
+    const inRoom = (p, m) => p && p[0] >= -m && p[1] >= -m && p[0] <= W + m && p[1] <= H + m;
+
+    // ------------------------------------------------------------ the room, once
+    function paintBackground() {
+      const cv = document.createElement("canvas");
+      cv.width = FW; cv.height = FH;
+      const ctx = cv.getContext("2d"), img = ctx.createImageData(FW, FH), px = img.data;
+      const fx = fixtures().filter((f) => !isStruct(f)).map(function (f) {
+        const a = -(f.rot || 0) * Math.PI / 180;
+        const col = f.type === "stage" ? [96, 74, 56] : f.type === "dance" ? [176, 138, 92]
+                  : f.type === "door" ? [70, 64, 58] : fixSpec(f.type).solid ? [84, 86, 90] : [120, 116, 110];
+        return { f: f, ca: Math.cos(a), sa: Math.sin(a), col: col };
+      });
+      for (let v = 0; v < FH; v++) {
+        for (let u = 0; u < FW; u++) {
+          const d = rayOf(u + 0.5, v + 0.5);
+          let best = Infinity, r = 30, g = 31, b = 34, z = 0;              // ceiling
+          // the nearest wall the ray meets, up to the ceiling
+          for (let k = 0; k < 4; k++) {
+            const axis = k < 2 ? 0 : 1, val = k === 0 ? 0 : k === 1 ? W : k === 2 ? 0 : H;
+            if (Math.abs(d[axis]) < 1e-9) continue;
+            const t = (val - C[axis]) / d[axis];
+            if (t <= 0 || t >= best) continue;
+            const o = C[1 - axis] + t * d[1 - axis], zz = C[2] + t * d[2];
+            if (zz < 0 || zz > WALL || o < -0.01 || o > (axis ? W : H) + 0.01) continue;
+            best = t; z = zz;
+            const sh = axis ? 178 : 164;
+            r = sh; g = sh - 6; b = sh - 16;
+            if (Math.abs(zz - 1.0) < 0.035) { r = 128; g = 120; b = 110; }      // dado rail
+            if (zz < 0.12) { r = 92; g = 84; b = 76; }                          // skirting
+          }
+          if (d[2] < -1e-9) {
+            const t = -C[2] / d[2];
+            if (t < best) {
+              const X = C[0] + t * d[0], Y = C[1] + t * d[1];
+              if (X >= 0 && Y >= 0 && X <= W && Y <= H) {
+                best = t;
+                // a banquet carpet: deep red with a faint diamond repeat
+                const pat = ((Math.floor(X * 1.6 + Y * 1.6) + Math.floor(X * 1.6 - Y * 1.6)) & 1) ? 10 : 0;
+                r = 132 + pat; g = 44 + pat * 0.4; b = 46 + pat * 0.4;
+                for (let i = 0; i < fx.length; i++) {
+                  const q = fx[i], ddx = X - q.f.x, ddy = Y - q.f.y;
+                  const lu = ddx * q.ca - ddy * q.sa, lv = ddx * q.sa + ddy * q.ca;
+                  if (Math.abs(lu) <= q.f.w / 2 && Math.abs(lv) <= q.f.h / 2) {
+                    const plank = q.f.type === "dance" && (Math.floor(lu * 3) & 1) ? 12 : 0;
+                    r = q.col[0] + plank; g = q.col[1] + plank; b = q.col[2] + plank;
+                  }
+                }
+              }
+            }
+          }
+          // light falls off with distance, a lens vignettes its corners
+          const fall = Math.max(0.5, Math.min(1.12, 1.18 - Math.min(best, 40) / 40));
+          const cu = (u - FW / 2) / (FW / 2), cvv = (v - FH / 2) / (FH / 2);
+          const vig = 1 - 0.28 * (cu * cu + cvv * cvv) * 0.5;
+          const o = (v * FW + u) * 4, k2 = fall * vig;
+          px[o] = r * k2; px[o + 1] = g * k2; px[o + 2] = b * k2; px[o + 3] = 255;
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+      bg = cv;
+      // sensor grain, drawn over each frame at a random offset
+      const gc = document.createElement("canvas");
+      gc.width = 256; gc.height = 256;
+      const gx = gc.getContext("2d"), gi = gx.createImageData(256, 256);
+      for (let i = 0; i < gi.data.length; i += 4) {
+        const n = Math.random() * 255;
+        gi.data[i] = gi.data[i + 1] = gi.data[i + 2] = n; gi.data[i + 3] = 14;
+      }
+      gx.putImageData(gi, 0, 0);
+      grain = gc;
+    }
+
+    // ------------------------------------------------------------ calibration
+    // Four floor points the camera can see -- what a person would click on its picture.
+    function calibrate() {
+      const cand = [[W, H], [W, 0], [0, H], [W - 2, 2], [2, H - 2], [W / 2, H / 2], [W * 0.75, H * 0.3],
+                    [W * 0.3, H * 0.75], [W - 3, H / 2], [W / 2, H - 3], [4, 4], [6, 3], [3, 6]];
+      const ok = cand.filter(function (p) {
+        const q = project(p[0], p[1], 0);
+        return q[2] > 0.2 && q[0] > 25 && q[1] > 25 && q[0] < FW - 25 && q[1] < FH - 25;
+      });
+      let best = null, area = 0;
+      const ar = (q) => { let s2 = 0; for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4];
+                          s2 += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s2) / 2; };
+      for (let a = 0; a < ok.length; a++) for (let b = a + 1; b < ok.length; b++)
+        for (let c = b + 1; c < ok.length; c++) for (let d = c + 1; d < ok.length; d++) {
+          // order the four round their centre so the quad does not cross itself
+          const pts = [ok[a], ok[b], ok[c], ok[d]];
+          const cx = (pts[0][0] + pts[1][0] + pts[2][0] + pts[3][0]) / 4;
+          const cy = (pts[0][1] + pts[1][1] + pts[2][1] + pts[3][1]) / 4;
+          pts.sort((p, q) => Math.atan2(p[1] - cy, p[0] - cx) - Math.atan2(q[1] - cy, q[0] - cx));
+          const A2 = ar(pts);
+          if (A2 > area) { area = A2; best = pts; }
+        }
+      if (!best) return null;
+      return { corners: best.map(function (p) {
+                 const q = project(p[0], p[1], 0);
+                 return { u: q[0], v: q[1], fx: q[0] / FW, fy: q[1] / FH, x: p[0], y: p[1] };
+               }),
+               size: { w: FW, h: FH }, height: C[2], nadir: { x: C[0], y: C[1] } };
+    }
+    // The floor the camera sees, for the plan: far edge along each column, near edge at the bottom.
+    function viewPolygon() {
+      const far = [], near = [];
+      for (let i = 0; i <= 24; i++) {
+        const u = (FW * i) / 24;
+        let f = null;
+        for (let v = 0; v <= FH; v += 6) { const p = floorAt(u, v); if (inRoom(p, 0)) { f = p; break; } }
+        const n = floorAt(u, FH);
+        if (f) far.push(f);
+        if (n && inRoom(n, 0.01)) near.push(n);
+      }
+      return far.concat(near.reverse()).map((p) => [+p[0].toFixed(2), +p[1].toFixed(2)]);
+    }
+
+    // ------------------------------------------------------------ the hall's tables
+    function layout() {
+      // a full banquet laid around the plan's own stage and dance floor, a little untidy,
+      // as a real one is: a few smaller rounds, nothing exactly on its grid line
+      const cells = arrangeCells("r6", 1.6, true);
+      return cells.map(function (c, i) {
+        const pick = rnd();
+        const key = pick < 0.12 ? "r5" : pick < 0.22 ? "r55" : "r6";
+        const sp = STOCK.find((x) => x.key === key);
+        return { id: "t" + String(i + 1).padStart(2, "0"), x: c.x + (rnd() - 0.5) * 0.4,
+                 y: c.y + (rnd() - 0.5) * 0.4, d: sp.d };
+      });
+    }
+    function present(now) {
+      const el2 = (now - t0) / 1000;
+      const n = Math.min(tabs.length, startN + Math.floor(el2 / 2.5));
+      if (n === tabs.length && now - nudgedAt > 7000) {   // staff move a table now and then
+        nudgedAt = now;
+        const i = order[Math.floor(rnd() * order.length)];
+        nudge[i] = [(rnd() - 0.5) * 0.6, (rnd() - 0.5) * 0.6];
+      }
+      return order.slice(0, n).map(function (i) {
+        const T = tabs[i], o = nudge[i] || [0, 0];
+        return { id: T.id, x: T.x + o[0], y: T.y + o[1], d: T.d };
+      });
+    }
+    function walkerAt(w, now) {
+      const p = w.path, L = w.len, s2 = ((now / 1000) * w.speed + w.phase) % (2 * L);
+      let s = s2 < L ? s2 : 2 * L - s2;                       // there and back
+      for (let i = 0; i < p.length - 1; i++) {
+        const seg = Math.hypot(p[i + 1][0] - p[i][0], p[i + 1][1] - p[i][1]);
+        if (s <= seg) { const k = s / seg;
+          return [p[i][0] + (p[i + 1][0] - p[i][0]) * k, p[i][1] + (p[i + 1][1] - p[i][1]) * k]; }
+        s -= seg;
+      }
+      return p[p.length - 1];
+    }
+
+    // ------------------------------------------------------------ drawing a frame
+    function ringPx(x, y, d, z, n) {
+      const out = [];
+      for (let k = 0; k < n; k++) {
+        const a = (2 * Math.PI * k) / n;
+        out.push(project(x + (d / 2) * Math.cos(a), y + (d / 2) * Math.sin(a), z));
+      }
+      return out;
+    }
+    function hull(pts) {
+      const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+      const lo = [], up = [];
+      p.forEach(function (q) { while (lo.length > 1 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); });
+      p.slice().reverse().forEach(function (q) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); });
+      return lo.slice(0, -1).concat(up.slice(0, -1));
+    }
+    function poly(ctx, pts, fill, stroke) {
+      ctx.beginPath();
+      pts.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])));
+      ctx.closePath();
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+    }
+    function chair(ctx, cx, cy, a) {
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const at = (u, v, z) => project(cx + u * ca - v * sa, cy + u * sa + v * ca, z);
+      const seat = [at(-0.2, -0.2, 0.46), at(0.2, -0.2, 0.46), at(0.2, 0.2, 0.46), at(-0.2, 0.2, 0.46)];
+      const back = [at(0.2, -0.2, 0.46), at(0.2, 0.2, 0.46), at(0.2, 0.2, 0.95), at(0.2, -0.2, 0.95)];
+      if (seat.concat(back).some((q) => q[2] < 0.2)) return;
+      poly(ctx, seat, "#4a3f3a");
+      poly(ctx, back, "#3a302c");
+    }
+    function drawTable(ctx, T) {
+      const top = ringPx(T.x, T.y, T.d, TH, 40);
+      if (top.some((q) => q[2] < 0.2)) return;
+      const dist = Math.hypot(T.x - C[0], T.y - C[1]);
+      const chairs = [];
+      for (let k = 0; k < 10; k++) {
+        const a = (2 * Math.PI * k) / 10, cx = T.x + (T.d / 2 + 0.32) * Math.cos(a),
+              cy = T.y + (T.d / 2 + 0.32) * Math.sin(a);
+        chairs.push({ a: a, x: cx, y: cy, far: Math.hypot(cx - C[0], cy - C[1]) > dist });
+      }
+      chairs.filter((c) => c.far).forEach((c) => chair(ctx, c.x, c.y, c.a));
+      const base = ringPx(T.x, T.y, T.d * 0.97, 0.03, 40);
+      poly(ctx, hull(top.concat(base)), "#c9ccd0");
+      poly(ctx, top, "#f1f2f3", "#b4b9be");
+      const cp = project(T.x, T.y, TH + 0.06);
+      ctx.beginPath(); ctx.ellipse(cp[0], cp[1], Math.max(2, 90 / cp[2]), Math.max(1.4, 50 / cp[2]), 0, 0, 7);
+      ctx.fillStyle = "#c98a8a"; ctx.fill();                     // a centrepiece
+      chairs.filter((c) => !c.far).forEach((c) => chair(ctx, c.x, c.y, c.a));
+    }
+    function drawPerson(ctx, p) {
+      const foot = project(p[0], p[1], 0), head = project(p[0], p[1], 1.62);
+      if (foot[2] < 0.3) return;
+      const w = Math.max(3, (0.46 * fpx) / foot[2]);
+      ctx.fillStyle = "#24262b";
+      ctx.beginPath();
+      ctx.ellipse((foot[0] + head[0]) / 2, (foot[1] + head[1]) / 2 + w * 0.3, w / 2,
+                  Math.max(1, Math.abs(foot[1] - head[1]) / 2 - w * 0.15), 0, 0, 7);
+      ctx.fill();
+      ctx.fillStyle = "#c79d84";
+      ctx.beginPath(); ctx.arc(head[0], head[1], w * 0.32, 0, 7); ctx.fill();
+    }
+
+    return {
+      build: function () {
+        const R = room();
+        W = R.w; H = R.h; seed = 7;
+        C = [0.25, 0.25, Math.max(3.2, Math.min(6.5, 0.27 * Math.max(W, H) + 0.4))];
+        WALL = C[2] + 0.8;
+        const f = norm([W * 0.58 - C[0], H * 0.6 - C[1], -C[2]]);
+        const x = norm(cross([0, 0, 1], f));
+        let y = cross(f, x);
+        if (y[2] > 0) y = [-y[0], -y[1], -y[2]];
+        M = [x, y, f];
+        fpx = (FW / 2) / Math.tan((HFOV * Math.PI) / 360);
+        paintBackground();
+        tabs = layout();
+        order = tabs.map((t, i) => i);
+        for (let i = order.length - 1; i > 0; i--) {
+          const j = Math.floor(rnd() * (i + 1)); const t = order[i]; order[i] = order[j]; order[j] = t;
+        }
+        startN = Math.max(3, Math.ceil(tabs.length * 0.5));
+        t0 = performance.now(); nudge = {}; nudgedAt = t0; last = null; lastAt = -1e9;
+        walkers = [{ path: [[0.7, 3], [0.7, H - 1.2], [W * 0.45, H - 0.7]], speed: 0.8, phase: 3 },
+                   { path: [[W - 0.7, H - 1.5], [W - 0.7, 4], [W * 0.6, 3.6]], speed: 0.65, phase: 11 }];
+        walkers.forEach(function (w) {
+          w.len = 0;
+          for (let i = 0; i < w.path.length - 1; i++)
+            w.len += Math.hypot(w.path[i + 1][0] - w.path[i][0], w.path[i + 1][1] - w.path[i][1]);
+        });
+        cal = calibrate();
+        const head = (Math.atan2(H * 0.6 - C[1], W * 0.58 - C[0]) * 180) / Math.PI;
+        cam = { name: "cam1", label: "Demo camera", at_m: [C[0], C[1]], heading_deg: +head.toFixed(1),
+                hfov_deg: HFOV, height_m: +C[2].toFixed(1), view_m: viewPolygon() };
+      },
+      cal: function () { return cal; },
+      size: [FW, FH],
+      // One frame of the hall at time `now`.
+      render: function (ctx, now) {
+        if (!bg) return;
+        ctx.drawImage(bg, 0, 0);
+        const things = present(now).map((T) => ({ T: T, d: Math.hypot(T.x - C[0], T.y - C[1]) }))
+          .concat(walkers.map(function (w) { const p = walkerAt(w, now);
+                                             return { P: p, d: Math.hypot(p[0] - C[0], p[1] - C[1]) }; }));
+        things.sort((a, b) => b.d - a.d);
+        things.forEach((o) => (o.T ? drawTable(ctx, o.T) : drawPerson(ctx, o.P)));
+        ctx.drawImage(grain, -Math.random() * 128, -Math.random() * 128, FW + 256, FH + 256);
+        // the recorder's own burn-in
+        const d = new Date(), pad = (n) => String(n).padStart(2, "0");
+        const stamp = "CAM 01   HALL NW   " + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" +
+                      pad(d.getDate()) + "  " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+        ctx.font = "15px monospace"; ctx.textBaseline = "top";
+        ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(10, 10, ctx.measureText(stamp).width + 14, 24);
+        ctx.fillStyle = "#e9e9e9"; ctx.fillText(stamp, 17, 15);
+      },
+      // What the segmenter reports for the latest frame: one mask rim per tabletop it can
+      // see, in pixels, a fresh frame each second.
+      detections: function () {
+        const now = performance.now();
+        if (last && now - lastAt < 900) return last;
+        seq++; lastAt = now;
+        const list = [];
+        present(now).forEach(function (T) {
+          const rim = ringPx(T.x, T.y, T.d, TH, 48);
+          if (rim.some((q) => q[2] < 0.2)) return;
+          const inside = rim.filter((q) => q[0] > 0 && q[1] > 0 && q[0] < FW && q[1] < FH).length / rim.length;
+          if (inside < 0.6) return;
+          const jit = () => (rnd() + rnd() + rnd() - 1.5) * 0.8;
+          const out = rim.map((q) => [+(q[0] + jit()).toFixed(1), +(q[1] + jit()).toFixed(1)]);
+          let u0 = Infinity, u1 = -Infinity, cu = 0, cv = 0;
+          out.forEach(function (q) { u0 = Math.min(u0, q[0]); u1 = Math.max(u1, q[0]); cu += q[0]; cv += q[1]; });
+          list.push({ id: T.id, shape: "round", outline_px: out,
+                      centre_px: [+(cu / out.length).toFixed(1), +(cv / out.length).toFixed(1)],
+                      diameter_px: +(u1 - u0).toFixed(1), confidence: +(0.9 + 0.08 * rnd()).toFixed(2) });
+        });
+        last = { schema: "banquet-detections/0.1", source: "VATEL demo camera", seq: seq,
+                 captured_at: new Date().toISOString(), units: "pixels",
+                 frame: { width: FW, height: FH }, cameras: [cam], tables: list };
+        return last;
+      }
+    };
+  })();
+
+  /* ------------------------------------------------------------- camera view
+     The panel beside the plan: the camera's picture -- rendered for the demo, the bridge's
+     latest frame for a real one -- with each segmented table's mask drawn over it and
+     labelled with the plan's own table number. Clicking a table on the plan lights its
+     mask, so the two can be read against each other. */
+  const CAMV = { seg: true, img: new Image(), doc: null, seqAt: 0, seen: new Map(), timer: null };
+  function startCamView() {
+    if (CAMV.timer) return;
+    const tick = function () {
+      if (!(LIVE.on && LIVE.thumb) || document.hidden) { CAMV.timer = null; return; }
+      drawCamView(performance.now());
+      CAMV.timer = setTimeout(tick, 66);          // ~15 frames a second, like a CCTV feed
+    };
+    tick();
+  }
+  function drawCamView(now) {
+    const cv = $("camCanvas"), ctx = cv.getContext("2d");
+    if (LIVE.demo) {
+      if (cv.width !== SIM.size[0]) { cv.width = SIM.size[0]; cv.height = SIM.size[1]; }
+      SIM.render(ctx, now);
+    } else if (CAMV.img.complete && CAMV.img.naturalWidth) {
+      if (cv.width !== CAMV.img.naturalWidth) { cv.width = CAMV.img.naturalWidth; cv.height = CAMV.img.naturalHeight; }
+      ctx.drawImage(CAMV.img, 0, 0);
+    } else {
+      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = "#888"; ctx.font = "20px sans-serif"; ctx.textBaseline = "middle";
+      ctx.fillText("waiting for the camera's picture...", 30, cv.height / 2);
+    }
+    const doc = CAMV.doc;
+    if (!CAMV.seg || !doc || doc.units === "metres") return;
+    const sx = cv.width / ((doc.frame && doc.frame.width) || cv.width);
+    const sy = cv.height / ((doc.frame && doc.frame.height) || cv.height);
+    const sel = new Set(SEL);
+    // the model's pass over the new frame
+    const sweep = (now - CAMV.seqAt) / 450;
+    if (sweep < 1) {
+      ctx.fillStyle = "rgba(95,194,162,.16)";
+      ctx.fillRect(0, 0, cv.width, cv.height * sweep);
+      ctx.fillStyle = "rgba(95,194,162,.75)";
+      ctx.fillRect(0, cv.height * sweep - 1, cv.width, 2);
+    }
+    const placed = [];
+    const masks = (doc.tables || []).filter((d) => d.outline_px && d.outline_px.length >= 3)
+      .sort((a, b) => (b.diameter_px || 0) - (a.diameter_px || 0));
+    masks.forEach(function (d) {
+      if (!CAMV.seen.has(d.id)) CAMV.seen.set(d.id, now);
+      const age = Math.min(1, (now - CAMV.seen.get(d.id)) / 500);
+      const tid = LIVE.det.get(d.id), t = tid !== undefined ? byId(tid) : null;
+      const hot = t && (sel.has(t.id) || HOVER === t.id);
+      ctx.beginPath();
+      d.outline_px.forEach((q, i) => (i ? ctx.lineTo(q[0] * sx, q[1] * sy) : ctx.moveTo(q[0] * sx, q[1] * sy)));
+      ctx.closePath();
+      ctx.fillStyle = "rgba(95,194,162," + ((hot ? 0.62 : 0.34) * age).toFixed(3) + ")";
+      ctx.fill();
+      ctx.lineWidth = hot ? 3 : 1.6;
+      ctx.strokeStyle = hot ? "rgba(255,255,255," + age + ")" : "rgba(95,194,162," + age + ")";
+      ctx.stroke();
+      const span = (d.diameter_px || 0) * sx;
+      if (age < 0.3 || (!hot && span < 26)) return;
+      let top = d.outline_px[0];
+      d.outline_px.forEach((q) => { if (q[1] < top[1]) top = q; });
+      const label = (t ? tagOf(t) : "table") +
+        (hot || span > 70 ? "  " + Math.round((d.confidence || 0) * 100) + "%" : "");
+      ctx.font = (hot ? "600 15px " : "600 12px ") + "Inter, sans-serif";
+      const w = ctx.measureText(label).width + 10, h = hot ? 20 : 17;
+      const lx = Math.min(cv.width - w - 2, Math.max(2, top[0] * sx - w / 2)), ly = Math.max(2, top[1] * sy - h - 4);
+      if (!hot && placed.some((r) => lx < r[0] + r[2] && r[0] < lx + w && ly < r[1] + r[3] && r[1] < ly + h)) return;
+      placed.push([lx, ly, w, h]);
+      ctx.fillStyle = hot ? "#5FC2A2" : "rgba(17,20,18,.78)";
+      ctx.fillRect(lx, ly, w, h);
+      ctx.fillStyle = hot ? "#0B1310" : "#5FC2A2";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, lx + 5, ly + h / 2 + 0.5);
+    });
   }
 
   /* ================================================================ the robot
@@ -3631,13 +4141,12 @@
   const toggleBtn = function (id, key) {
     $(id).addEventListener("click", function () {
       UI[key] = !UI[key];
-      if (key === "ruler" && !UI.ruler) ruler = null;
       render();
     });
   };
   toggleBtn("tSnap", "snap"); toggleBtn("tChairs", "chairs");
   toggleBtn("tCovers", "covers"); toggleBtn("tClear", "clearance");
-  toggleBtn("tRuler", "ruler");
+  $("tRuler").addEventListener("click", toggleRuler);
 
   /* ---- tabs ---- */
   function showTab(name) {
@@ -3686,6 +4195,7 @@
     roomSel.appendChild(o);
   });
   roomSel.addEventListener("change", function () {
+    if (LIVE.on) pauseLive("Live paused for the new room");
     mark();
     S.roomId = roomSel.value;
     const R = room();
@@ -3693,11 +4203,18 @@
     // another one they are debris scattered across the floor, and worse, the room extent
     // that came with them stays in force -- so arranging in the ballroom would be penned
     // into the shape of the lab. Both go.
+    // What stands inside the new room stays where it is; what would be outside goes.
+    // Squeezing it in against the walls instead piled whole rows of tables on top of
+    // each other, every one of them unreachable.
     const before = S.items.length;
     S.items = S.items.filter(function (it) {
       if (it.k === "f" && (it.type === "wall" || it.type === "obst")) return false;
       const e = halfExtent(it);
-      return e.hx < R.w / 2 && e.hy < R.h / 2;
+      if (!(e.hx < R.w / 2 && e.hy < R.h / 2)) return false;
+      // a door or a dish return belongs against a wall, so it may sit on the edge
+      const slack = it.k === "f" && fixSpec(it.type).nav === "access" ? e.hx + e.hy : 0.05;
+      return it.x - e.hx > -slack && it.y - e.hy > -slack &&
+             it.x + e.hx < R.w + slack && it.y + e.hy < R.h + slack;
     });
     S.floor = null; FLOOR = null;
     S.items.forEach(function (it) {
@@ -3705,9 +4222,32 @@
       it.x = clamp(it.x, e.hx, R.w - e.hx);
       it.y = clamp(it.y, e.hy, R.h - e.hy);
     });
-    if (S.items.length < before) toast((before - S.items.length) + " removed, no room for them");
+    const gone = before - S.items.length;
+    if (gone) toast(gone + (gone > 1 ? " pieces were" : " piece was") + " outside the " + R.name +
+                    " and removed", "Undo", undo);
     SEL.clear(); selSig = null; roomSig = null; fitView(); render();
   });
+
+  // Somewhere clear for a new piece, nearest the middle of the room: a spiral out from
+  // the centre until nothing is under it. On a full floor it falls back to the middle.
+  function freeSpot(r) {
+    const R = room(), cx = R.w / 2, cy = R.h / 2;
+    const clear = function (x, y) {
+      if (x - r < 0.3 || y - r < 0.3 || x + r > R.w - 0.3 || y + r > R.h - 0.3) return false;
+      return S.items.every(function (o) {
+        return Math.hypot(o.x - x, o.y - y) > r + boundRadius(o) + 0.3;
+      });
+    };
+    for (let ring = 0; ring < 60; ring++) {
+      const rad = ring * 0.5, n = Math.max(1, Math.round((2 * Math.PI * rad) / 0.5));
+      for (let k = 0; k < n; k++) {
+        const a = (2 * Math.PI * k) / n, x = cx + rad * Math.cos(a), y = cy + rad * Math.sin(a);
+        if (clear(x, y)) return { x: x, y: y };
+      }
+    }
+    toast("No clear floor left: placed in the middle, drag it where it goes");
+    return { x: cx, y: cy };
+  }
 
   const addWrap = $("addBtns");
   STOCK.forEach(function (s) {
@@ -3715,7 +4255,8 @@
     b.innerHTML = "<b>" + s.label + "</b><span>" + stockNote(s) + "</span>";
     b.addEventListener("click", function () {
       mark();
-      const t = makeTable(s.key, room().w / 2, room().h / 2);
+      const at = freeSpot(s.shape === "round" ? s.d / 2 : Math.hypot(s.w, s.h) / 2);
+      const t = makeTable(s.key, at.x, at.y);
       S.items.push(t); SEL.clear(); SEL.add(t.id); selSig = null; render();
     });
     addWrap.appendChild(b);
@@ -3726,7 +4267,8 @@
     b.innerHTML = "<b>" + f.label + "</b><span>" + fmt(f.w, 1) + " x " + fmt(f.h, 2) + " m</span>";
     b.addEventListener("click", function () {
       mark();
-      const it = makeFixture(f.key, room().w / 2, room().h / 2);
+      const at = freeSpot(Math.hypot(f.w, f.h) / 2);
+      const it = makeFixture(f.key, at.x, at.y);
       S.items.unshift(it); SEL.clear(); SEL.add(it.id); selSig = null; render();
     });
     fixWrap.appendChild(b);
@@ -3746,7 +4288,13 @@
   });
   $("arrStagger").addEventListener("change", renderArrangeHint);
   $("arrStock").addEventListener("change", renderArrangeHint);
+  const cameraOwnsTables = function () {
+    if (!LIVE.on) return false;
+    toast("The hall camera is placing the tables. Pause live first.");
+    return true;
+  };
   $("doArrange").addEventListener("click", function () {
+    if (cameraOwnsTables()) return;
     const n = Math.max(1, +$("arrCount").value || 0);
     const got = doArrange(n, $("arrStock").value, +$("arrGap").value,
                           $("arrStagger").checked, true);
@@ -3754,6 +4302,7 @@
                    "Undo", undo);
   });
   $("doFitMax").addEventListener("click", function () {
+    if (cameraOwnsTables()) return;
     const cells = arrangeCells($("arrStock").value, +$("arrGap").value, $("arrStagger").checked);
     $("arrCount").value = cells.length;
     const got = doArrange(cells.length, $("arrStock").value, +$("arrGap").value,
@@ -3890,8 +4439,8 @@
   });
   $("camLiveCal").addEventListener("click", calibrateLive);
   $("liveGo").addEventListener("click", function () {
-    if (!camBase()) { openSettings("cam"); return; }
     if (LIVE.on) { pauseLive("Paused. The tables stay where they are."); return; }
+    if (!camBase()) { goLiveDemo(); return; }
     if (!calibrated() && !LIVE.metres) {
       // a camera that sends metres needs no corners clicked: ask it which kind it is
       fetchJSON(camBase() + "/detections").then(function (doc) {
@@ -3903,6 +4452,15 @@
   });
   $("liveShow").addEventListener("click", function () { LIVE.thumb = !LIVE.thumb; renderLive(); });
   $("camThumbHide").addEventListener("click", function () { LIVE.thumb = false; renderLive(); });
+  $("camSeg").addEventListener("click", function () {
+    CAMV.seg = !CAMV.seg; this.classList.toggle("on", CAMV.seg);
+  });
+  $("camStage").addEventListener("click", function () {
+    $("planWrap").classList.toggle("camwide");
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && LIVE.on && LIVE.thumb) startCamView();
+  });
   $("robSend").addEventListener("click", function () { sendPlan(false); });
   $("robStart").addEventListener("click", startMission);
   $("detFileBtn").addEventListener("click", function () { $("detFile").click(); });
