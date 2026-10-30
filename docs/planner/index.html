@@ -876,10 +876,14 @@
     { key: "r6",  label: "6 ft round",   shape: "round", d: 6 * FT,   covers: 10 },
     { key: "r7",  label: "7 ft round",   shape: "round", d: 7 * FT,   covers: 12 },
     { key: "oblong", label: "Oblong", shape: "rect", w: 6 * FT, h: 2.5 * FT, covers: 6, sides: "both" },
-    { key: "ibm",    label: "IBM",    shape: "rect", w: 6 * FT, h: 1.5 * FT, covers: 3, sides: "one" }
+    { key: "ibm",    label: "IBM",    shape: "rect", w: 6 * FT, h: 1.5 * FT, covers: 3, sides: "one" },
+    // A metric square, as test rooms have: two covers on each of two opposite sides.
+    { key: "sq12", label: "1.2 m square", shape: "rect", w: 1.2, h: 1.2, covers: 4, sides: "both",
+      metric: true }
   ];
   const stockNote = (s) => s.shape === "round"
     ? (s.d / FT).toFixed(s.d / FT % 1 ? 1 : 0) + " ft · " + s.covers + " covers"
+    : s.metric ? s.w.toFixed(1) + " x " + s.h.toFixed(1) + " m · " + s.covers
     : (s.w / FT).toFixed(0) + " x " + (s.h / FT).toFixed(1) + " ft · " + s.covers;
 
   // Everything else that stands on a banquet floor. `nav` says what it means to the
@@ -926,6 +930,11 @@
     custom: { w: 6.0, h: 4.0 },      // only used when roomId === "custom"
     setup: defaultSetup(),           // camera, robot link, map frame: Settings, not undo
     floor: null,                     // where a traced map says there is open floor
+    // the robot's own map this layout sits on ({w, h, res, origin, pgm_b64}), from
+    // cctv_navmap.py plan: the export draws tables onto it instead of boxing the room in.
+    // Kept beside the plan, not in it: ninety undo steps of a quarter-megabyte map is not
+    // something a browser should hold.
+    base: null,
     items: [],          // tables {k:"t"} and fixtures {k:"f"}, one list, one z-order
     nextId: 1
   };
@@ -1604,7 +1613,8 @@
   const serialise = () => ({ roomId: S.roomId, event: S.event, items: S.items,
                              nextId: S.nextId, custom: S.custom, floor: S.floor });
   // what a saved file holds: the plan, plus the hall's setup
-  const fileDoc = () => Object.assign(serialise(), { setup: S.setup });
+  const fileDoc = () => Object.assign(serialise(), { setup: S.setup },
+                                      S.base ? { base: S.base } : {});
   const snap = () => JSON.stringify(serialise());
   function mark() {
     HIST.past.push(snap());
@@ -2493,6 +2503,15 @@
     const R = room();
     const W = Math.max(1, Math.round(R.w / res)), H = Math.max(1, Math.round(R.h / res));
     const g = new Uint8Array(W * H).fill(PGM_FREE);
+    // On the robot's own map, when the layout carries one at this grid: its walls exactly as
+    // its lidar saw them, and the tables drawn on top -- not a box round the room's extent.
+    const b = S.base;
+    const onBase = !!(b && S.roomId === "custom" && b.w === W && b.h === H &&
+                      Math.abs(b.res - res) < 1e-9);
+    if (onBase) {
+      const raw = atob(b.pgm_b64);
+      for (let i = 0; i < raw.length && i < g.length; i++) g[i] = raw.charCodeAt(i);
+    }
 
     const stampRect = function (cx, cy, w, h, rotDeg) {
       const a = -rotDeg * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
@@ -2526,7 +2545,7 @@
 
     // A traced room already HAS its walls as objects; drawing a rectangle round the
     // outside as well would wall off the corridor it opens on to.
-    const traced = fixtures().some(function (f) { return f.type === "wall"; });
+    const traced = onBase || fixtures().some(function (f) { return f.type === "wall"; });
     if (!traced) {
       const t = Math.max(1, Math.round(0.10 / res));
       for (let c = 0; c < W; c++)
@@ -2677,6 +2696,14 @@
      call can throw. Everything here degrades to the file export instead.        */
   const KEY_PLANS = "banquet.plans.v1";
   const KEY_LAST  = "banquet.current.v1";
+  const KEY_BASE  = "banquet.basemap.v1";
+  function setBase(b) {
+    S.base = b || null;
+    try {
+      if (S.base) localStorage.setItem(KEY_BASE, JSON.stringify(S.base));
+      else localStorage.removeItem(KEY_BASE);
+    } catch (e) {}
+  }
   function storeOK() {
     try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); return true; }
     catch (e) { return false; }
@@ -2726,6 +2753,7 @@
     if (o.custom) S.custom = o.custom;
     S.floor = o.floor || null;
     FLOOR = null;
+    setBase(o.base);
     if (o.setup || o.mapRef) { S.setup = mergeSetup(o.setup || S.setup, o.mapRef); persistSetup(); }
     S.event = Object.assign({ name: "", date: "", pax: 0, courses: 3 }, o.event || {});
     S.items = o.items || [];
@@ -3188,6 +3216,7 @@
                       (S.roomId === "custom" && (S.custom.name || "") !== (cr.name || ""));
         if (moved) {
           S.roomId = "custom";
+          setBase(null);              // a map made for another room no longer fits
           S.custom = { w: +cr.w, h: +cr.h, name: cr.name || "" };
           if (cr.floor_m && cr.floor_m.length >= 3) S.custom.floor = cr.floor_m;
           if ($("room")) $("room").value = "custom";
@@ -4217,6 +4246,7 @@
              it.x + e.hx < R.w + slack && it.y + e.hy < R.h + slack;
     });
     S.floor = null; FLOOR = null;
+    setBase(null);
     S.items.forEach(function (it) {
       const e = halfExtent(it);
       it.x = clamp(it.x, e.hx, R.w - e.hx);
@@ -4519,6 +4549,7 @@
           if (o.custom) S.custom = o.custom;
           S.floor = o.floor || null;
           S.items = o.items; S.nextId = o.nextId;
+          try { S.base = JSON.parse(localStorage.getItem(KEY_BASE) || "null"); } catch (e) {}
           restored = true;
         }
       }
