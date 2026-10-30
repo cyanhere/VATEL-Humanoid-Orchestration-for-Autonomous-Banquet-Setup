@@ -870,6 +870,16 @@
     // back scaled to a ballroom.
     { id: "custom", name: "Custom — measure it yourself", w: 6.0, h: 4.0 }
   ];
+  // Rooms a robot has a map of: a saved layout -- the room drawn from its floor plan
+  // (walls, columns, built-ins), in that robot map's own frame and extent -- opened when
+  // picked, so the export lands in the frame the robot localises in. Written by
+  //   planner/cctv_navmap.py plan venue.json --room NAME --base ROBOT.pgm ... --base-from plan
+  // Drawn from the plan, not the robot's scan: no lidar or camera pixels go in the site.
+  const MAP_PRESETS = [
+    { id: "map:ilounge", name: "iLounge (robot map)", layout: "presets/ilounge.plan.json" },
+    { id: "map:tinkering", name: "Tinkering Corner (robot map)",
+      layout: "presets/tinkering_corner.plan.json" }
+  ];
   const STOCK = [
     { key: "r5",  label: "5 ft round",   shape: "round", d: 5 * FT,   covers: 8 },
     { key: "r55", label: "5.5 ft round", shape: "round", d: 5.5 * FT, covers: 9 },
@@ -2414,7 +2424,7 @@
     $("evName").value = S.event.name || "";
     $("evDate").value = S.event.date || "";
     $("evPax").value = S.event.pax || 0;
-    $("room").value = S.roomId;
+    $("room").value = S.roomId === "custom" && S.custom.preset ? S.custom.preset : S.roomId;
   }
 
   /* ================================================================== export */
@@ -4080,6 +4090,7 @@
       markEdit();
       S.custom[n.dataset.act === "roomw" ? "w" : "h"] = clamp(+n.value || 1, 1, 60);
       delete S.custom.floor;
+      if (S.custom.preset) { delete S.custom.preset; $("room").value = "custom"; }
       const R = room();
       S.items.forEach(function (it2) {
         const e = halfExtent(it2);
@@ -4223,10 +4234,37 @@
     o.value = r.id; o.textContent = r.name;
     roomSel.appendChild(o);
   });
+  const mapGroup = document.createElement("optgroup");
+  mapGroup.label = "Robot maps";
+  MAP_PRESETS.forEach(function (p) {
+    const o = document.createElement("option");
+    o.value = p.id; o.textContent = p.name;
+    mapGroup.appendChild(o);
+  });
+  roomSel.appendChild(mapGroup);
+  // A robot-map room is a whole saved layout, fetched from beside this page.
+  function openPreset(p) {
+    fetch(p.layout)
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (o) {
+        if (roomSel.value !== p.id) return;       // another room was picked while it loaded
+        o.custom = Object.assign({}, o.custom, { preset: p.id });
+        loadPlan(o);
+        toast("Opened " + p.name);
+      })
+      .catch(function () {
+        syncEventFields();
+        toast("Couldn't load the " + p.name + " — open the page from the site, not as a file");
+      });
+  }
   roomSel.addEventListener("change", function () {
     if (LIVE.on) pauseLive("Live paused for the new room");
+    const preset = MAP_PRESETS.find((p) => p.id === roomSel.value);
+    if (preset) { openPreset(preset); return; }
     mark();
     S.roomId = roomSel.value;
+    // leaving a robot-map room for the custom one: keep its size, drop its walls and name
+    if (S.roomId === "custom" && S.custom.preset) S.custom = { w: S.custom.w, h: S.custom.h };
     const R = room();
     // Walls and obstacles traced from a lidar map describe THAT room. Carried into
     // another one they are debris scattered across the floor, and worse, the room extent
