@@ -39,6 +39,24 @@ provides the operational context.
 
 ![fig:platform | The development platform: (a) the Unitree R1 humanoid robot; (b) the BrainCo Revo 2 hand, one on each arm](../assets/interim/intro-platform.webp)
 
+Thus, the main stakeholders are:
+
+- **Partner's Banquet Operations Team:** Primary users responsible for banquet hall preparation and
+  operation of the VATEL Planner.
+- **Industry Partner's Management:** Oversees operational requirements and potential system
+  adoption.
+- **EDIC Department:** Provides the robotic platform and technical support.
+
+### 1.3. Objectives and Scope
+
+Plates were selected as the initial focus due to the R1's manipulation limitations. Its hands are
+difficult to program for fine-grasp tasks, while its 2 kg payload per arm limits its ability to handle
+heavier objects such as tables and chairs. Plates were also identified by the industry partner as the
+simplest starting point for automation.
+
+With this narrower focus, the project seeks to address the following problem: *How could we use the
+Unitree R1 humanoid robot to optimise banquet setup by automating plate setup?*
+
 The plate-setting workflow consists of five steps (Figure [[fig:workflow]] and Table
 [[tab:workflow]]), as summarised below. The industry partner is deploying an **automated guided vehicle (AGV)** to
 transport plate stacks from the kitchen to the banquet hall entrance. VATEL focuses on the subsequent
@@ -56,15 +74,20 @@ Table: tab:workflow | The current plate-setting workflow, and the part VATEL add
 | 4 | Retrieve and transport plates to tables | Humanoid robot |
 | 5 | Place plates at designated seats | Humanoid robot |
 
-Thus, the main stakeholders are:
+By the end of CDE4301, VATEL aims to achieve three objectives:
 
-- **Partner's Banquet Operations Team:** Primary users responsible for banquet hall preparation and
-  operation of the VATEL Planner.
-- **Industry Partner's Management:** Oversees operational requirements and potential system
-  adoption.
-- **EDIC Department:** Provides the robotic platform and technical support.
+1. Transfer the banquet hall layout from the planner to the robot.
+2. Navigate autonomously to each designated table position and stop accurately and consistently.
+3. Retrieve plates from the AGV and place them at their designated table positions.
 
-### 1.3. Value Proposition and Novelty
+Table: tab:scope | Project scope
+| In scope | Out of scope |
+| --- | --- |
+| In-hall operations, from the AGV at the entrance to individual seats | Kitchen-to-hall transportation (handled by the partner's AGV) |
+| Porcelain dinner plates, one per trip | Cutlery, glassware, bowls and linen |
+| Table layout planning and plate-position assignment | Moving tables and chairs |
+
+### 1.4. Value Proposition and Novelty
 
 Existing banquet equipment, such as trolleys, dollies and racks, helps staff transport items in bulk
 (Section 2.1), but does not automate the placement process. VATEL addresses this gap by introducing a
@@ -82,26 +105,3 @@ VATEL addresses these challenges through three key contributions:
   place setting;
 - **a push-to-grasp strategy** that lets a humanoid hand with few joints take one plate off a tightly
   nested stack.
-
-### 1.4. Objectives and Scope
-
-Plates were selected as the initial focus due to the R1's manipulation limitations. Its hands are
-difficult to program for fine-grasp tasks, while its 2 kg payload per arm limits its ability to handle
-heavier objects such as tables and chairs. Plates were also identified by the industry partner as the
-simplest starting point for automation.
-
-With this narrower focus, the project seeks to address the following problem: *How could we use the
-Unitree R1 humanoid robot to optimise banquet setup by automating plate setup?*
-
-By the end of CDE4301, VATEL aims to achieve three objectives:
-
-1. Transfer the banquet hall layout from the planner to the robot.
-2. Navigate autonomously to each designated table position and stop accurately and consistently.
-3. Retrieve plates from the AGV and place them at their designated table positions.
-
-Table: tab:scope | Project scope
-| In scope | Out of scope |
-| --- | --- |
-| In-hall operations, from the AGV at the entrance to individual seats | Kitchen-to-hall transportation (handled by the partner's AGV) |
-| Porcelain dinner plates, one per trip | Cutlery, glassware, bowls and linen |
-| Table layout planning and plate-position assignment | Moving tables and chairs |

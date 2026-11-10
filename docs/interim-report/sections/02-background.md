@@ -7,9 +7,11 @@ author: Teh Wei Sheng
 
 ### 2.1. Current Banquet Setup Practice
 
-During banquet preparation, servers follow the event layout and setup instructions, carrying stacks of
-plates to each table and placing one plate at every designated seat. This process is repeated until
-all tables are fully set.
+During banquet preparation, servers follow the event layout and setup instructions, carrying stacks
+of plates to each table and placing one plate at every designated seat (Figure
+[[fig:server-steps]]). This process is repeated until all tables are fully set.
+
+![fig:server-steps | How a server sets plates: four steps, repeated until every table is done](../assets/interim/background-server-steps.webp)
 
 Venues already employ various types of equipment to streamline different aspects of banquet
 preparation (Figure [[fig:equipment]]), including:
@@ -51,8 +53,6 @@ preceding four.
 These limitations highlight three key capabilities VATEL must provide: **task planning**, to
 translate the event layout into actionable instructions; **autonomous navigation**, to guide the
 robot through the hall; and **plate manipulation**, to retrieve and place individual plates.
-
-![fig:server-steps | How a server sets plates: four steps, repeated until every table is done](../assets/interim/background-server-steps.webp)
 
 Table: tab:gap | Comparison of manual plate-setting tasks and the R1's capabilities out of the box
 | Server's step | R1 out of the box |
