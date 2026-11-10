@@ -906,13 +906,21 @@ a.report-card:active {
   max-width: 760px;
 }
 
-.content h2 {
-  margin: 72px 0 16px;
-  font-size: 1.85rem;
+/* Each chapter starts below a thin rule, with the same space above and below it whatever the
+   previous chapter ended with (a paragraph, a figure or a table). */
+.content > section + section {
+  margin-top: 56px;
+  padding-top: 48px;
+  border-top: 1px solid var(--rule);
 }
 
-.content > section:first-child > h2 {
-  margin-top: 0;
+.content > section > :last-child {
+  margin-bottom: 0;
+}
+
+.content h2 {
+  margin: 0 0 12px;
+  font-size: 1.85rem;
 }
 
 .content h3 {
@@ -941,7 +949,8 @@ a.report-card:active {
 
 /* Who led a subsystem; the course requires individual scope to be visible. */
 .lead-tag {
-  display: inline-block;
+  display: block;
+  width: fit-content;
   margin: 0 0 12px;
   padding: 3px 12px;
   border-radius: 999px;
@@ -949,6 +958,10 @@ a.report-card:active {
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--accent);
+}
+
+.lead-tag + h3 {
+  margin-top: 28px;
 }
 
 /* Placeholders: delete each .todo once its section is written. */
@@ -1088,10 +1101,6 @@ a.report-card:active {
   color: var(--muted);
 }
 
-.content section.references h2 {
-  margin-top: 72px;
-}
-
 .content section.references li {
   margin: 14px 0;
   padding-left: 2em;
@@ -1148,7 +1157,8 @@ a.report-card:active {
     justify-content: center;
   }
 
-  .content h2 {
-    margin-top: 56px;
+  .content > section + section {
+    margin-top: 40px;
+    padding-top: 36px;
   }
 }
