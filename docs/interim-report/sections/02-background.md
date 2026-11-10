@@ -48,11 +48,11 @@ capabilities out of the box (Table [[tab:gap]]). The R1 cannot independently per
 steps, while the final step of repeating the process depends on the successful execution of the
 preceding four.
 
-![fig:server-steps | How a server sets plates: four steps, repeated until every table is done](../assets/interim/background-server-steps.webp)
-
 These limitations highlight three key capabilities VATEL must provide: **task planning**, to
 translate the event layout into actionable instructions; **autonomous navigation**, to guide the
 robot through the hall; and **plate manipulation**, to retrieve and place individual plates.
+
+![fig:server-steps | How a server sets plates: four steps, repeated until every table is done](../assets/interim/background-server-steps.webp)
 
 Table: tab:gap | Comparison of manual plate-setting tasks and the R1's capabilities out of the box
 | Server's step | R1 out of the box |
