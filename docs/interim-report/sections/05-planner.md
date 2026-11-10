@@ -14,7 +14,7 @@ place setting and where the robot stands for each. Because its
 users are banquet staff, the main screen needs only two numbers and two buttons; everything only the
 robot needs sits in a Settings dialog.
 
-![fig:planner-app | The VATEL Planner's main page](../assets/hardware/vatel-planner.webp)
+![fig:planner-app | The VATEL Planner's main page](../assets/interim/planner-app.webp)
 
 ### 5.2. Design Choices
 
