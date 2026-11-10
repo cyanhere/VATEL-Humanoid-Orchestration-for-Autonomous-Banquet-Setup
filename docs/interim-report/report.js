@@ -25,8 +25,8 @@ const SECTIONS = [
   "references",
   "appendices",
 ];
-// The course limit excludes captions, references and appendices.
-const UNCOUNTED = new Set(["references", "appendices"]);
+// The course limit excludes captions, the executive summary, references and appendices.
+const UNCOUNTED = new Set(["00-summary", "references", "appendices"]);
 const WORD_LIMIT = 5000;
 
 const main = document.getElementById("report");
@@ -196,7 +196,7 @@ function showWordCount(root) {
   const panel = el("aside", { class: "wc-panel" },
     `<p><b>${total.toLocaleString()}</b> / ${WORD_LIMIT.toLocaleString()} words</p>
      <table>${rows.join("")}</table>
-     <p class="wc-note">Captions, "To fill" notes, references and appendices are not counted.</p>`);
+     <p class="wc-note">Captions, "To fill" notes, the executive summary, references and appendices are not counted.</p>`);
   if (total > WORD_LIMIT) panel.classList.add("over");
   document.body.append(panel);
 }
