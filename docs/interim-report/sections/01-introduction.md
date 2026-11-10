@@ -47,15 +47,46 @@ Thus, the main stakeholders are:
   adoption.
 - **EDIC Department:** Provides the robotic platform and technical support.
 
-### 1.3. Objectives and Scope
+### 1.3. Focus on Plate Setup
 
 Plates were selected as the initial focus due to the R1's manipulation limitations. Its hands are
 difficult to program for fine-grasp tasks, while its 2 kg payload per arm limits its ability to handle
 heavier objects such as tables and chairs. Plates were also identified by the industry partner as the
 simplest starting point for automation.
 
+Venues already employ various types of equipment to streamline different aspects of banquet
+preparation (Figure [[fig:equipment]]), including:
+
+- **Table and chair trolleys:** Facilitate the transportation of folding tables and stacking chairs.
+- **Table covers:** Fitted or stretch covers simplify table dressing.
+- **Tableware equipment:** Cutlery baskets, glass racks and polishing machines assist with handling
+  and preparation.
+- **Plate dollies and carts:** Allow plates to be transported in bulk.
+- **Stage and truss systems:** Modular platforms and trusses simplify stage setup.
+
+![fig:equipment | Equipment that venues use to set up in bulk: (a) table trolley; (b) chair trolley; (c) stretch table cover; (d) cutlery basket and polishing machine; (e) plate dolly; (f) modular stage platforms](../assets/interim/background-equipment.webp)
+
+While these tools improve bulk transportation and preparation, the final placement of individual
+items at their designated positions remains a manual task.
+
+Several types of robots already support parts of this work (Figure [[fig:existing-robots]]).
+Restaurant delivery robots, such as Pudu Robotics' BellaBot, carry food on trays of up to 10 kg each
+(Pudu Robotics, n.d.), but have no arm, so staff or diners still remove each dish by hand. Automated
+guided vehicles (AGVs) and autonomous mobile robots (AMRs) move loads in bulk: the MiR250 Hook tows
+carts of up to 500 kg (Mobile Industrial Robots, n.d.), and the industry partner is deploying an AGV
+to bring plate stacks to the hall entrance. None of these robots can place a plate at a seat. Mobile
+manipulators can pick and place objects: Toyota's Human Support Robot fetches items and tidies
+rooms, but grasps at most 1.2 kg and was designed for homes (Yamamoto et al., 2019). Humanoid robots
+are entering logistics, where Agility Robotics' Digit moves totes onto conveyors for GXO (Agility
+Robotics, 2024), but this is a single repetitive task in a fixed warehouse, whereas each banquet has
+a different layout.
+
+![fig:existing-robots | Existing robots: (a) a Pudu BellaBot delivery robot in a sports club restaurant; (b) a MiR250 AMR in a factory; (c) Toyota's Human Support Robot; (d) Agility Robotics' Digit placing a tote on a conveyor at GXO. Photos: (a) John Robert McPherson, CC0, and (b) AnnaEbdrup, CC BY-SA 4.0, both via Wikimedia Commons; (c) Yamamoto et al. (2019), CC BY 4.0; (d) Agility Robotics (2024)](../assets/interim/background-existing-robots.webp)
+
 With this narrower focus, the project seeks to address the following problem: *How could we use the
 Unitree R1 humanoid robot to optimise banquet setup by automating plate setup?*
+
+### 1.4. Objectives and Scope
 
 The plate-setting workflow consists of five steps (Figure [[fig:workflow]] and Table
 [[tab:workflow]]), as summarised below. The industry partner is deploying an **automated guided vehicle (AGV)** to
@@ -86,22 +117,3 @@ Table: tab:scope | Project scope
 | In-hall operations, from the AGV at the entrance to individual seats | Kitchen-to-hall transportation (handled by the partner's AGV) |
 | Porcelain dinner plates, one per trip | Cutlery, glassware, bowls and linen |
 | Table layout planning and plate-position assignment | Moving tables and chairs |
-
-### 1.4. Value Proposition and Novelty
-
-Existing banquet equipment, such as trolleys, dollies and racks, helps staff transport items in bulk
-(Section 2.1), but does not automate the placement process. VATEL addresses this gap by introducing a
-humanoid robot that can perform repetitive plate-setting tasks consistently, reducing reliance on
-temporary labour and minimising human handling of tableware. Unlike fixed automation, which is often
-limited by changing venue layouts, a humanoid robot can operate in spaces designed for people,
-provided it has an accurate representation of the venue and can manipulate tableware designed for
-human use.
-
-VATEL addresses these challenges through three key contributions:
-
-- **automatic layout capture** from the hall's existing CCTV, turned into a static map the robot can
-  navigate with;
-- **a planner simple enough for banquet staff**, which turns the event plan into a goal for every
-  place setting;
-- **a push-to-grasp strategy** that lets a humanoid hand with few joints take one plate off a tightly
-  nested stack.
