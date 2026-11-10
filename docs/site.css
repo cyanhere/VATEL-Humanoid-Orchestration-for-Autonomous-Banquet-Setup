@@ -911,7 +911,15 @@ a.report-card:active {
 .content > section + section {
   margin-top: 56px;
   padding-top: 48px;
-  border-top: 1px solid var(--rule);
+  border-top: 2px solid #A3B1AA;
+}
+
+/* Body text set justified, with hyphenation so the spacing stays even on narrow screens */
+.content p,
+.content li {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
 .content > section > :last-child {
