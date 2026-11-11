@@ -47,8 +47,6 @@ The helmet fits the robot without modifying it. A first, clamp-only version slid
 head in a fit check. A finite-element analysis of the clamping forces showed that most of the load
 went through the rear pads, so later versions also screw into an existing threaded hole in the R1's
 head and preload the pads. The parts are 3D-printed in PETG, with heat-set inserts for the screws.
-The latest version replaces the lidar mount, after we found that the real JT128 has no mounting
-flange, only screw holes in its base.
 
 ### 6.3. Cable Management
 
