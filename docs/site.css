@@ -942,6 +942,15 @@ a.report-card:active {
   color: var(--ink-2);
 }
 
+/* fourth level (e.g. 7.3.1.1) */
+.content h5 {
+  margin: 18px 0 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--ink-2);
+}
+
 .content ol,
 .content ul {
   padding-left: 1.4em;
@@ -993,6 +1002,15 @@ a.report-card:active {
 .todo .budget {
   font-weight: 600;
   white-space: nowrap;
+}
+
+/* "[TODO: ...]" left inside a sentence or table cell */
+.todo-inline {
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--todo-bg);
+  color: inherit;
+  font-size: 0.9em;
 }
 
 .blank {

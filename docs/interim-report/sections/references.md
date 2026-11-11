@@ -37,17 +37,43 @@ class: references
   U.K.: Cambridge Univ. Press, 2004.
 - [14] Z. Zhang, "A flexible new technique for camera calibration," *IEEE Trans. Pattern Anal. Mach.
   Intell.*, vol. 22, no. 11, pp. 1330–1334, 2000, doi: 10.1109/34.888718.
-- [15] P. E. Hart, N. J. Nilsson, and B. Raphael, "A formal basis for the heuristic determination of
+- [15] W. Xu, Y. Cai, D. He, J. Lin, and F. Zhang, "FAST-LIO2: Fast direct LiDAR-inertial odometry,"
+  *IEEE Trans. Robot.*, vol. 38, no. 4, pp. 2053–2073, 2022, doi: 10.1109/TRO.2022.3141876.
+- [16] P. E. Hart, N. J. Nilsson, and B. Raphael, "A formal basis for the heuristic determination of
   minimum cost paths," *IEEE Trans. Syst. Sci. Cybern.*, vol. 4, no. 2, pp. 100–107, 1968, doi:
   10.1109/TSSC.1968.300136.
-- [16] S. Macenski, F. Martín, R. White, and J. Ginés Clavero, "The Marathon 2: A navigation system,"
+- [17] S. Macenski, F. Martín, R. White, and J. Ginés Clavero, "The Marathon 2: A navigation system,"
   in *Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS)*, 2020, pp. 2718–2725, doi:
   10.1109/IROS45743.2020.9341207.
-- [17] D. Fox, W. Burgard, and S. Thrun, "The dynamic window approach to collision avoidance," *IEEE
+- [18] D. Fox, W. Burgard, and S. Thrun, "The dynamic window approach to collision avoidance," *IEEE
   Robot. Autom. Mag.*, vol. 4, no. 1, pp. 23–33, 1997, doi: 10.1109/100.580977.
-- [18] E. Todorov, T. Erez, and Y. Tassa, "MuJoCo: A physics engine for model-based control," in
+- [19] W. M. Carty and U. Senapati, "Porcelain: Raw materials, processing, phase evolution, and
+  mechanical behavior," *J. Am. Ceram. Soc.*, vol. 81, no. 1, pp. 3–20, 1998, doi:
+  10.1111/j.1151-2916.1998.tb02290.x.
+- [20] A. Fitzgibbon, M. Pilu, and R. B. Fisher, "Direct least square fitting of ellipses," *IEEE
+  Trans. Pattern Anal. Mach. Intell.*, vol. 21, no. 5, pp. 476–480, 1999.
+- [21] M. A. Fischler and R. C. Bolles, "Random sample consensus: A paradigm for model fitting with
+  applications to image analysis and automated cartography," *Commun. ACM*, vol. 24, no. 6, pp.
+  381–395, 1981.
+- [22] K. Hang, A. S. Morgan, and A. M. Dollar, "Pre-grasp sliding manipulation of thin objects
+  using soft, compliant, or underactuated hands," *IEEE Robot. Autom. Lett.*, vol. 4, no. 2, pp.
+  662–669, 2019.
+- [23] W. Zhou and D. Held, "Learning to grasp the ungraspable with emergent extrinsic dexterity," in
+  *Proc. Conf. Robot Learn. (CoRL)*, 2022.
+- [24] C. Chi, S. Feng, Y. Du, Z. Xu, E. Cousineau, B. Burchfiel, and S. Song, "Diffusion policy:
+  Visuomotor policy learning via action diffusion," in *Proc. Robot.: Sci. Syst. (RSS)*, 2023.
+- [25] E. Todorov, T. Erez, and Y. Tassa, "MuJoCo: A physics engine for model-based control," in
   *Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS)*, 2012, pp. 5026–5033, doi:
   10.1109/IROS.2012.6386109.
-
-> TODO: check each reference against its source before submission, and add the sources for the robot
-> and sensor specifications (Unitree R1, BrainCo Revo 2, Hesai JT128, Intel RealSense D435if).
+- [26] T. Erez, Y. Tassa, and E. Todorov, "Simulation tools for model-based robotics: Comparison of
+  Bullet, Havok, MuJoCo, ODE and PhysX," in *Proc. IEEE Int. Conf. Robot. Autom. (ICRA)*, 2015, pp.
+  4397–4404.
+- [27] K. Zakka et al., "MuJoCo Playground," arXiv:2502.08844, 2025.
+- [28] M. Mittal et al., "Orbit: A unified simulation framework for interactive robot learning
+  environments," *IEEE Robot. Autom. Lett.*, vol. 8, no. 6, pp. 3740–3747, 2023.
+- [29] C. Canudas de Wit, H. Olsson, K. J. Åström, and P. Lischinsky, "A new model for control of
+  systems with friction," *IEEE Trans. Autom. Control*, vol. 40, no. 3, pp. 419–425, 1995.
+- [30] Q. Ben, F. Jia, J. Zeng, J. Dong, D. Lin, and J. Pang, "HOMIE: Humanoid loco-manipulation with
+  isomorphic exoskeleton cockpit," arXiv:2502.13013, 2025.
+- [31] H. Zhao et al., "AGILE: A comprehensive workflow for humanoid loco-manipulation learning,"
+  arXiv:2603.20147, 2026.

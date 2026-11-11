@@ -44,8 +44,9 @@ milestones.
 
 ![fig:gantt | Semester 2 plan by subsystem](../assets/interim/plan-gantt.webp)
 
-> TODO: the Gantt chart and the milestone table disagree on integration (chart: full-system
-> integration in Weeks 7–11; table: first integration in Week 6, second in Weeks 9–11). Align them.
+> TODO: the Gantt chart and the milestone table disagree on integration
+> (chart: full-system integration in Weeks 7–11; table: first
+> integration in Week 6, second in Weeks 9–11). Align them.
 
 Table: tab:timeline | Major milestones in Semester 2
 | Week | Milestone |

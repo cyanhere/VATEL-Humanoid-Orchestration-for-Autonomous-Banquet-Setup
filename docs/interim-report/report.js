@@ -64,7 +64,9 @@ function renderSection(name, text) {
   const { meta, body } = splitHeader(text);
   const section = el("section", { id: meta.id || name.replace(/^\d+-/, ""), "data-file": name });
   if (meta.class) section.className = meta.class;
-  section.innerHTML = marked.parse(body, { gfm: true });
+  section.innerHTML = marked.parse(body, { gfm: true })
+    // "[TODO: ...]" inside a sentence or table cell -> a marked note, left out of the word count
+    .replace(/\[TODO:\s*([^\]<]*)\]/g, '<mark class="todo-inline">TODO: $1</mark>');
 
   const h2 = section.querySelector("h2");
   if (meta.author && h2) {
@@ -180,7 +182,7 @@ function buildContents(root) {
 
 function countWords(section) {
   const copy = section.cloneNode(true);
-  copy.querySelectorAll(".todo, .lead-tag, image-component, pre.mermaid").forEach((e) => e.remove());
+  copy.querySelectorAll(".todo, .todo-inline, .lead-tag, image-component, pre.mermaid").forEach((e) => e.remove());
   return (copy.textContent.match(/[A-Za-z0-9][\w'’.,%/-]*/g) || []).length;
 }
 

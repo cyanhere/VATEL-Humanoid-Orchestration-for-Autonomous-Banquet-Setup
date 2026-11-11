@@ -70,8 +70,9 @@ Section 8.3 explains why the R1 cannot copy how people lift a plate off a stack,
 pushing it instead. The dexterous hands come with the platform and keep other tableware within reach
 later.
 
-> TODO: If the team scored the options (an evaluation matrix with weighted criteria), add it here;
-> the rubric rewards a systematic comparison (A2).
+> TODO: If the team scored the options (an evaluation matrix with
+> weighted criteria), add it here; the rubric rewards a systematic
+> comparison (A2).
 
 ### 4.3. Selected Concept and System Architecture
 
