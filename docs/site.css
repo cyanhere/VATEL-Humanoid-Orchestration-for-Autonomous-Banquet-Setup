@@ -1109,10 +1109,18 @@ a.report-card:active {
   color: var(--muted);
 }
 
+/* IEEE list: no bullets, the [n] hangs to the left of each entry */
+.content section.references ul {
+  list-style: none;
+  padding-left: 0;
+}
+
 .content section.references li {
-  margin: 14px 0;
-  padding-left: 2em;
-  text-indent: -2em;
+  margin: 10px 0;
+  padding-left: 2.4em;
+  text-indent: -2.4em;
+  text-align: left;
+  overflow-wrap: anywhere;
 }
 
 /* ?wc: the word count against the course limit */

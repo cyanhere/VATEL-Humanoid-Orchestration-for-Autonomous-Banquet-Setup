@@ -16,8 +16,8 @@ Table: tab:bom | Main hardware
 | Unitree R1 humanoid robot | 1 | 40,000 |
 | BrainCo Revo 2 dexterous hand | 2 | 40,000 (pair) |
 | Hesai JT128 lidar | 1 | 1,000 |
-| Intel RealSense D435if depth camera | 1 | |
-| Sensor helmet (3D-printed PETG parts, inserts, screws) | 1 set | |
+| Intel RealSense D435if depth camera | 1 |  |
+| Sensor helmet (3D-printed PETG parts, inserts, screws) | 1 set |  |
 
 > TODO: confirm the costs and fill in the camera and helmet; the helmet's full parts list is in the
 > repository's hardware folder.
@@ -28,5 +28,5 @@ Table: tab:bom | Main hardware
 
 ### Appendix D: Source Code
 
-All code is in this project's
-[GitHub repository](https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup).
+All code is in this project's [GitHub
+repository](https://github.com/cyanhere/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup).

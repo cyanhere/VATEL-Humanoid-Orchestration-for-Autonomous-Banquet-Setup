@@ -1,6 +1,5 @@
 ---
 id: plan
-author: Team
 ---
 
 ## 9. Project Plan
@@ -8,8 +7,8 @@ author: Team
 ### 9.1. Test Plan and Progress
 
 Testing climbs a ladder of three levels (Table [[tab:test-ladder]]): each subsystem on its own, then
-step-by-step integration, then the full mission in the banquet hall. The segment tests set the targets
-for each subsystem's development, and we are about 35% of the way through them. Table
+step-by-step integration, then the full mission in the banquet hall. The segment tests set the
+targets for each subsystem's development, and we are about 35% of the way through them. Table
 [[tab:milestones]] lists what each subsystem has reached and what comes next.
 
 Table: tab:test-ladder | The test ladder
@@ -31,10 +30,10 @@ Table: tab:milestones | Milestones reached, and the next ones
 Once the segment tests pass, the subsystems are integrated in two stages, each ending with a fault
 test of extreme cases:
 
-1. **Navigation and plate manipulation.** The robot, parked at a table's edge, places plates: one
-   table in the Tinkering Corner, 4 plates (one per edge), table position set by hand.
-2. **Adding the planner.** The planner's map, tables and plate layout drive the whole mission: 4
-   tables in the Tinkering Corner at random positions, each with a different plate layout.
+- **Navigation and plate manipulation.** The robot, parked at a table's edge, places plates: one
+  table in the Tinkering Corner, 4 plates (one per edge), table position set by hand.
+- **Adding the planner.** The planner's map, tables and plate layout drive the whole mission: 4
+  tables in the Tinkering Corner at random positions, each with a different plate layout.
 
 A second round, after users' feedback, repeats the same order.
 

@@ -1,6 +1,5 @@
 ---
 id: specifications
-author: Team
 ---
 
 ## 3. Requirements and Specifications
@@ -34,5 +33,5 @@ Table: tab:specs | Design specifications
 | S8 | Autonomy | No staff intervention during a run | Stakeholder requirement |
 | S9 | Acceptance mission | 5 tables with 8 plates each, in the banquet hall | Test plan (Section 9.1) |
 
-> TODO: Confirm the 10 cm target for S1 and the 30 cm target for S5 with the subsystem leads, and add
-> any target from the partner (for example, time allowed to set one table).
+> TODO: Confirm the 10 cm target for S1 and the 30 cm target for S5 with the subsystem leads, and
+> add any target from the partner (for example, time allowed to set one table).

@@ -1,20 +1,22 @@
 ---
 id: planner
-author: Teh Wei Sheng
 ---
 
 ## 5. VATEL Planner
 
 ### 5.1. Purpose
 
-The VATEL Planner is a browser app the banquet team uses to plan the hall and send the plan to the
-robot (Figure [[fig:planner-app]]). It uses the hall's existing CCTV to draw every table on a 2-D map,
-so no one measures the floor plan by hand; staff plan the event on it, and the planner works out every
-place setting and where the robot stands for each. Because its
-users are banquet staff, the main screen needs only two numbers and two buttons; everything only the
-robot needs sits in a Settings dialog.
+The [VATEL
+Planner](https://cyanhere.github.io/VATEL-Humanoid-Orchestration-for-Autonomous-Banquet-Setup/planner/)
+is a browser-based application that allows the banquet team to plan the hall layout and send the
+plan to the robot (Figure [[fig:planner-app]]). Using the hall's existing CCTV, it automatically
+maps every table onto a 2-D layout, eliminating the need for manual measurements. Staff can then
+arrange the tables for the event, while the planner automatically determines each place setting and
+the robot's corresponding stopping position. As the application is designed for banquet staff, the
+main screen is kept simple. Robot-specific settings are accessed separately through a Settings
+dialog.
 
-![fig:planner-app | The VATEL Planner's main page](../assets/interim/planner-app.webp)
+![fig:planner-app | VATEL Planner main page](../assets/interim/planner-app.webp)
 
 ### 5.2. Design Choices
 
@@ -22,97 +24,108 @@ Table: tab:planner-choices | Design choices within the planner (selected option 
 | Function | Option A | Option B | Option C |
 | --- | --- | --- | --- |
 | Remove people from the picture | Use the live frame | Background subtraction (MOG2) | **Temporal median** |
-| Find the tables | YOLO (trained detector) | **Grounding DINO + SAM** | |
-| Picture position to room position | **Calibrated ray–plane intersection** | Depth camera | |
+| Find the tables | YOLO (trained detector) | **Grounding DINO + SAM** |  |
+| Picture position to room position | **Calibrated ray–plane intersection** | Depth camera |  |
 | Refine each table | Bounding box | Convex hull | **Far-edge fit** |
 
-Background subtraction (Zivkovic, 2004) lets a still table fade into the background; a temporal
-median keeps whatever stays put. YOLO (Redmon et al., 2016) needs hundreds of labelled hall frames we
-do not have, while Grounding DINO and SAM need only a text prompt. A depth camera cannot cover a hall
-from a wall. Boxes and hulls include legs and chairs; the far-edge fit does not.
+Background subtraction [8] was considered but rejected because it removes stationary objects over
+time, whereas the temporal median retains the tables while filtering out moving people. For table
+detection, YOLO [9] was less suitable because training requires hundreds of labelled hall images,
+which were unavailable. Grounding DINO and SAM were preferred as they can detect and segment tables
+using text prompts. A depth camera was also considered, but a wall-mounted unit would not reliably
+cover the entire hall. Finally, bounding boxes and convex hulls were rejected because they can
+include table legs and chairs, while the far-edge fit provides a closer estimate of the actual
+tabletop boundary.
 
 ### 5.3. From CCTV to a 2-D Static Map
 
-Figure [[fig:planner-pipeline]] summarises the six steps.
+Figure [[fig:planner-pipeline]] summarises the six-step process.
 
-![fig:planner-pipeline | From the hall's CCTV to the planner: clean plate, detection and segmentation, ray–plane intersection and edge clean-up, with a one-time calibration](../assets/interim/planner-pipeline.webp)
+![fig:planner-pipeline | CCTV-to-map pipeline](../assets/interim/planner-pipeline.webp)
 
-**Step 1: clean plate.** Staff walking through the picture would confuse the detector. The planner
-keeps a frame every 2 s for the last minute (31 frames) and takes the median of each pixel (Figure
-[[fig:clean-plate]]). A table covers its pixels the whole time and a person only briefly, so the
-median is the furniture (Cucchiara et al., 2003). A moved table appears in its new place within about
-a minute.
+**Step 1: Generate a clean plate.** People walking through the camera's view can interfere with
+table detection. To remove them, the planner captures one frame every 2 s over the past minute (31
+frames) and calculates the median value of each pixel (Figure [[fig:clean-plate]]). Since tables
+remain stationary while people move through the scene, the median image retains the furniture while
+filtering out people [10]. If a table is moved, its new position becomes visible in the clean plate
+within approximately one minute.
 
-![fig:clean-plate | Clean plate: the median of each pixel over the last minute keeps the furniture and drops the people](../assets/interim/planner-clean-plate.webp)
+![fig:clean-plate | Clean plate: a per-pixel median removes people](../assets/interim/planner-clean-plate.webp)
 
-**Step 2: find the tables.** Grounding DINO (Liu et al., 2024) draws a box around every object that
-matches the prompt "table", and SAM (Kirillov et al., 2023) turns each box into the table's exact
-outline. Our code splits boxes that cover several tables, drops duplicates and cuts chairs out of the
-table outlines.
+**Step 2: Detect and segment the tables.** Grounding DINO [11] identifies objects matching the text
+prompt "table" and draws a bounding box around each detection. SAM [12] then converts each box into
+a precise table outline. Our code further splits boxes containing multiple tables, removes duplicate
+detections and excludes chairs from the table outlines.
 
-![fig:detect-segment | Step 2 on real CCTV of the Tinkering Corner: Grounding DINO's boxes (left) and SAM's outlines (right)](../assets/interim/planner-detect-segment.webp)
+![fig:detect-segment | Grounding DINO boxes (left) and SAM outlines (right) on Tinkering Corner CCTV](../assets/interim/planner-detect-segment.webp)
 
-**Step 3: calibrate the camera.** Each camera is calibrated once (Figure [[fig:calibration]]) from
-points whose floor-plan position is known, edges that must stand upright, which the code finds itself,
-and tabletops, which must be rectangles seen from above. A least-squares fit finds the focal length,
-lens distortion, position and orientation that best fit these clues (Hartley & Zisserman, 2004;
-Zhang, 2000), checked by drawing the floor plan back onto the picture. For a test-room camera it gave
-a height of 2.57 m and a distortion coefficient of −0.19, with a 13-pixel residual on a 2,560-pixel
-picture.
+**Step 3: Calibrate the camera.** Each camera is calibrated once using three types of visual
+references (Figure [[fig:calibration]]): points with known positions on the floor plan, vertical
+edges detected automatically by the code, and tabletops assumed to be rectangular when viewed from
+above. A least-squares fit estimates the camera's focal length, lens distortion, position and
+orientation from these references [13], [14]. The calibration is then checked by projecting the
+floor plan back onto the camera image. For the Tinkering Corner CCTV camera, this produced an
+estimated camera height of 2.57 m and a distortion coefficient of −0.19, with a residual error of 13
+pixels in a 2,560-pixel-wide image.
 
-![fig:calibration | Calibrating a camera once: match a few points between the picture and the floor plan, solve for the camera, and check the result](../assets/interim/planner-calibration.webp)
+![fig:calibration | One-time camera calibration](../assets/interim/planner-calibration.webp)
 
-![fig:calibration-check | The check on a real camera: the floor plan's wall bases (green) and pillars (orange) drawn back through the solved camera](../assets/interim/planner-calibration-check.webp)
+![fig:calibration-check | Calibration check: floor-plan walls (green) and pillars (orange) projected onto the image](../assets/interim/planner-calibration-check.webp)
 
-**Step 4: ray–plane intersection.** Every pixel is a ray into the room (Figure [[fig:ray]]). A
-table's outline lies on its top, so the ray is followed to the tabletop's height, not the floor. For a
-camera 3 m up and a ray 18° below horizontal, the ray drops 2.25 m to the tabletop, which is therefore
-2.25 / tan 18° ≈ 6.9 m away. Following it to the floor would put the table 2.3 m too far away.
+**Step 4: Ray–plane intersection.** Every pixel corresponds to a ray extending into the room (Figure
+[[fig:ray]]). Since the table outline lies on the tabletop, each ray is intersected with the
+tabletop plane rather than the floor. For example, with a camera 3 m above the floor and a ray
+angled 18° below the horizontal, the ray travels 2.25 m vertically to reach the tabletop, placing
+the table 2.25 / tan 18° ≈ 6.9 m away. Repeating this for the table outline converts its image
+coordinates into positions in the room.
 
-![fig:ray | A pixel is a ray into the room; stopping it at the tabletop's height gives the table's true position](../assets/interim/planner-ray.webp)
+![fig:ray | Ray–tabletop intersection gives the true table position](../assets/interim/planner-ray.webp)
 
-**Step 5: clean up each table.** SAM's outline also catches legs and chairs. These sit lower than
-the tabletop, so their rays reach the tabletop's height early and land short, nearer the camera. Seen
-from the floor point under the camera, the farthest outline point in every direction is the tabletop's
-real edge (Figure [[fig:far-edge]]), and a rectangle or circle is fitted to those points.
+**Step 5: Refine each table outline.** SAM's segmentation may also include table legs and chairs.
+Since these are below the tabletop, their projected points fall closer to the camera when
+intersected with the tabletop plane. By viewing the outline from the floor point directly below the
+camera, the farthest point in each direction corresponds to the tabletop's actual edge (Figure
+[[fig:far-edge]]). A rectangle or circle is then fitted to these points.
 
-![fig:far-edge | Keeping the far edge: lower parts always land short, so the farthest points are the tabletop's edge](../assets/interim/planner-far-edge.webp)
+![fig:far-edge | Far-edge fit: the farthest points mark the tabletop edge](../assets/interim/planner-far-edge.webp)
 
-![fig:cleanup | Step 5 on real CCTV: SAM's raw masks (green) and the cleaned-up tabletops (red)](../assets/interim/planner-cleanup.webp)
+![fig:cleanup | SAM masks (green) and refined tabletops (red)](../assets/interim/planner-cleanup.webp)
 
-**Step 6: snap onto the map.** Each table is matched to the nearest size the venue owns (Figure
-[[fig:snap]]), or keeps its measured size if it is more than 15% off every stock size. The planner
-places every setting, with a spot for the robot 0.45 m from the edge, and in live mode updates every
-1.5 s, so the plan follows when staff move a table. The plan is exported as the static map the
-navigation stack loads (`.pgm` and `.yaml`), with a named goal for every place setting.
+**Step 6: Snap tables onto the map.** Each detected table is matched to the nearest standard size
+used by the venue (Figure [[fig:snap]]). If its measured dimensions differ by more than 15% from all
+available standard sizes, the measured dimensions are retained. The planner then generates every
+place setting and assigns a robot stopping position 0.45 m from the table edge. In live mode, the
+map updates every 1.5 s to reflect table movements by staff. Finally, the plan is exported as a
+static map (.pgm and .yaml) for the navigation stack, with a named goal assigned to each place
+setting.
 
-![fig:snap | Snapping a measured table to the venue's stock, with its sets and the robot's stopping points](../assets/interim/planner-snap.webp)
+![fig:snap | Snapping a table to stock sizes, with its settings and robot stops](../assets/interim/planner-snap.webp)
 
-![fig:to-robot-map | The Tinkering Corner's six tables in the planner (left), and drawn into the robot's lidar map as the exported static map (right)](../assets/interim/planner-to-robot-map.webp)
+![fig:to-robot-map | Tinkering Corner tables in the planner (left) and on the robot's lidar map (right)](../assets/interim/planner-to-robot-map.webp)
 
 ### 5.4. Tests and Results
 
 Table: tab:planner-tests | Planner tests in Semester 1
 | Test | Method | Result |
 | --- | --- | --- |
-| Simulated hall | Corner CCTV camera, 23 tables at known positions | All 23 found; centre error 2.3 cm mean, 6.6 cm worst |
-| Height correction | Same scene, with and without it | Offsets of 223 mm and 329 mm reduced to 0 mm |
-| Real CCTV | Recorded footage of the Tinkering Corner, NUS Innovation & Design Hub | All 6 tables found and placed on the floor plan |
-| Devices | Tablet and laptop | Works in both |
-| Hand-off | Export `.pgm` and `.yaml` | Accepted by the navigation stack |
+| Simulated hall | Corner CCTV camera, 23 tables at known positions | All 23 tables detected; mean centre error of 2.3 cm and worst-case error of 6.6 cm |
+| Height correction | Same scene, with and without it | Position offsets of 223 mm and 329 mm reduced to 0 mm |
+| Real CCTV | Recorded footage of the Tinkering Corner, NUS Innovation & Design Hub | All 6 tables detected and placed on the floor plan |
+| Devices | Tablet and laptop | Successfully runs on both devices |
+| Hand-off | Export to .pgm and .yaml | Exported map successfully loaded by the navigation stack |
 
-![fig:floorplan-result | Real CCTV result: the tables found by SAM placed on the Tinkering Corner's floor plan in metres, with the camera's field of view shaded and the walls used to check distances in blue](../assets/interim/planner-floorplan-result.webp)
-
-> TODO (Wei Sheng): add the measured position error in the Tinkering Corner (tape-measured gaps from
-> each table to the walls against the planner's).
+![fig:floorplan-result | Detected tables on the Tinkering Corner floor plan (m); camera view shaded, reference walls in blue](../assets/interim/planner-floorplan-result.webp)
 
 ### 5.5. Problems and Next Steps
 
-Three problems shaped the design. A four-corner homography cannot model wide lenses, tabletop
-height or several cameras, which led to the full camera model. SAM's masks included legs and chairs,
-which led to the far-edge fit. A box spanning two rows of tables once made the clean-up drop the second row; it
-now keeps any part of a mask that smaller ones do not explain.
+Three issues influenced the final design. First, a four-corner homography could not account for
+wide-angle lens distortion, tabletop height or multiple cameras, leading us to implement a full
+camera model. Second, SAM's masks included table legs and chairs, which led to the far-edge fitting
+method. Third, a bounding box spanning two rows of tables once caused the clean-up process to
+discard the second row. We modified the algorithm to retain mask regions not already explained by
+smaller masks.
 
-The planner has not yet been verified in the partner's hall. Next semester we will verify its
-accuracy there, finish the live mode that updates the map from the CCTV stream, test the interface
-with banquet staff, and send the map straight to the robot once the subsystems are integrated.
+The planner has not yet been tested in the industry partner's hall. Next semester, we will validate
+its accuracy in that environment, complete the live mode for updating the map from the CCTV stream,
+evaluate the interface with banquet staff and enable direct map transfer to the robot following
+subsystem integration.

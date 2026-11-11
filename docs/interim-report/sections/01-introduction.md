@@ -1,6 +1,5 @@
 ---
 id: introduction
-author: Teh Wei Sheng
 ---
 
 ## 1. Introduction
@@ -9,22 +8,20 @@ author: Teh Wei Sheng
 
 Banquet halls typically begin as empty spaces that must be transformed into fully prepared dining
 venues within a few hours, with all table settings arranged manually before guests arrive (Figure
-[[fig:banquet-setup]]). A typical banquet comprising 15 to 20 tables, with 10 place settings per
-table and approximately 10 items per setting, requires staff to manually position an estimated 1,500
-to 2,000 individual items. This makes banquet preparation a labour-intensive and time-consuming
-process, particularly when tight setup schedules must be met.
+[[fig:banquet-setup]]). A typical banquet comprising 15 to 20 tables requires staff to manually
+position an estimated 1,500 to 2,000 individual items. This makes banquet preparation a
+labour-intensive and time-consuming process, particularly when tight setup schedules must be met.
 
-![fig:banquet-setup | Setting up a banquet hall: (a) the empty hall; (b) tables in place; (c) staff laying out the settings by hand; (d) a finished table setting](../assets/interim/intro-banquet-setup.webp)
+![fig:banquet-setup | Banquet hall setup: (a) empty hall; (b) tables placed; (c) staff laying settings; (d) finished setting](../assets/interim/intro-banquet-setup.webp)
 
 This challenge is especially relevant in Singapore, where business events, including meetings,
 incentives, conventions and exhibitions (MICE), form a significant and growing part of the tourism
 industry. In 2025, business events generated S$2.3 billion in tourism receipts, representing a 35%
-increase from 2024 (Singapore Tourism Board, 2026). Weddings further contribute to the demand for
-banquet services. Singapore recorded 24,688 marriages in 2025 (Department of Statistics Singapore,
-2026), while a 2017 survey by Bridestory found that 59.6% of 1,500 surveyed couples preferred hotel
-ballrooms as their wedding venues. Applying this proportion to the number of marriages registered in
-2025 suggests that hotel wedding banquets could represent a substantial share of the demand for
-banquet preparation services.
+increase from 2024 [1]. Weddings further contribute to the demand for banquet services. Singapore
+recorded 24,688 marriages in 2025 [2], while a 2017 Bridestory survey [3] found that 59.6% of 1,500
+surveyed couples preferred hotel ballrooms as their wedding venues. Applying this proportion to the
+number of marriages registered in 2025 suggests that hotel wedding banquets could represent a
+substantial share of the demand for banquet preparation services.
 
 Given the frequency of such events and the considerable manual effort involved, our initial problem
 statement was broad: *How can the banquet setup process be made less labour-intensive,
@@ -37,7 +34,7 @@ humanoid robot equipped with two BrainCo Revo 2 hands** as the development platf
 [[fig:platform]]), while an **industry partner** (name withheld under a non-disclosure agreement)
 provides the operational context.
 
-![fig:platform | The development platform: (a) the Unitree R1 humanoid robot; (b) the BrainCo Revo 2 hand, one on each arm](../assets/interim/intro-platform.webp)
+![fig:platform | Development platform: (a) Unitree R1; (b) BrainCo Revo 2 hand](../assets/interim/intro-platform.webp)
 
 Thus, the main stakeholders are:
 
@@ -59,7 +56,7 @@ preparation (Figure [[fig:equipment]]), including:
 - **Plate dollies and carts:** Allow plates to be transported in bulk.
 - **Stage and truss systems:** Modular platforms and trusses simplify stage setup.
 
-![fig:equipment | Equipment that venues use to set up in bulk: (a) table trolley; (b) chair trolley; (c) stretch table cover; (d) cutlery basket and polishing machine; (e) plate dolly; (f) modular stage platforms](../assets/interim/background-equipment.webp)
+![fig:equipment | Bulk setup equipment: (a) table trolley; (b) chair trolley; (c) stretch cover; (d) cutlery basket and polisher; (e) plate dolly; (f) stage platforms](../assets/interim/background-equipment.webp)
 
 Although these tools improve transportation and preparation efficiency, placing individual items at
 their designated positions remains a manual task.
@@ -73,27 +70,27 @@ automation.
 ### 1.4. Existing Robotic Solutions
 
 Several types of robots already automate parts of material handling and service operations (Figure
-[[fig:existing-robots]]). Restaurant delivery robots, such as Pudu Robotics' BellaBot, transport food on trays with
-a capacity of up to 10 kg each (Pudu Robotics, n.d.). However, without robotic arms, they rely on
+[[fig:existing-robots]]). Restaurant delivery robots, such as Pudu Robotics' BellaBot, transport
+food on trays with a capacity of up to 10 kg each [4]. However, without robotic arms, they rely on
 staff or diners to retrieve the items. Similarly, automated guided vehicles (AGVs) and autonomous
 mobile robots (AMRs) handle bulk transportation. For example, the MiR250 Hook can tow carts weighing
-up to 500 kg (Mobile Industrial Robots, n.d.), while the industry partner is deploying an AGV to
-transport plate stacks to the banquet hall entrance.
+up to 500 kg [5], while the industry partner is deploying an AGV to transport plate stacks to the
+banquet hall entrance.
 
 In contrast, mobile manipulators can both transport and handle objects. Toyota's Human Support
 Robot, for instance, can retrieve items and perform household tasks, although its maximum payload of
-1.2 kg limits its handling capabilities (Yamamoto et al., 2019). Meanwhile, humanoid robots are
-increasingly being deployed in logistics. Agility Robotics' Digit, for example, transfers totes onto
-conveyors in GXO's warehouse operations (Agility Robotics, 2024). However, these applications
-typically involve repetitive tasks in structured environments, unlike banquet halls where table
-layouts and plate positions vary between events.
+1.2 kg limits its handling capabilities [6]. Meanwhile, humanoid robots are increasingly being
+deployed in logistics. Agility Robotics' Digit, for example, transfers totes onto conveyors in GXO's
+warehouse operations [7]. However, these applications typically involve repetitive tasks in
+structured environments, unlike banquet halls where table layouts and plate positions vary between
+events.
 
 Existing solutions therefore address either material transportation or object manipulation, but
 adapting these capabilities to variable banquet layouts remains a challenge. VATEL explores the use
 of a humanoid robot to bridge this gap by combining autonomous navigation with plate manipulation in
 a human-oriented environment.
 
-![fig:existing-robots | Existing robots: (a) a Pudu BellaBot delivery robot in a sports club restaurant; (b) a MiR250 AMR in a factory; (c) Toyota's Human Support Robot; (d) Agility Robotics' Digit placing a tote on a conveyor at GXO. Photos: (a) John Robert McPherson, CC0, and (b) AnnaEbdrup, CC BY-SA 4.0, both via Wikimedia Commons; (c) Yamamoto et al. (2019), CC BY 4.0; (d) Agility Robotics (2024).](../assets/interim/background-existing-robots.webp)
+![fig:existing-robots | Existing robots: (a) Pudu BellaBot; (b) MiR250 AMR; (c) Toyota HSR; (d) Agility Digit. Photos: (a) J. R. McPherson, CC0; (b) AnnaEbdrup, CC BY-SA 4.0, via Wikimedia Commons; (c) [6], CC BY 4.0; (d) [7]](../assets/interim/background-existing-robots.webp)
 
 With this narrower focus, the project seeks to address the following problem: *How could we use the
 Unitree R1 humanoid robot to optimise banquet setup by automating plate setup?*
@@ -109,7 +106,7 @@ retrieving plates from the AGV at the entrance and placing each one at its desig
 the layout changes with every event, the robot must also know where each table and seat is, but
 moving tables and chairs stays out of scope.
 
-![fig:workflow | The plate-setting workflow: (a) the five steps, of which VATEL takes on the two inside the banquet hall; (b) inside the hall, the robot carries each plate from the AGV at the door to its seat, on a layout that changes from one event to the next](../assets/interim/intro-workflow.webp)
+![fig:workflow | Plate-setting workflow: (a) the five steps, with VATEL's two in the hall; (b) the robot carrying plates from the AGV to each seat](../assets/interim/intro-workflow.webp)
 
 Table: tab:workflow | The current plate-setting workflow, and the part VATEL addresses
 | Step | Process | Done by |

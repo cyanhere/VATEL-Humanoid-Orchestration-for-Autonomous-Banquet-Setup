@@ -1,13 +1,14 @@
 ---
 id: conclusion
-author: Team
 ---
 
 ## 11. Conclusion
 
-In Semester 1 we narrowed banquet setup to one task a humanoid can realistically take on, setting
-plates, and built each part of a system to do it. The planner turns a hall's CCTV into a map of its
-tables, accurate to a few centimetres in simulation; the navigation stack takes a robot to a table and
-lines it up consistently; and pushing a plate out of the stack works around the R1's limits, with the
-full lift shown in simulation. Picking up a plate on the real robot is the largest open risk, and
-Semester 2 starts with it, alongside porting navigation to the R1 and two stages of integration.
+In Semester 1, we narrowed the banquet setup task to plate placement, a task suited to the
+humanoid's capabilities, and developed the key system components to support it. The planner converts
+hall CCTV footage into a table map, achieving centimetre-level accuracy in simulation. The
+navigation stack guides the robot to each table and aligns it consistently, while the plate
+manipulation pipeline pushes a plate out of the stack to create an accessible grasp point, with the
+full lifting motion demonstrated in simulation. Reliable plate grasping on the physical robot
+remains the main outstanding challenge. In Semester 2, we will prioritise this, port navigation to
+the R1 and integrate the three subsystems in two stages.
