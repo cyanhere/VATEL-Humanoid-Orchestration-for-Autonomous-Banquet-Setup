@@ -5,7 +5,7 @@ author: Teh Wei Sheng
 
 ## 2. Background
 
-### 2.1. Current Banquet Setup Practice
+### 2.1. Current Plate-Setting Practice
 
 During banquet preparation, servers follow the event layout and setup instructions, carrying stacks
 of plates to each table and placing one plate at every designated seat (Figure
@@ -36,8 +36,8 @@ Table: tab:gap | Comparison of manual plate-setting tasks and the R1's capabilit
 ### 2.3. Value Proposition and Novelty
 
 Existing banquet equipment, such as trolleys, dollies and racks, helps staff transport items in bulk
-(Section 1.3), but does not automate the placement process. VATEL addresses this gap by introducing a
-humanoid robot that can perform repetitive plate-setting tasks consistently, reducing reliance on
+(Section 1.3), but does not automate the placement process. VATEL addresses this gap by introducing
+a humanoid robot that can perform repetitive plate-setting tasks consistently, reducing reliance on
 temporary labour and minimising human handling of tableware. Unlike fixed automation, which is often
 limited by changing venue layouts, a humanoid robot can operate in spaces designed for people,
 provided it has an accurate representation of the venue and can manipulate tableware designed for
@@ -49,5 +49,5 @@ VATEL addresses these challenges through three key contributions:
   navigate with;
 - **a planner simple enough for banquet staff**, which turns the event plan into a goal for every
   place setting;
-- **a push-to-grasp strategy** that lets a humanoid hand with few joints take one plate off a tightly
-  nested stack.
+- **a push-to-grasp strategy** that lets a humanoid hand with few joints take one plate off a
+  tightly nested stack.

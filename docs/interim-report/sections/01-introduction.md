@@ -42,12 +42,12 @@ provides the operational context.
 Thus, the main stakeholders are:
 
 - **Partner's Banquet Operations Team:** Primary users responsible for banquet hall preparation and
-  operation of the VATEL Planner.
+  planning.
 - **Industry Partner's Management:** Oversees operational requirements and potential system
   adoption.
 - **EDIC Department:** Provides the robotic platform and technical support.
 
-### 1.3. Background
+### 1.3. Existing Banquet Equipment
 
 Venues already employ various types of equipment to streamline different aspects of banquet
 preparation (Figure [[fig:equipment]]), including:
@@ -70,7 +70,7 @@ while its 2 kg payload per arm limits its ability to handle heavier objects such
 chairs. Furthermore, the industry partner identified plates as the simplest starting point for
 automation.
 
-### 1.4. Existing Robotics Solutions
+### 1.4. Existing Robotic Solutions
 
 Several types of robots already support parts of this work (Figure [[fig:existing-robots]]).
 Restaurant delivery robots, such as Pudu Robotics' BellaBot, carry food on trays of up to 10 kg each
@@ -89,16 +89,16 @@ a different layout.
 With this narrower focus, the project seeks to address the following problem: *How could we use the
 Unitree R1 humanoid robot to optimise banquet setup by automating plate setup?*
 
-### 1.5. Project Scope & Objectives
+### 1.5. Project Scope and Objectives
 
 The plate-setting workflow consists of five steps (Figure [[fig:workflow]] and Table
-[[tab:workflow]]). The first three get the layout decided and the plates to the hall: the banquet
-team sets the table layout for the event, staff load plate stacks onto a dish dolly, and the
-industry partner is deploying an **automated guided vehicle (AGV)** to transport them from the
-kitchen to the banquet hall entrance. The project is therefore scoped to the work **inside the
-hall** (Table [[tab:scope]]): retrieving plates from the AGV at the entrance and placing each one at
-its designated seat. Because the layout changes with every event, the robot must also know where
-each table and seat is, but moving tables and chairs stays out of scope.
+[[tab:workflow]]). The first three get the layout decided and transfer the plates to the hall: the
+banquet team sets the table layout for the event, staff load plate stacks onto a dish dolly, and the
+industry partner is deploying an AGV to transport them from the kitchen to the banquet hall
+entrance. The project is therefore scoped to the work **inside the hall** (Table [[tab:scope]]):
+retrieving plates from the AGV at the entrance and placing each one at its designated seat. Because
+the layout changes with every event, the robot must also know where each table and seat is, but
+moving tables and chairs stays out of scope.
 
 ![fig:workflow | The plate-setting workflow: (a) the five steps, of which VATEL takes on the two inside the banquet hall; (b) inside the hall, the robot carries each plate from the AGV at the door to its seat, on a layout that changes from one event to the next](../assets/interim/intro-workflow.webp)
 
@@ -106,8 +106,8 @@ Table: tab:workflow | The current plate-setting workflow, and the part VATEL add
 | Step | Process | Done by |
 | --- | --- | --- |
 | 1 | Set the table layout for the event | Banquet team |
-| 2 | Load plate stacks onto dish dolly | Manual |
-| 3 | Transport plates to banquet hall | AGV (partner) |
+| 2 | Load plate stacks onto dish dolly | Staff |
+| 3 | Transport plates to banquet hall | AGV |
 | 4 | Retrieve and transport plates to tables | Humanoid robot |
 | 5 | Place plates at designated seats | Humanoid robot |
 
