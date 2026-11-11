@@ -72,17 +72,26 @@ automation.
 
 ### 1.4. Existing Robotic Solutions
 
-Several types of robots already support parts of this work (Figure [[fig:existing-robots]]).
-Restaurant delivery robots, such as Pudu Robotics' BellaBot, carry food on trays of up to 10 kg each
-(Pudu Robotics, n.d.), but have no arm, so staff or diners still remove each dish by hand. Automated
-guided vehicles (AGVs) and autonomous mobile robots (AMRs) move loads in bulk: the MiR250 Hook tows
-carts of up to 500 kg (Mobile Industrial Robots, n.d.), and the industry partner is deploying an AGV
-to bring plate stacks to the hall entrance. None of these robots can place a plate at a seat. Mobile
-manipulators can pick and place objects: Toyota's Human Support Robot fetches items and tidies
-rooms, but grasps at most 1.2 kg and was designed for homes (Yamamoto et al., 2019). Humanoid robots
-are entering logistics, where Agility Robotics' Digit moves totes onto conveyors for GXO (Agility
-Robotics, 2024), but this is a single repetitive task in a fixed warehouse, whereas each banquet has
-a different layout.
+Several types of robots already automate parts of material handling and service operations (Figure
+[[fig:existing-robots]]). Restaurant delivery robots, such as Pudu Robotics' BellaBot, transport food on trays with
+a capacity of up to 10 kg each (Pudu Robotics, n.d.). However, without robotic arms, they rely on
+staff or diners to retrieve the items. Similarly, automated guided vehicles (AGVs) and autonomous
+mobile robots (AMRs) handle bulk transportation. For example, the MiR250 Hook can tow carts weighing
+up to 500 kg (Mobile Industrial Robots, n.d.), while the industry partner is deploying an AGV to
+transport plate stacks to the banquet hall entrance.
+
+In contrast, mobile manipulators can both transport and handle objects. Toyota's Human Support
+Robot, for instance, can retrieve items and perform household tasks, although its maximum payload of
+1.2 kg limits its handling capabilities (Yamamoto et al., 2019). Meanwhile, humanoid robots are
+increasingly being deployed in logistics. Agility Robotics' Digit, for example, transfers totes onto
+conveyors in GXO's warehouse operations (Agility Robotics, 2024). However, these applications
+typically involve repetitive tasks in structured environments, unlike banquet halls where table
+layouts and plate positions vary between events.
+
+Existing solutions therefore address either material transportation or object manipulation, but
+adapting these capabilities to variable banquet layouts remains a challenge. VATEL explores the use
+of a humanoid robot to bridge this gap by combining autonomous navigation with plate manipulation in
+a human-oriented environment.
 
 ![fig:existing-robots | Existing robots: (a) a Pudu BellaBot delivery robot in a sports club restaurant; (b) a MiR250 AMR in a factory; (c) Toyota's Human Support Robot; (d) Agility Robotics' Digit placing a tote on a conveyor at GXO. Photos: (a) John Robert McPherson, CC0, and (b) AnnaEbdrup, CC BY-SA 4.0, both via Wikimedia Commons; (c) Yamamoto et al. (2019), CC BY 4.0; (d) Agility Robotics (2024).](../assets/interim/background-existing-robots.webp)
 
