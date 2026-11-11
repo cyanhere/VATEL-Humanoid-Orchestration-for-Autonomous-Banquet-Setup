@@ -89,17 +89,20 @@ Unitree R1 humanoid robot to optimise banquet setup by automating plate setup?*
 ### 1.4. Objectives and Scope
 
 The plate-setting workflow consists of five steps (Figure [[fig:workflow]] and Table
-[[tab:workflow]]), as summarised below. The industry partner is deploying an **automated guided vehicle (AGV)** to
-transport plate stacks from the kitchen to the banquet hall entrance. VATEL focuses on the subsequent
-in-hall operations: planning the table layout and using the humanoid robot to retrieve and distribute
-plates.
+[[tab:workflow]]). The first three get the layout decided and the plates to the hall: the banquet
+team sets the table layout for the event, staff load plate stacks onto a dish dolly, and the
+industry partner is deploying an **automated guided vehicle (AGV)** to transport them from the
+kitchen to the banquet hall entrance. The project is therefore scoped to the work **inside the
+hall** (Table [[tab:scope]]): retrieving plates from the AGV at the entrance and placing each one at
+its designated seat. Because the layout changes with every event, the robot must also know where
+each table and seat is, but moving tables and chairs stays out of scope.
 
-![fig:workflow | The plate-setting workflow: (a) the five steps, with the parts VATEL handles in green; (b) inside the hall, the robot carries each plate from the AGV at the door to its seat, on a layout that changes from one event to the next](../assets/interim/intro-workflow.webp)
+![fig:workflow | The plate-setting workflow: (a) the five steps, of which VATEL takes on the two inside the banquet hall; (b) inside the hall, the robot carries each plate from the AGV at the door to its seat, on a layout that changes from one event to the next](../assets/interim/intro-workflow.webp)
 
 Table: tab:workflow | The current plate-setting workflow, and the part VATEL addresses
-| Step | Process | Responsible system |
+| Step | Process | Done by |
 | --- | --- | --- |
-| 1 | Arrange table layout | VATEL Planner |
+| 1 | Set the table layout for the event | Banquet team |
 | 2 | Load plate stacks onto dish dolly | Manual |
 | 3 | Transport plates to banquet hall | AGV (partner) |
 | 4 | Retrieve and transport plates to tables | Humanoid robot |
@@ -107,7 +110,7 @@ Table: tab:workflow | The current plate-setting workflow, and the part VATEL add
 
 By the end of CDE4301, VATEL aims to achieve three objectives:
 
-1. Transfer the banquet hall layout from the planner to the robot.
+1. Transfer the event's banquet hall layout to the robot.
 2. Navigate autonomously to each designated table position and stop accurately and consistently.
 3. Retrieve plates from the AGV and place them at their designated table positions.
 
@@ -116,4 +119,4 @@ Table: tab:scope | Project scope
 | --- | --- |
 | In-hall operations, from the AGV at the entrance to individual seats | Kitchen-to-hall transportation (handled by the partner's AGV) |
 | Porcelain dinner plates, one per trip | Cutlery, glassware, bowls and linen |
-| Table layout planning and plate-position assignment | Moving tables and chairs |
+| Knowing the event's table layout and each plate's position | Moving tables and chairs |
