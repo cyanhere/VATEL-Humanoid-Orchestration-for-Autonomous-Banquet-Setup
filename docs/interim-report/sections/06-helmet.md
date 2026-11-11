@@ -60,7 +60,7 @@ panels between 3D-printed PETG end caps, and it hooks over the robot's back hand
 frame, again without modifying the robot. In CAD, the head and helmet clear it by at least 14 mm
 over the neck's full range; the box has not yet been built or fitted.
 
-![fig:cable-box | The cable management box (CAD renders of the current design): (a) hung on the R1's back, with the lidar lead (red) and the camera cable (blue) running down from the helmet; (b) assembled, with the acrylic panels drawn clear to show the take-up pulley, hub, spool and splitter inside](../assets/interim/helmet-cable-box.webp)
+![fig:cable-box | The cable management box (CAD renders of the current design): (a) hung on the R1's back, with the lidar lead (red) and the camera cable (blue) running from the sensors, through a clip on the helmet, into the box; (b) assembled, with the acrylic panels drawn clear to show the take-up pulley, hub, spool and splitter inside](../assets/interim/helmet-cable-box.webp)
 
 ![fig:cable-box-exploded | Exploded view of the cable management box (CAD render)](../assets/interim/cable-box-exploded.webp)
 
