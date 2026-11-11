@@ -9,10 +9,10 @@ author: Teh Wei Sheng
 
 Banquet halls typically begin as empty spaces that must be transformed into fully prepared dining
 venues within a few hours, with all table settings arranged manually before guests arrive (Figure
-[[fig:banquet-setup]]). A typical banquet comprising 15 to 20 tables, with 10 place settings per table
-and approximately 10 items per setting, requires staff to manually position an estimated 1,500 to
-2,000 individual items. This makes banquet preparation a labour-intensive and time-consuming process,
-particularly when tight setup schedules must be met.
+[[fig:banquet-setup]]). A typical banquet comprising 15 to 20 tables, with 10 place settings per
+table and approximately 10 items per setting, requires staff to manually position an estimated 1,500
+to 2,000 individual items. This makes banquet preparation a labour-intensive and time-consuming
+process, particularly when tight setup schedules must be met.
 
 ![fig:banquet-setup | Setting up a banquet hall: (a) the empty hall; (b) tables in place; (c) staff laying out the settings by hand; (d) a finished table setting](../assets/interim/intro-banquet-setup.webp)
 
@@ -47,12 +47,7 @@ Thus, the main stakeholders are:
   adoption.
 - **EDIC Department:** Provides the robotic platform and technical support.
 
-### 1.3. Focus on Plate Setup
-
-Plates were selected as the initial focus due to the R1's manipulation limitations. Its hands are
-difficult to program for fine-grasp tasks, while its 2 kg payload per arm limits its ability to handle
-heavier objects such as tables and chairs. Plates were also identified by the industry partner as the
-simplest starting point for automation.
+### 1.3. Background
 
 Venues already employ various types of equipment to streamline different aspects of banquet
 preparation (Figure [[fig:equipment]]), including:
@@ -66,8 +61,16 @@ preparation (Figure [[fig:equipment]]), including:
 
 ![fig:equipment | Equipment that venues use to set up in bulk: (a) table trolley; (b) chair trolley; (c) stretch table cover; (d) cutlery basket and polishing machine; (e) plate dolly; (f) modular stage platforms](../assets/interim/background-equipment.webp)
 
-While these tools improve bulk transportation and preparation, the final placement of individual
-items at their designated positions remains a manual task.
+Although these tools improve transportation and preparation efficiency, placing individual items at
+their designated positions remains a manual task.
+
+Given this gap, VATEL focuses on automating plate placement as an initial step. Plates were selected
+based on the R1's manipulation limitations: its hands are difficult to program for fine-grasp tasks,
+while its 2 kg payload per arm limits its ability to handle heavier objects such as tables and
+chairs. Furthermore, the industry partner identified plates as the simplest starting point for
+automation.
+
+### 1.4. Existing Robotics Solutions
 
 Several types of robots already support parts of this work (Figure [[fig:existing-robots]]).
 Restaurant delivery robots, such as Pudu Robotics' BellaBot, carry food on trays of up to 10 kg each
@@ -81,12 +84,12 @@ are entering logistics, where Agility Robotics' Digit moves totes onto conveyors
 Robotics, 2024), but this is a single repetitive task in a fixed warehouse, whereas each banquet has
 a different layout.
 
-![fig:existing-robots | Existing robots: (a) a Pudu BellaBot delivery robot in a sports club restaurant; (b) a MiR250 AMR in a factory; (c) Toyota's Human Support Robot; (d) Agility Robotics' Digit placing a tote on a conveyor at GXO. Photos: (a) John Robert McPherson, CC0, and (b) AnnaEbdrup, CC BY-SA 4.0, both via Wikimedia Commons; (c) Yamamoto et al. (2019), CC BY 4.0; (d) Agility Robotics (2024)](../assets/interim/background-existing-robots.webp)
+![fig:existing-robots | Existing robots: (a) a Pudu BellaBot delivery robot in a sports club restaurant; (b) a MiR250 AMR in a factory; (c) Toyota's Human Support Robot; (d) Agility Robotics' Digit placing a tote on a conveyor at GXO. Photos: (a) John Robert McPherson, CC0, and (b) AnnaEbdrup, CC BY-SA 4.0, both via Wikimedia Commons; (c) Yamamoto et al. (2019), CC BY 4.0; (d) Agility Robotics (2024).](../assets/interim/background-existing-robots.webp)
 
 With this narrower focus, the project seeks to address the following problem: *How could we use the
 Unitree R1 humanoid robot to optimise banquet setup by automating plate setup?*
 
-### 1.4. Objectives and Scope
+### 1.5. Project Scope & Objectives
 
 The plate-setting workflow consists of five steps (Figure [[fig:workflow]] and Table
 [[tab:workflow]]). The first three get the layout decided and the plates to the hall: the banquet
