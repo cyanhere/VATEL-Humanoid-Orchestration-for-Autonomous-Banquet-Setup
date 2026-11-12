@@ -25,16 +25,16 @@ transformed using the head joint angles to align with the robot's coordinate fra
 
 The JT128 scans 360° horizontally, but its vertical field of view extends from 4.4° below to 90.5°
 above its horizon. If mounted level, its lowest beam would only reach the floor at 17 m away.
-Therefore, we tilted it forward by 24°, which is the steepest angle between 15° and 25° that keeps
-the helmet outside its field of view. This directs the lowest beam 28.4° downwards, allowing it to
-detect tabletops from 1.05 m away and the floor from 2.46 m away. The trade-off is that its rearward
-field of view begins 19.6° above the horizon (Appendix 6A).
+Therefore, we tilted it forward by 24°, which keeps every part of the helmet at least 16.7° below
+its lowest beam. This directs the lowest beam 28.4° downwards, allowing it to detect tabletops from
+1.05 m away and the floor from 2.46 m away. The trade-off is that its rearward field of view begins
+19.6° above the horizon (Appendix 6A).
 
 The RealSense camera is mounted at the front of the helmet, below the LiDAR's field of view, and
 tilted 30° downwards. Its depth image spans 87° × 58°. At a height of 1.21 m, it can detect
 tabletops from 0.37 m ahead of the neck and the floor from 0.82 m. The two sensors therefore
 complement each other: the LiDAR detects tables from about a metre away, while the camera covers the
-final metre as the robot aligns itself with the table edge (Section 7.6). The G1 navigation tests
+final metre as the robot aligns itself with the table edge (Section 7.3.4). The G1 navigation tests
 used a camera tilted 63.6° downwards for this final alignment step. On the R1, the equivalent view
 requires pitching the head 33.6° downwards from its 30° camera mount.
 
