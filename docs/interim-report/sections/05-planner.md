@@ -63,10 +63,10 @@ detections and excludes chairs from the table outlines.
 references (Figure [[fig:calibration]]): points with known positions on the floor plan, vertical
 edges detected automatically by the code, and tabletops assumed to be rectangular when viewed from
 above. A least-squares fit estimates the camera's focal length, lens distortion, position and
-orientation from these references [13], [14]. The calibration is then checked by projecting the
-floor plan back onto the camera image. For the Tinkering Corner CCTV camera, this produced an
-estimated camera height of 2.57 m and a distortion coefficient of −0.19, with a residual error of 13
-pixels in a 2,560-pixel-wide image.
+orientation from these references [13], [14] (Appendix 5A). The calibration is then checked by
+projecting the floor plan back onto the camera image. For the Tinkering Corner CCTV camera, this
+produced an estimated camera height of 2.57 m and a distortion coefficient of −0.19, with a residual
+error of 13 pixels in a 2,560-pixel-wide image.
 
 ![fig:calibration | One-time camera calibration](../assets/interim/planner-calibration.webp)
 
@@ -85,7 +85,7 @@ coordinates into positions in the room.
 Since these are below the tabletop, their projected points fall closer to the camera when
 intersected with the tabletop plane. By viewing the outline from the floor point directly below the
 camera, the farthest point in each direction corresponds to the tabletop's actual edge (Figure
-[[fig:far-edge]]). A rectangle or circle is then fitted to these points.
+[[fig:far-edge]]). A rectangle or circle is then fitted to these points (Appendix 5B).
 
 ![fig:far-edge | Far-edge fit: the farthest points mark the tabletop edge](../assets/interim/planner-far-edge.webp)
 
@@ -97,7 +97,7 @@ available standard sizes, the measured dimensions are retained. The planner then
 place setting and assigns a robot stopping position 0.45 m from the table edge. In live mode, the
 map updates every 1.5 s to reflect table movements by staff. Finally, the plan is exported as a
 static map (.pgm and .yaml) for the navigation stack, with a named goal assigned to each place
-setting.
+setting (parameters in Appendix 5C).
 
 ![fig:snap | Snapping a table to stock sizes, with its settings and robot stops](../assets/interim/planner-snap.webp)
 

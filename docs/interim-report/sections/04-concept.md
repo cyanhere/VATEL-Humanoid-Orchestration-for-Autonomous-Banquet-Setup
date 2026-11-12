@@ -58,17 +58,27 @@ latency and fail where the view is blocked. A trail would have to be laid again 
 costmap planner adapts to any layout. The depth camera measures the distance to a table directly,
 while tags or RFID would have to be fitted to every table.
 
-Table: tab:morph-manipulation | Morphological chart: plate manipulation
-| Question | Option A | Option B | Option C |
-| --- | --- | --- | --- |
-| Find the plate | **The robot's own camera** | The hall's cameras | Plates always in a fixed spot |
-| Separate the top plate | Copy how people do it | **Push it sideways to make a grip point** |  |
-| Hold the plate | Parallel gripper | **Dexterous hand** | Suction end effector |
+Table: tab:morph-manipulation | Morphological chart: plate manipulation (selected options in bold)
+| Question | Option A | Option B | Option C | Option D |
+| --- | --- | --- | --- | --- |
+| 1. Find the plate | **Head depth camera** | Hall CCTV | Stack at a fixed position | Wrist cameras (under evaluation) |
+| 2. Separate the top plate | Grasp in the rim gap, as people do | Press the near rim to tip the plate | **Push sideways, then grasp** | Tool or fixture |
+| 3. Hold the plate | Thumb–middle pinch | Palm under, thumb above | **Rim in the index–middle slot** |  |
+| 4. Control the motion | **Scripted state machine** | Reinforcement learning | Imitation learning |  |
 
-The robot's own camera sees the stack from close range, far more accurately than the hall cameras.
-Section 8.3 explains why the R1 cannot copy how people lift a plate off a stack, which led to
-pushing it instead. The dexterous hands come with the platform and keep other tableware within reach
-later.
+The head camera sees the stack from close range, far more accurately than the hall cameras, and
+needs no fixed stack position. Separation is the critical question. Table [[tab:separation-eval]]
+compares its options against the criteria of Table [[tab:pick-criteria]], and Sections 8.3 and 8.4
+give the evidence for each choice. The end effector is fixed by the platform (Revo 2 hands); a
+gripper or suction cup would need new hardware and would not handle other tableware later.
+
+Table: tab:separation-eval | Separation options against the pick criteria (● meets, ◐ partly, ○ does not, – not reached)
+| Option | Feasible with the R1 arm and hand | Stack kept in place | Tolerates ±15 mm pose error | No added hardware |
+| --- | --- | --- | --- | --- |
+| Grasp in the rim gap | ○ 14 mm finger, 0.5–2.0 mm gap; approach 54° off | – | – | ● |
+| Press to tip | ○ far rim rises 3–8 mm; about 16 mm needed | – | – | ● |
+| Push sideways, then grasp | ● 4 of 5 pushes on the R1 | ● < 5 mm in MuJoCo | ● −15 to +20 mm | ● |
+| Tool or fixture | ◐ depends on the undefined AGV holder | – | – | ○ |
 
 > TODO: If the team scored the options (an evaluation matrix with
 > weighted criteria), add it here; the rubric rewards a systematic

@@ -28,7 +28,7 @@ above its horizon. If mounted level, its lowest beam would only reach the floor 
 Therefore, we tilted it forward by 24°, which is the steepest angle between 15° and 25° that keeps
 the helmet outside its field of view. This directs the lowest beam 28.4° downwards, allowing it to
 detect tabletops from 1.05 m away and the floor from 2.46 m away. The trade-off is that its rearward
-field of view begins 19.6° above the horizon.
+field of view begins 19.6° above the horizon (Appendix 6A).
 
 The RealSense camera is mounted at the front of the helmet, below the LiDAR's field of view, and
 tilted 30° downwards. Its depth image spans 87° × 58°. At a height of 1.21 m, it can detect
@@ -44,14 +44,14 @@ The helmet mounts without modifying the robot. During the initial fit check, a c
 slid backwards off the head. Finite-element analysis showed that most of the clamping load was
 concentrated on the rear pads. The subsequent design iteration therefore added a screw connection to
 an existing threaded hole in the R1's head to secure the helmet and preload the pads. The parts are
-3D-printed in PETG and TPU, with heat-set inserts for the screws.
+3D-printed in PETG and TPU, with heat-set inserts for the screws (Appendices 6B and 6C).
 
 ### 6.3. Cable Management
 
 The LiDAR and camera cables run from the helmet to a cable management box mounted on the R1's back,
 behind its onboard computer (Figure [[fig:cable-box]]). As the head turns, the cables pull a pulley
 along a sliding carriage inside the box, providing up to 235 mm of cable take-up. This accommodates
-head rotation of ±80° while keeping the cables clear of the neck and torso.
+head rotation of ±80° while keeping the cables clear of the neck and torso (Appendix 6D).
 
 The box also houses a USB hub for the Wi-Fi dongle, the LiDAR cable splitter and a spool for excess
 LiDAR cable (Figure [[fig:cable-box-exploded]]). It consists of 3 mm laser-cut acrylic panels
