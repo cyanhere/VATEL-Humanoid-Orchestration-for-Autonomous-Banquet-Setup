@@ -210,7 +210,7 @@ together across a 1.0 mm gap.
 
 **Finite-element model.** A linear-elastic contact model of one side piece (gmsh mesh, scikit-fem
 solver; PETG with E = 1.5 GPa, TPU pads as compression-only springs, skull screw fixed) gives the
-loads in Table [[tab:clamp-fe]]. The results move by up to ±25% with mesh refinement, so they are
+loads in Table [[tab:clamp-fe]] and the stresses in Figure [[fig:clamp-fe]]. The results move by up to ±25% with mesh refinement, so they are
 approximate.
 
 Table: tab:clamp-fe | Rear-clamp loads with the flanges touching (±25%)
