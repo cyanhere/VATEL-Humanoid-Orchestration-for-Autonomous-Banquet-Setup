@@ -1,0 +1,39 @@
+{
+  "method": "level floor: pitch and roll measured, yaw and position from the helmet CAD",
+  "source": "seeded from the first on-robot check_mount.py --live run: 14 readings transcribed from the console and averaged (tilt sd 0.16 deg, roll sd 0.11 deg). Replace with  python check_mount.py --calibrate.",
+  "date": "2026-10-13",
+  "angles_at_calibration": {},
+  "measured_tilt_deg": 34.00785714285714,
+  "measured_roll_deg": -2.2657142857142856,
+  "cad_tilt_deg": 29.99999413330029,
+  "correction_tilt_deg": 4.00786300955685,
+  "correction_roll_deg": -2.265703475422563,
+  "T_headyaw_optical": [
+    [
+      -0.0011520386835462107,
+      -0.5595755000623251,
+      0.8287785787150089,
+      0.095
+    ],
+    [
+      -0.9994621887831241,
+      0.027805099893381154,
+      0.01738417708049386,
+      0.0
+    ],
+    [
+      -0.032772030753654646,
+      -0.8283128250545913,
+      -0.5593065866323798,
+      0.04999999999999999
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "camera_above_floor_m": 1.1814285714285713,
+  "pelvis_above_floor_m": 0.7109285714285714
+}
