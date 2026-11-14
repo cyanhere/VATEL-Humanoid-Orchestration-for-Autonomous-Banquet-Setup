@@ -222,6 +222,8 @@ Table: tab:clamp-fe | Rear-clamp loads with the flanges touching (±25%)
 | Skull-screw load | 36 N |
 | Peak stress (crown arm, front edge) | 7.0 MPa |
 
+![fig:clamp-fe | Von Mises stress in the side piece with the flanges touching; the colour scale is capped at the 99.5th percentile and the 7.0 MPa peak is circled](../assets/interim/helmet-clamp-fe.webp)
+
 **Why the screws were added.** The first, clamp-only design slid backwards off the head: its model
 showed the rear pads carrying 44 N of the 52 N clamp force and the ear cups, which locate the
 helmet, only 13 N. Screwing the side pieces to the skull and preloading the ear pads moved the load
