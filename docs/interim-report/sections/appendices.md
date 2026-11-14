@@ -149,7 +149,7 @@ This appendix gives the reasoning for the options in Table [[tab:morph-manipulat
 does not cover. The separation options A–C and the three holding options were tested in MuJoCo and
 on the R1, and are reported in Section 8.4 (Tables [[tab:push-contacts]] and
 [[tab:receiving-grasps]]). The hands are fixed by the platform (N5); a gripper or suction cup would
-need new hardware and would not handle the other tableware in Appendix E.
+need new hardware and would not handle the other tableware in Appendix D.
 
 1. Find the plate. The hall CCTV (B) is specified to locate tables only to 10 cm (T4), too coarse to
 place a fingertip on a 5.5 mm rim. A fixed stack position (C) needs a holder at a known pose

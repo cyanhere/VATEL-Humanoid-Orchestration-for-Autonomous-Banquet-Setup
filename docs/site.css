@@ -1184,6 +1184,12 @@ a.report-card:active {
   pointer-events: none;
 }
 
+/* appendix previews: title on the first line, the opening text below it */
+.content a.xref-appendix[data-preview]::after {
+  white-space: pre-line;
+  max-width: min(420px, 85vw);
+}
+
 .content a.xref[data-preview]:hover::after,
 .content a.xref[data-preview]:focus-visible::after {
   opacity: 1;

@@ -6,7 +6,7 @@ id: manipulation
 
 ### 8.1. Requirements, Scope and Design Decisions
 
-Out of the 28 items in PARKROYAL's tableware inventory (Appendix E), the 10.5-inch porcelain dinner
+Out of the 28 items in PARKROYAL's tableware inventory (Appendix D), the 10.5-inch porcelain dinner
 plate is the most numerous (3,000 pieces), so development began with it. Test plates of the same
 diameter were procured; they weigh 522 g, with the dimensions shown in Figure
 [[fig:plate-geometry]]. Two further constraints follow from PARKROYAL's operation:

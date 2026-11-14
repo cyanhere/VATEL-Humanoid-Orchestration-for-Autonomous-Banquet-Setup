@@ -229,8 +229,25 @@ function linkReferencesAndAppendices(root) {
     if (a.closest("#toc")) return;
     const target = document.getElementById(decodeURIComponent(a.hash.slice(1)));
     if (!target) return;
-    const text = (target.getAttribute("subtitle") || target.textContent).replace(/\s+/g, " ").trim();
+    let text = (target.getAttribute("subtitle") || target.textContent).replace(/\s+/g, " ").trim();
     if (!text) return;
+    // an appendix: its title, then the opening of its text
+    if (target.tagName === "H3" && /^Appendix\b/.test(text)) {
+      let body = "";
+      for (let n = target.nextElementSibling; n && n.tagName !== "H3" && n.tagName !== "H2" && body.length < 260; n = n.nextElementSibling) {
+        if (n.matches("table-component, image-component")) {
+          if (!body) body = n.getAttribute("subtitle") || "";      // a table-only appendix: its caption
+          continue;
+        }
+        if (n.matches(".todo")) continue;
+        body += " " + n.textContent;
+      }
+      body = body.replace(/\s+/g, " ").trim();
+      if (body) text += "\n" + (body.length > 240 ? body.slice(0, 237) + "…" : body);
+      a.dataset.preview = text;
+      a.classList.add("xref", "xref-appendix");
+      return;
+    }
     a.classList.add("xref");
     a.dataset.preview = text.length > 220 ? text.slice(0, 217) + "…" : text;
   });
