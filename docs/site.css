@@ -1141,6 +1141,57 @@ a.report-card:active {
   overflow-wrap: anywhere;
 }
 
+/* Citation and appendix links, and the button that returns to the link that was followed */
+.content a.xref {
+  text-decoration: none;
+}
+
+.content a.xref:hover {
+  text-decoration: underline;
+}
+
+.content section.references li:target,
+.content h3:target {
+  background: var(--accent-soft);
+  border-radius: 4px;
+  transition: background 0.6s;
+}
+
+.content a.flash {
+  animation: link-flash 1.6s ease-out;
+  border-radius: 3px;
+}
+
+@keyframes link-flash {
+  from { background: var(--accent-bright); }
+  to { background: transparent; }
+}
+
+.back-to-link {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 60;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.back-to-link:hover {
+  background: var(--accent-2);
+}
+
+.back-to-link[hidden] {
+  display: none;
+}
+
 /* ?wc: the word count against the course limit */
 .wc-panel {
   position: fixed;

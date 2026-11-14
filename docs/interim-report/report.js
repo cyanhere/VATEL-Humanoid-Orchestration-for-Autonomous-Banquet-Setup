@@ -180,6 +180,67 @@ function buildContents(root) {
   toc.append(tree);
 }
 
+// Citations "[12]" link to their reference entry, and "Appendix 5B" / "Appendices 6B and 6C" link to the
+// appendix heading. Run after buildContents, so the headings already have their ids.
+function linkReferencesAndAppendices(root) {
+  const refs = new Set();
+  root.querySelectorAll("section.references li").forEach((li) => {
+    const m = /^\s*\[(\d+)\]/.exec(li.textContent);
+    if (m) { li.id = "ref-" + m[1]; refs.add(m[1]); }
+  });
+  const apps = {};
+  root.querySelectorAll("h3").forEach((h) => {
+    const m = /^\s*Appendix\s+(\d?[A-Z])\b/.exec(h.textContent);
+    if (m) apps[m[1]] = h.id;
+  });
+
+  const code = String.raw`\d?[A-Z](?![\w-])`;
+  const appRe = new RegExp(String.raw`\b(Appendix|Appendices)\s+(${code}(?:(?:,\s*|,?\s+and\s+|\s*(?:–|-|to)\s*)${code})*)`, "g");
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) => n.parentElement.closest("a, code, pre, h1, h2, h3, h4, h5, section.references li, .wc-panel")
+      ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+  });
+  const hits = [];
+  while (walker.nextNode()) {
+    const v = walker.currentNode.nodeValue;
+    if (/\[\d+\]/.test(v) || /\bAppendi(x|ces)\s+\d?[A-Z]/.test(v)) hits.push(walker.currentNode);
+  }
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  hits.forEach((node) => {
+    const html = esc(node.nodeValue)
+      .replace(/\[(\d+)\]/g, (m, n) => (refs.has(n) ? `<a class="xref" href="#ref-${n}">[${n}]</a>` : m))
+      .replace(appRe, (m, word, list) => word + " " + list.replace(/\d?[A-Z](?![\w-])/g,
+        (c) => (apps[c] ? `<a class="xref" href="#${apps[c]}">${c}</a>` : c)));
+    if (html === esc(node.nodeValue)) return;
+    const span = document.createElement("span");
+    span.innerHTML = html;
+    node.replaceWith(...span.childNodes);
+  });
+}
+
+// Following a figure, table, reference or appendix link shows a "Back" button that returns to the link.
+function enableBackButton(root) {
+  const btn = el("button", { class: "back-to-link", type: "button", hidden: "" }, "&#8617; Back to text");
+  document.body.append(btn);
+  let from = null;
+  root.addEventListener("click", (e) => {
+    const a = e.target.closest("a[href^='#']");
+    if (!a || a.closest("#toc")) return;
+    from = a;
+    btn.hidden = false;
+  });
+  btn.addEventListener("click", () => {
+    if (!from) return;
+    from.scrollIntoView({ behavior: "smooth", block: "center" });
+    from.classList.remove("flash");
+    void from.offsetWidth;
+    from.classList.add("flash");
+    history.replaceState(null, "", location.pathname + location.search);
+    btn.hidden = true;
+    from = null;
+  });
+}
+
 function countWords(section) {
   const copy = section.cloneNode(true);
   copy.querySelectorAll(".todo, .todo-inline, .lead-tag, image-component, pre.mermaid").forEach((e) => e.remove());
@@ -221,6 +282,8 @@ async function build() {
   main.replaceChildren(...SECTIONS.map((name, i) => renderSection(name, texts[i])));
   numberFiguresAndTables(main);
   buildContents(main);
+  linkReferencesAndAppendices(main);
+  enableBackButton(main);
   if (new URLSearchParams(location.search).has("wc")) showWordCount(main);
 
   if (main.querySelector("pre.mermaid")) {
