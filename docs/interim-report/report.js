@@ -224,33 +224,114 @@ function linkReferencesAndAppendices(root) {
     node.replaceWith(...span.childNodes);
   });
 
-  // hover preview: the reference entry, the appendix title, or the figure / table caption
+  // hover preview: the reference entry, or the figure / table caption. Appendix links get a
+  // floating window with the whole appendix instead (enableAppendixPreview).
   root.querySelectorAll("a[href^='#']").forEach((a) => {
     if (a.closest("#toc")) return;
     const target = document.getElementById(decodeURIComponent(a.hash.slice(1)));
     if (!target) return;
     let text = (target.getAttribute("subtitle") || target.textContent).replace(/\s+/g, " ").trim();
     if (!text) return;
-    // an appendix: its title, then the opening of its text
     if (target.tagName === "H3" && /^Appendix\b/.test(text)) {
-      let body = "";
-      for (let n = target.nextElementSibling; n && n.tagName !== "H3" && n.tagName !== "H2" && body.length < 260; n = n.nextElementSibling) {
-        if (n.matches("table-component, image-component")) {
-          if (!body) body = n.getAttribute("subtitle") || "";      // a table-only appendix: its caption
-          continue;
-        }
-        if (n.matches(".todo")) continue;
-        body += " " + n.textContent;
-      }
-      body = body.replace(/\s+/g, " ").trim();
-      if (body) text += "\n" + (body.length > 240 ? body.slice(0, 237) + "…" : body);
-      a.dataset.preview = text;
       a.classList.add("xref", "xref-appendix");
       return;
     }
     a.classList.add("xref");
     a.dataset.preview = text.length > 220 ? text.slice(0, 217) + "…" : text;
   });
+}
+
+// Hovering an appendix link opens a small floating window holding a copy of the whole appendix,
+// which scrolls on its own. The pointer can move into the window to scroll it or follow its links.
+function enableAppendixPreview(root) {
+  if (!matchMedia("(hover: hover)").matches) return;   // touch screens: the link just jumps there
+  const pop = el("div", { class: "appendix-pop", role: "dialog", "aria-label": "Appendix preview", hidden: "" });
+  root.append(pop);                                    // inside .content, so the report's styles apply
+  let showTimer = 0;
+  let hideTimer = 0;
+
+  // a copy of the appendix: its heading, then everything up to the next appendix or chapter
+  function fill(h3) {
+    const title = el("p", { class: "appendix-pop-title" });
+    title.append(el("a", { href: "#" + h3.id }, h3.innerHTML));
+    const parts = [title];
+    for (let n = h3.nextElementSibling; n && !/^H[1-3]$/.test(n.tagName); n = n.nextElementSibling) {
+      const copy = n.cloneNode(true);
+      [copy, ...copy.querySelectorAll("[id]")].forEach((e) => e.removeAttribute("id"));
+      copy.querySelectorAll("[data-preview]").forEach((e) => e.removeAttribute("data-preview"));
+      parts.push(copy);
+    }
+    pop.replaceChildren(...parts);
+    pop.scrollTop = 0;
+  }
+
+  // below the link if there is room, otherwise above it; never off the screen
+  function place(a) {
+    const r = a.getBoundingClientRect();
+    const gap = 8;
+    const w = Math.min(520, innerWidth - 24);
+    const below = innerHeight - r.bottom - gap - 12;
+    const above = r.top - gap - 12;
+    const down = below >= 280 || below >= above;
+    pop.style.width = w + "px";
+    pop.style.left = Math.max(12, Math.min(r.left, innerWidth - w - 12)) + "px";
+    pop.style.maxHeight = Math.min(440, down ? below : above) + "px";
+    pop.style.top = down ? r.bottom + gap + "px" : "";
+    pop.style.bottom = down ? "" : innerHeight - r.top + gap + "px";
+  }
+
+  function show(a) {
+    clearTimeout(hideTimer);
+    const h3 = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+    if (!h3) return;
+    if (pop.sourceLink !== a || pop.hidden) fill(h3);
+    pop.sourceLink = a;
+    pop.hidden = false;
+    place(a);
+  }
+  function hide() {
+    clearTimeout(showTimer);
+    clearTimeout(hideTimer);
+    pop.hidden = true;
+  }
+  function hideSoon() {
+    clearTimeout(showTimer);
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(hide, 250);
+  }
+
+  const appendixLink = (e) => {
+    const a = e.target.closest?.("a.xref-appendix");
+    return a && !pop.contains(a) ? a : null;
+  };
+  root.addEventListener("mouseover", (e) => {
+    const a = appendixLink(e);
+    if (!a || (a === pop.sourceLink && !pop.hidden)) { if (a) clearTimeout(hideTimer); return; }
+    clearTimeout(showTimer);
+    showTimer = setTimeout(() => show(a), 150);
+  });
+  root.addEventListener("mouseout", (e) => {
+    const a = appendixLink(e);
+    if (a && !a.contains(e.relatedTarget)) hideSoon();
+  });
+  root.addEventListener("focusin", (e) => { const a = appendixLink(e); if (a) show(a); });
+  root.addEventListener("focusout", (e) => { if (appendixLink(e) && !pop.contains(e.relatedTarget)) hideSoon(); });
+  root.addEventListener("click", (e) => { if (appendixLink(e)) hide(); });
+
+  // the wheel scrolls the window only, never the page behind it, even at the window's top or end
+  pop.addEventListener("wheel", (e) => {
+    const atTop = pop.scrollTop <= 0;
+    const atEnd = pop.scrollTop + pop.clientHeight >= pop.scrollHeight - 1;
+    if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atEnd)) e.preventDefault();
+  }, { passive: false });
+  pop.addEventListener("mouseenter", () => clearTimeout(hideTimer));
+  pop.addEventListener("mouseleave", hideSoon);
+  pop.addEventListener("focusout", (e) => { if (!pop.contains(e.relatedTarget)) hideSoon(); });
+  pop.addEventListener("click", (e) => { if (e.target.closest("a[href^='#']")) hide(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !pop.hidden) hide(); });
+  // the page scrolling away from the link closes it; scrolling inside the window does not
+  addEventListener("scroll", () => { if (!pop.hidden && !pop.matches(":hover")) hide(); }, { passive: true });
+  addEventListener("resize", hide);
 }
 
 // Following a figure, table, reference or appendix link shows a "Back" button that returns to the link.
@@ -261,7 +342,8 @@ function enableBackButton(root) {
   root.addEventListener("click", (e) => {
     const a = e.target.closest("a[href^='#']");
     if (!a || a.closest("#toc")) return;
-    from = a;
+    // a link inside the appendix window: come back to the link that opened the window
+    from = a.closest(".appendix-pop")?.sourceLink || a;
     btn.hidden = false;
   });
   btn.addEventListener("click", () => {
@@ -318,6 +400,7 @@ async function build() {
   numberFiguresAndTables(main);
   buildContents(main);
   linkReferencesAndAppendices(main);
+  enableAppendixPreview(main);
   enableBackButton(main);
   if (new URLSearchParams(location.search).has("wc")) showWordCount(main);
 
