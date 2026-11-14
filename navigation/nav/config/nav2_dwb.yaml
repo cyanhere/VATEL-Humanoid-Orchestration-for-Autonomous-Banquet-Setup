@@ -1,0 +1,283 @@
+# Nav2 (Foxy) for the Unitree G1 - DWB local controller.
+#
+# FRAMES (FAST-LIO's naming, NOT the Nav2 defaults):
+#   map -> camera_init -> body
+#   camera_init = odom frame   (published by relocalizer: map->camera_init)
+#   body        = robot base   (published by FAST-LIO: camera_init->body)
+#
+# THE MID-360 IS MOUNTED INVERTED (~150 deg from up). camera_init and body are
+# the lidar's own axes, so their z points roughly DOWN. Consequences here:
+#   * no costmap may use camera_init as its frame: its plane is upside down
+#     (mirrored grid, height band slicing the floor). Both costmaps use `map`,
+#     which is level (floor at z=0).
+#   * robot_base_frame `body` is fine: Nav2 takes the heading from the body's
+#     +x axis projected on the ground, which is the robot's forward.
+#   * velocity feedback comes from odom_2d.py, not /Odometry (see odom_topic).
+#
+# Values from measurement on this robot:
+#   robot_radius 0.28   (G1 ~0.45 m shoulders + margin)
+#   inflation    0.70   (swept: best clearance for ~5% path cost)
+#   localization ~0.13 m rmse -> keep goal tolerances generous
+
+map_server:
+  ros__parameters:
+    use_sim_time: false
+    # walls only: the furniture in this lounge is rearranged between
+    # sessions, so tables are NOT in the static map any more - the
+    # obstacle_layer marks them live from the lidar instead. Derived
+    # from ilounge_02_dt_map by shape (walls are thin lines through a
+    # big bbox, furniture fills its bbox); 66% of occupied cells removed.
+    yaml_filename: "/home/unitree/.scuba/nav/maps/ilounge_02_walls_map.yaml"
+    topic_name: "map"
+    frame_id: "map"
+
+planner_server:
+  ros__parameters:
+    use_sim_time: false
+    expected_planner_frequency: 1.0
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"   # Foxy has no Smac2D; NavFn A*
+      tolerance: 0.35
+      use_astar: true
+      allow_unknown: false          # D14: unknown may hide a stairwell
+
+controller_server:
+  ros__parameters:
+    use_sim_time: false
+    controller_frequency: 10.0      # G1 gait is slow; 20 Hz buys nothing
+    min_x_velocity_threshold: 0.02
+    min_y_velocity_threshold: 0.02
+    min_theta_velocity_threshold: 0.02
+    # /Odometry's twist is never filled by FAST-LIO, so DWB saw 0 and its window
+    # capped out at 0 + acc_lim/controller_frequency = 0.05 m/s, 0.1 rad/s.
+    # odom_2d.py publishes the real forward/left/yaw-rate about true up.
+    odom_topic: "/odom_2d"
+    controller_plugins: ["FollowPath"]
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugin: "goal_checker"
+
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.30
+      movement_time_allowance: 20.0    # the G1 accelerates slowly
+
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.30          # >= localization error (~0.13 m)
+      # 0.35 rad (20 deg) is finer than this gait can actually resolve: the
+      # smallest LEGAL turn is min_speed_theta 0.30 rad/s, and the measured turn
+      # rate overshoots what is commanded (nav_log: asked max 0.60, measured
+      # 0.68). With ~0.5 s of gait latency the heading quantum is ~0.15 rad
+      # before overshoot, so the robot hunted across the band instead of
+      # settling - the jitter seen AT THE GOAL. 0.60 rad (34 deg) is wider than
+      # the overshoot, so RotateToGoal can finish.
+      yaw_goal_tolerance: 0.60
+      stateful: true
+
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: true
+      # introspection for the path viewer: every sampled trajectory with its
+      # score (/evaluation), the chosen one (/local_plan), and the plan DWB is
+      # actually following (/received_global_plan, /transformed_global_plan).
+      publish_evaluation: true
+      publish_local_plan: true
+      publish_trajectories: true
+      publish_global_plan: true
+      publish_transformed_plan: true
+      publish_cost_grid_pc: false
+      # --- HOLONOMIC: the G1 can strafe. vy != 0 is the whole reason DWB is
+      #     used here rather than Regulated Pure Pursuit, which cannot.
+      # ---- limits matched to what the gait actually honours ----
+      # turn_test.py: static turns work at 0.3-0.6 rad/s, ramped AND stepped.
+      # vel_probe.py: forward under ~0.20 m/s is ignored (0.10, 0.15 stood still).
+      # DWB rejects a sample only when BOTH its speed is under min_speed_xy AND
+      # its turn rate is under min_speed_theta, so this pair means
+      #     valid  <=>  vx >= 0.20  OR  |turn| >= 0.30
+      # which is exactly the measured capability. Previously min_speed_theta
+      # (0.40) was ABOVE max_vel_theta (0.30), so the turn-rate escape could
+      # never be met and in-place rotation was never sampled at all.
+      # Lateral is still off until a probe shows what vy the gait accepts.
+      min_vel_x: 0.0
+      max_vel_x: 0.25
+      min_vel_y: 0.0
+      max_vel_y: 0.0
+      max_vel_theta: 0.60
+      min_speed_xy: 0.20
+      max_speed_xy: 0.25
+      min_speed_theta: 0.30
+      # DWB samples velocities in a window around the CURRENT velocity:
+      #     max = current + acc_lim / controller_frequency
+      # At 0.5 m/s^2 the window from standstill was 0.05 m/s - too small for the
+      # G1's gait to act on, so it never moved, feedback stayed 0, and the window
+      # never opened ("Failed to make progress" at exactly 20 s).
+      # These are set to max_vel * controller_frequency so a single cycle can
+      # reach full speed. Physical smoothness is NOT DWB's job here: nav_bridge
+      # slew-limits every command (0.35 m/s^2, 0.70 rad/s^2) - that is what
+      # stops the stomping.
+      acc_lim_x: 2.5
+      acc_lim_y: 1.0
+      acc_lim_theta: 6.0      # window must reach max_vel_theta in one cycle
+      decel_lim_x: -2.5
+      decel_lim_y: -1.0
+      decel_lim_theta: -6.0
+      vx_samples: 12
+      vy_samples: 1                    # WALK-ONLY: lateral off (was 8)
+      vtheta_samples: 15
+      sim_time: 3.0                    # 3.0 s x 0.25 m/s = 0.75 m of look-ahead
+      linear_granularity: 0.05
+      angular_granularity: 0.025
+      transform_tolerance: 0.5         # networked TF; be forgiving
+      # false so /evaluation carries a COMPLETE score list for every sample.
+      # With it true, DWB stops scoring a sample as soon as its running total
+      # exceeds the best so far, so only the winners are fully scored and any
+      # per-critic spread measured from the topic is biased toward them (that is
+      # why PathDist/GoalDist read 0.00 spread after sum_scores went on).
+      # It is a scoring shortcut, not a policy: the chosen trajectory is
+      # identical either way. Set it back to true if the 10 Hz budget suffers.
+      short_circuit_trajectory_evaluation: false
+      # RotateToGoal is back: it slows down and turns in place near the goal,
+      # which is now both sampled and achievable (its scale/slowing_factor/
+      # lookahead_time are set further down).
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign",
+                "PathAlign", "PathDist", "GoalDist"]
+      # was 0.02, i.e. 1600x weaker than PathDist: DWB hugged the blocked path
+      # until every sample hit a lethal cell, then stopped. At 0.6 the inflation
+      # gradient steers it away early enough to slip past.
+      # 0.6 was tuned when sum_scores was false, i.e. against ONE pose. Summing
+      # adds 15-72 poses per trajectory (0.75 m at linear_granularity 0.05, or
+      # 1.8 rad at angular_granularity 0.025), and the measured spread duly blew
+      # up to 1296 against GoalAlign's 4.80 - a 270x margin that made every
+      # other critic decorative. 0.02 is 30x down, which should land the spread
+      # near 40: still the strongest discriminator, no longer the only one.
+      BaseObstacle.scale: 0.02
+      # MEASURED 2026-09-28, 60 s in front of an unmapped obstacle:
+      # with sum_scores false (the dwb_critics default) BaseObstacleCritic
+      # returns ONLY THE FINAL POSE's cost. Consequence, straight from
+      # diag_jitter.py: 23359 of 71880 samples (32%) were rejected and EVERY
+      # rejection was BaseObstacle, while the survivors - all ending in free
+      # space - shared an identical cost, spread 0.00. So the obstacle was a
+      # veto with no gradient: DWB had options deleted until only sideways ones
+      # remained, instead of being steered around anything. That is the
+      # "jitters until it reaches the side of the obstacle" behaviour.
+      # true = sum the cost over every pose of the trajectory, so brushing past
+      # an obstacle costs more than staying clear of it.
+      BaseObstacle.sum_scores: true
+      PathAlign.scale: 32.0
+      # MEASURED: NavFn's gradient descent wobbles ~6 rad/m with a direction
+      # reversal every ~0.10 m (only 3% of segments are near 45 deg, so this is
+      # gradient chatter, not 8-connected staircase). At 0.2 m the alignment
+      # target sits 4 cells ahead and rides that chatter; diag_jitter compared
+      # the two distances live and found the target heading swings 3x less at
+      # 0.7 m (0.30 deg -> 0.10 deg per 0.1 s).
+      PathAlign.forward_point_distance: 0.7
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.2
+      PathDist.scale: 32.0
+      GoalDist.scale: 24.0
+      RotateToGoal.scale: 32.0
+      RotateToGoal.slowing_factor: 5.0
+      RotateToGoal.lookahead_time: -1.0
+      # MEASURED LIVE 2026-09-28: the chosen turn direction flipped every 0.43 s
+      # (37 reversals in 60 s) while the bridge needs 0.57 s to ramp to max_vyaw
+      # - so every turn was abandoned before it could be executed. 8.54 m
+      # travelled for 670 deg turned.
+      # Oscillation exists to forbid reversing a committed turn, but at the
+      # defaults below its lockout CLEARS after 5 cm of travel or 0.2 rad of
+      # rotation, which a jittering robot covers instantly - hence it was
+      # rejecting only 3.4% of samples. Require real progress before a reversal
+      # is allowed again:
+      Oscillation.oscillation_reset_dist: 0.25     # was 0.05
+      Oscillation.oscillation_reset_angle: 0.5     # was 0.2  (~29 deg)
+      # ...with a time-based escape so a genuine change of mind is still
+      # possible and the robot cannot deadlock facing an obstacle. -1 disables
+      # it, which is the default; 3 s is longer than the 0.43 s jitter period
+      # but short enough to recover.
+      Oscillation.oscillation_reset_time: 3.0      # was -1.0 (disabled)
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      use_sim_time: false
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: map                # NOT camera_init: that frame is upside down
+      robot_base_frame: body           # base frame  (FAST-LIO)
+      rolling_window: true
+      width: 6
+      height: 6
+      resolution: 0.05
+      robot_radius: 0.28
+      transform_tolerance: 0.5
+      plugins: ["obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: lidar
+        lidar:
+          topic: /cloud_registered      # FAST-LIO output, already in camera_init
+          # raytrace from the ROBOT: without this the clearing rays start at the
+          # cloud's frame origin, i.e. wherever FAST-LIO was started
+          sensor_frame: body
+          data_type: "PointCloud2"
+          marking: true
+          clearing: true
+          max_obstacle_height: 1.60     # D11 band ceiling
+          min_obstacle_height: 0.20     # D11: floor spread is 12.7 cm; 0.05 leaks
+          # Foxy names. obstacle_max_range / raytrace_max_range are Galactic+ and
+          # were SILENTLY IGNORED here (defaults 2.5 / 3.0 applied). The window is
+          # 6 x 6 m, so beyond ~3 m there is nothing to mark.
+          obstacle_range: 3.0
+          raytrace_range: 3.5
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.70
+        cost_scaling_factor: 3.0
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: false
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: body
+      resolution: 0.05
+      robot_radius: 0.28
+      track_unknown_space: true
+      transform_tolerance: 0.5
+      # Without an obstacle layer here, A* only knows the map recorded days ago:
+      # it plans straight through anything new and DWB - which can only see
+      # sim_time * max_vel_x ahead - has no room to go around it.
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: lidar
+        lidar:
+          topic: /cloud_registered
+          sensor_frame: body            # raytrace from the robot, not from the
+          data_type: "PointCloud2"      # cloud frame's origin
+          marking: true
+          clearing: true
+          min_obstacle_height: 0.20
+          max_obstacle_height: 1.60
+          # Foxy names (obstacle_max_range/raytrace_max_range are Galactic+ and
+          # would be silently ignored). Wider than the local costmap: this map
+          # does not roll, so marks persist and need a long clearing reach.
+          obstacle_range: 4.0
+          raytrace_range: 5.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.70
+        cost_scaling_factor: 3.0
+
+lifecycle_manager:
+  ros__parameters:
+    use_sim_time: false
+    autostart: true
+    node_names: ["map_server", "planner_server", "controller_server"]
