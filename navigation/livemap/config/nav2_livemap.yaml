@@ -1,0 +1,457 @@
+# LIVE-MAP PIPELINE - see ~/.scuba/livemap/README.md
+# No map server and no static layer: the robot starts knowing nothing
+# and the global costmap IS the map it builds, marked by obstacle_layer
+# from the lidar. The global costmap does not roll, so those marks
+# persist and accumulate for the whole run.
+#
+# SAFETY: with no walls known in advance, A* will plan through space
+# the robot has never seen, and DWB only looks sim_time * max_vel_x =
+# 0.75 m ahead. Keep goals within line of sight.
+# GROW-MAP PIPELINE copy - see ~/.scuba/growmap/README.md
+# Identical to ~/.scuba/nav/config/nav2_dwb.yaml except that it loads
+# growmap's own copy of the walls-only map. Nav2 itself needs NO
+# changes for the empty-cloud pipeline: the 2D map still has real
+# walls, so A* keeps hard boundaries and allow_unknown stays false.
+# Nav2 (Foxy) for the Unitree G1 - DWB local controller.
+#
+# FRAMES (FAST-LIO's naming, NOT the Nav2 defaults):
+#   map -> camera_init -> body
+#   camera_init = odom frame   (published by relocalizer: map->camera_init)
+#   body        = robot base   (published by FAST-LIO: camera_init->body)
+#
+# THE MID-360 IS MOUNTED INVERTED (~150 deg from up). camera_init and body are
+# the lidar's own axes, so their z points roughly DOWN. Consequences here:
+#   * no costmap may use camera_init as its frame: its plane is upside down
+#     (mirrored grid, height band slicing the floor). Both costmaps use `map`,
+#     which is level (floor at z=0).
+#   * robot_base_frame `body` is fine: Nav2 takes the heading from the body's
+#     +x axis projected on the ground, which is the robot's forward.
+#   * velocity feedback comes from odom_2d.py, not /Odometry (see odom_topic).
+#
+# Values from measurement on this robot:
+#   robot_radius 0.28   (G1 ~0.45 m shoulders + margin)
+#   inflation    0.70   (swept: best clearance for ~5% path cost)
+#   localization ~0.13 m rmse -> keep goal tolerances generous
+
+
+planner_server:
+  ros__parameters:
+    use_sim_time: false
+    expected_planner_frequency: 1.0
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"   # Foxy has no Smac2D; NavFn A*
+      tolerance: 0.35
+      use_astar: true
+      allow_unknown: false          # D14: unknown may hide a stairwell
+
+controller_server:
+  ros__parameters:
+    use_sim_time: false
+    controller_frequency: 10.0      # G1 gait is slow; 20 Hz buys nothing
+    min_x_velocity_threshold: 0.02
+    min_y_velocity_threshold: 0.02
+    min_theta_velocity_threshold: 0.02
+    # /Odometry's twist is never filled by FAST-LIO, so DWB saw 0 and its window
+    # capped out at 0 + acc_lim/controller_frequency = 0.05 m/s, 0.1 rad/s.
+    # odom_2d.py publishes the real forward/left/yaw-rate about true up.
+    odom_topic: "/odom_2d"
+    controller_plugins: ["FollowPath"]
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugin: "goal_checker"
+
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.30
+      movement_time_allowance: 20.0    # the G1 accelerates slowly
+
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.30          # NOT 0.20: min_speed_xy 0.20 x sim_time 3.0 = 0.60 m of
+                                       # minimum forward travel, so below ~0.6 m every forward
+                                       # trajectory overshoots and DWB prefers pure rotation.
+                                       # At 0.20 the robot jittered in the 0.20-0.30 m band.
+      # 0.20 to land OUTSIDE the alignment-critic trap. Measured 2026-10-22 at
+      # 0.10: the robot hunted 0.09 <-> 0.13 m for tens of seconds, turning on
+      # the spot. Cause is the forward point GoalAlign and PathAlign project
+      # ahead of the robot (forward_point_distance 0.2 and 0.7). Once the goal
+      # is CLOSER than that point, the point sits past the goal and the only
+      # way to reduce |forward_point - goal| is to ROTATE - driving forward
+      # makes the score worse. Those two critics carry scale 24 and 32, the
+      # joint-highest, so they win. Latching at 0.20 ends the goal before the
+      # trap can act, and the heading is finished by send_goal --finish-yaw.
+      # Final precision is edge_servo's job at the table, not Nav2's.
+      # MUST stay >= FollowPath.xy_goal_tolerance below. That is the
+      # radius RotateToGoal resolves to via searchAndGetParam, and inside
+      # it the critic (scale 32) penalises any trajectory with linear
+      # motion so the robot can only rotate. If the critic engages at a
+      # LARGER radius than the goal completes at, the band between them is
+      # a trap: translation forbidden, goal unreachable, the robot spins
+      # forever and send_goal's REACHED branch (so finish_yaw) never runs.
+      # Measured 2026-10-22 with 0.10 here against the 0.25 default:
+      # DWB held 0 forward + 0.29 yaw for 22 s and went nowhere.
+      yaw_goal_tolerance: 3.00         # 172 deg: DWB does NOT turn at
+                                       # the end. A gait step reaches
+                                       # 22.7 deg, so any window under
+                                       # that makes RotateToGoal
+                                       # overshoot and turn back. The
+                                       # heading is finished by
+                                       # send_goal --finish-yaw, which
+                                       # steps to a zero crossing.
+      stateful: true
+
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: true
+      # introspection for the path viewer: every sampled trajectory with its
+      # score (/evaluation), the chosen one (/local_plan), and the plan DWB is
+      # actually following (/received_global_plan, /transformed_global_plan).
+      publish_evaluation: true
+      publish_local_plan: true
+      publish_trajectories: true
+      publish_global_plan: true
+      publish_transformed_plan: true
+      publish_cost_grid_pc: false
+      # --- HOLONOMIC: the G1 can strafe. vy != 0 is the whole reason DWB is
+      #     used here rather than Regulated Pure Pursuit, which cannot.
+      # ---- limits matched to what the gait actually honours ----
+      # Both floors are MEASURED, by vel_sweep.py, 5 s per step from standstill:
+      #   forward  0.05-0.20 m/s   -> no motion;  0.25 m/s walks
+      #   yaw      0.05-0.30 rad/s -> no motion;  0.35 rad/s turns
+      # (an earlier reading put the yaw floor at 0.25; re-measured it is 0.30,
+      #  and setting min_speed_theta to 0.25 stalled the robot outright - DWB
+      #  chose 0.29 and nothing moved for 22 s.)
+      # so the gait deadband is 0.20 m/s and 0.25 rad/s, and the floors below
+      # are set to exactly those. max_vel_theta is 0.40 to match nav_bridge's
+      # max_vyaw clamp - at 0.60 DWB scored tight turns that nav_bridge then
+      # clipped to 0.40, so the chosen trajectory was one the robot could not
+      # execute and it under-turned every time.
+      #
+      # CAUTION, the min_speed pair is an OR, not a floor on either axis: DWB
+      # rejects a sample only when BOTH speed_xy < min_speed_xy AND
+      # |turn| < min_speed_theta, i.e.
+      #     valid  <=>  speed_xy >= 0.20  OR  |turn| >= 0.25
+      # so (vx 0.09, turn 0.30) is still a LEGAL sample. The turn executes and
+      # the forward component does not - that is the stationary-turn signature
+      # seen at the goal (nav_log: vx never exceeded 0.14 while yaw ran). The
+      # floors cannot fix it; min_vel_x stays 0.0 because raising it to 0.20
+      # would delete the vx=0 row and with it DWB's only in-place rotation.
+      # Foxy has no RotationShimController, so the heading is finished by
+      # send_goal --finish-yaw / turn_to.py instead.
+      # Lateral is still off until a probe shows what vy the gait accepts.
+      min_vel_x: 0.0
+      max_vel_x: 0.25
+      min_vel_y: 0.0
+      max_vel_y: 0.0
+      max_vel_theta: 0.60      # == nav_bridge max_vyaw; do not exceed it
+      min_speed_xy: 0.20       # measured forward gait deadband
+      max_speed_xy: 0.25
+      min_speed_theta: 0.30
+      # Not a goal tolerance for the controller - it is the radius the
+      # RotateToGoal critic uses. Foxy leaves it at 0.25 unless set here, and
+      # searchAndGetParam finds it from FollowPath.*, which is why it is not in
+      # the critic's own namespace. Held UNDER goal_checker's 0.20 so the
+      # goal always completes first: Foxy's controller_server tests
+      # isGoalReached() BEFORE computing each velocity.
+      xy_goal_tolerance: 0.08    # MIXED-command yaw floor, not the 0.25
+                               # pure-yaw one: vel_sweep measured 0.25
+                               # with vx == 0, but DWB's samples carry a
+                               # forward term too. Observed 2026-10-22:
+                               # (vx 0.05-0.11, vyaw 0.29) held for 22 s
+                               # produced meas turn 0.00, while
+                               # (vx 0.068, vyaw 0.355) did turn (0.174).
+                               # So mixed needs >0.29; 0.25 here stalled
+                               # the robot outright.
+      # DWB samples velocities in a window around the CURRENT velocity:
+      #     max = current + acc_lim / controller_frequency
+      # At 0.5 m/s^2 the window from standstill was 0.05 m/s - too small for the
+      # G1's gait to act on, so it never moved, feedback stayed 0, and the window
+      # never opened ("Failed to make progress" at exactly 20 s).
+      # These are set to max_vel * controller_frequency so a single cycle can
+      # reach full speed. Physical smoothness is NOT DWB's job here: nav_bridge
+      # slew-limits every command (0.35 m/s^2, 0.70 rad/s^2) - that is what
+      # stops the stomping.
+      acc_lim_x: 2.50
+      acc_lim_y: 1.0
+      acc_lim_theta: 6.0      # window must reach max_vel_theta (0.45) in one
+                              # cycle: needs >= 0.45 * 10 Hz = 4.5
+      decel_lim_x: -2.50
+      decel_lim_y: -1.0
+      decel_lim_theta: -6.0
+      # Grid rebalanced for the MEASURED gait, 2026-10-22. nav_bridge now
+      # snaps |vx| < 0.20 to exactly 0 (its gait_vx), so every forward sample
+      # under the threshold executes identically to the vx=0 row: 12 samples
+      # over 0..0.25 collapsed to only 4 distinct behaviours. 6 samples give 3
+      # (0.00 / 0.20 / 0.25) and cost half as much, which funds a turn grid
+      # twice as fine - and that is where the resolution was actually needed:
+      # with the yaw floor at 0.30, vtheta_samples 15 left only +/-0.343 and
+      # +/-0.400 legal, i.e. TWO in-place turn rates per direction. At 29 the
+      # legal set is +/-0.314 0.343 0.371 0.400.
+      # Raised 6 -> 8 when the forward floor went to 0.25: over 0..0.30 a
+      # 6-sample grid put only 0.300 at or above the floor, leaving DWB ONE
+      # forward speed and no way to ease off near a goal. 8 gives 0.257 and
+      # 0.300. This is a symptom, not a fix - the floor is 0.25 and the
+      # ceiling 0.30 because nav_bridge clamps max_vx there, so the whole
+      # usable band is 0.05 m/s wide. The forward ceiling has never been
+      # measured: the original sweep's 0.35 and 0.40 steps were silently
+      # clipped to 0.30 by that same clamp.
+      #   8 x 1 x 29 = 232 trajectories/cycle, against 12 x 1 x 15 = 180.
+      vx_samples: 12
+      vy_samples: 1                    # WALK-ONLY: lateral off (was 8)
+      vtheta_samples: 15
+      sim_time: 3.0                    # 3.0 s x 0.45 m/s = 1.35 m of look-ahead
+      linear_granularity: 0.05
+      angular_granularity: 0.025
+      transform_tolerance: 0.5         # networked TF; be forgiving
+      # false so /evaluation carries a COMPLETE score list for every sample.
+      # With it true, DWB stops scoring a sample as soon as its running total
+      # exceeds the best so far, so only the winners are fully scored and any
+      # per-critic spread measured from the topic is biased toward them (that is
+      # why PathDist/GoalDist read 0.00 spread after sum_scores went on).
+      # It is a scoring shortcut, not a policy: the chosen trajectory is
+      # identical either way. Set it back to true if the 10 Hz budget suffers.
+      short_circuit_trajectory_evaluation: false
+      # RotateToGoal is back: it slows down and turns in place near the goal,
+      # which is now both sampled and achievable (its scale/slowing_factor/
+      # lookahead_time are set further down).
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign",
+                "PathAlign", "PathDist", "GoalDist"]
+      # was 0.02, i.e. 1600x weaker than PathDist: DWB hugged the blocked path
+      # until every sample hit a lethal cell, then stopped. At 0.6 the inflation
+      # gradient steers it away early enough to slip past.
+      # 0.6 was tuned when sum_scores was false, i.e. against ONE pose. Summing
+      # adds 15-72 poses per trajectory (0.75 m at linear_granularity 0.05, or
+      # 1.8 rad at angular_granularity 0.025), and the measured spread duly blew
+      # up to 1296 against GoalAlign's 4.80 - a 270x margin that made every
+      # other critic decorative. 0.02 is 30x down, which should land the spread
+      # near 40: still the strongest discriminator, no longer the only one.
+      BaseObstacle.scale: 0.02
+      # MEASURED 2026-09-28, 60 s in front of an unmapped obstacle:
+      # with sum_scores false (the dwb_critics default) BaseObstacleCritic
+      # returns ONLY THE FINAL POSE's cost. Consequence, straight from
+      # diag_jitter.py: 23359 of 71880 samples (32%) were rejected and EVERY
+      # rejection was BaseObstacle, while the survivors - all ending in free
+      # space - shared an identical cost, spread 0.00. So the obstacle was a
+      # veto with no gradient: DWB had options deleted until only sideways ones
+      # remained, instead of being steered around anything. That is the
+      # "jitters until it reaches the side of the obstacle" behaviour.
+      # true = sum the cost over every pose of the trajectory, so brushing past
+      # an obstacle costs more than staying clear of it.
+      BaseObstacle.sum_scores: true
+      PathAlign.scale: 32.0
+      # MEASURED: NavFn's gradient descent wobbles ~6 rad/m with a direction
+      # reversal every ~0.10 m (only 3% of segments are near 45 deg, so this is
+      # gradient chatter, not 8-connected staircase). At 0.2 m the alignment
+      # target sits 4 cells ahead and rides that chatter; diag_jitter compared
+      # the two distances live and found the target heading swings 3x less at
+      # 0.7 m (0.30 deg -> 0.10 deg per 0.1 s).
+      PathAlign.forward_point_distance: 0.7
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.2
+      PathDist.scale: 32.0
+      GoalDist.scale: 24.0
+      RotateToGoal.scale: 32.0
+      RotateToGoal.slowing_factor: 5.0
+      RotateToGoal.lookahead_time: -1.0
+      # MEASURED LIVE 2026-09-28: the chosen turn direction flipped every 0.43 s
+      # (37 reversals in 60 s) while the bridge needs 0.57 s to ramp to max_vyaw
+      # - so every turn was abandoned before it could be executed. 8.54 m
+      # travelled for 670 deg turned.
+      # Oscillation exists to forbid reversing a committed turn, but at the
+      # defaults below its lockout CLEARS after 5 cm of travel or 0.2 rad of
+      # rotation, which a jittering robot covers instantly - hence it was
+      # rejecting only 3.4% of samples. Require real progress before a reversal
+      # is allowed again:
+      Oscillation.oscillation_reset_dist: 0.25     # was 0.05
+      Oscillation.oscillation_reset_angle: 0.5     # was 0.2  (~29 deg)
+      # ...with a time-based escape so a genuine change of mind is still
+      # possible and the robot cannot deadlock facing an obstacle. -1 disables
+      # it, which is the default; 3 s is longer than the 0.43 s jitter period
+      # but short enough to recover.
+      Oscillation.oscillation_reset_time: 3.0      # was -1.0 (disabled)
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      use_sim_time: false
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: map                # NOT camera_init: that frame is upside down
+      robot_base_frame: body           # base frame  (FAST-LIO)
+      rolling_window: true
+      width: 6
+      height: 6
+      resolution: 0.05
+      robot_radius: 0.28
+      transform_tolerance: 0.5
+      plugins: ["obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: lidar
+        lidar:
+          topic: /cloud_registered      # FAST-LIO output, already in camera_init
+          # raytrace from the ROBOT: without this the clearing rays start at the
+          # cloud's frame origin, i.e. wherever FAST-LIO was started
+          sensor_frame: body
+          data_type: "PointCloud2"
+          marking: true
+          clearing: true
+          max_obstacle_height: 1.60     # D11 band ceiling
+          min_obstacle_height: 0.20     # D11: floor spread is 12.7 cm; 0.05 leaks
+          # Foxy names. obstacle_max_range / raytrace_max_range are Galactic+ and
+          # were SILENTLY IGNORED here (defaults 2.5 / 3.0 applied). The window is
+          # 6 x 6 m, so beyond ~3 m there is nothing to mark.
+          obstacle_range: 3.0
+          raytrace_range: 3.5
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.70
+        cost_scaling_factor: 3.0
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: false
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: body
+      # Without a static map the costmap cannot inherit a size or an origin,
+      # so both are explicit. 60 x 60 m centred on the start pose, which IS
+      # the origin here. At 0.05 m that is 1.44 M cells and inflation over it
+      # every update is slow, so the GLOBAL grid is 0.10 m - ample for a
+      # 0.28 m robot radius. The local costmap stays at 0.05 m.
+      resolution: 0.05
+      width: 60
+      height: 60
+      origin_x: -30.0
+      origin_y: -30.0
+      rolling_window: false
+      # NOT the robot's size - the PLANNING radius. NavFn treats any cell at
+      # cost >= 253 as untraversable, and InflationLayer assigns exactly 253
+      # to everything within the INSCRIBED radius, which for a circular
+      # footprint is robot_radius. Setting it to 0.50 therefore makes a 0.50 m
+      # band around every obstacle genuinely impassable to A*, not merely
+      # expensive - so it must take the long clear route rather than plan
+      # through a gap it will only get stuck in.
+      # The LOCAL costmap keeps 0.28, so DWB's collision checking and the
+      # robot's real footprint are unchanged.
+      # CONSEQUENCE: a corridor narrower than 2 x robot_radius has no
+      # traversable cell down its middle and A* will refuse it, even though
+      # the robot is only 0.56 m wide.
+      #
+      # 2026-10-15: lowered 0.50 -> 0.35. At 0.50 this reserved a 1.00 m
+      # corridor for a 0.56 m robot and NO table approach pose was plannable:
+      # measured 0 of 16, every one sitting inside the 0.50 m band of a
+      # neighbouring table's chairs. The real corridors between those tables
+      # measured 1.80, 4.60 and 5.80 m of LETHAL-free width, so the robot fit
+      # with 1.24 m to spare - the block was entirely this margin.
+      # 0.35 keeps 0.07 m over the physical 0.28; going to 0.30 or 0.28 opens
+      # no further poses (measured 8 of 16 at 0.35, 0.30 and 0.28 alike).
+      # The LOCAL costmap still uses 0.28, so collision checking during
+      # execution is unchanged - this only makes the PLANNER less pessimistic.
+      robot_radius: 0.25
+      # Everything is unexplored at startup. With track_unknown_space true,
+      # A* (allow_unknown:false) would refuse to plan anywhere at all. False
+      # makes unseen cells FREE, so it plans straight lines into the unknown
+      # and the obstacle_layer corrects them as the lidar sees the room.
+      track_unknown_space: false
+      transform_tolerance: 0.5
+      # Without an obstacle layer here, A* only knows the map recorded days ago:
+      # it plans straight through anything new and DWB - which can only see
+      # sim_time * max_vel_x ahead - has no room to go around it.
+      plugins: ["memory_layer", "obstacle_layer", "inflation_layer"]
+      # MEMORY. The live obstacle_layer below raytrace-clears roughly 130x
+      # more cells per scan than the scan marks (1328 pts/scan, only 511 in
+      # band, each ray clearing up to 50 cells), so on its own the costmap
+      # holds nothing beyond sensor range - measured: no marks past 4.9 m
+      # after a 60 m traverse. This layer marks from the ACCUMULATED map that
+      # the accumulator publishes, and never clears, so the planner finally
+      # knows about places the robot has already been.
+      #
+      # Layers combine with Max, so the live layer can only ADD to this one -
+      # it can never erase a remembered obstacle. That is the point, and it is
+      # also the cost: a table that MOVES stays remembered at its old spot
+      # until the accumulated map itself is reset.
+      memory_layer:
+        # WAS an ObstacleLayer on /accumulated_cloud with clearing:false and
+        # combination_method Max. That pair makes every mark IMMORTAL: Max
+        # means the live layer can only add, and clearing:false means nothing
+        # ever removes one. A person who walked past therefore left a
+        # permanent 0.50 m wide hard-block band (robot_radius 0.25 inflates
+        # each lethal cell into a 0.25 m disc at cost 253, which navfn
+        # refuses). Measured 2026-10-22: 28 lethal cells within 0.60 m of the
+        # robot while the live lidar saw NOTHING within 0.50 m, sealing the
+        # robot into a 219-cell pocket - 2.2 m^2 - so every goal reported
+        # 'no path'. Ignoring inflation the same goal was reachable.
+        #
+        # StaticLayer's incomingMap() REPLACES the layer's contents, so a cell
+        # that costmap_decay.py forgets really disappears here - and because
+        # InflationLayer recomputes from the current lethal set every cycle
+        # (verified: 99.9% of cells match the formula to +/-3), the 0.50 m
+        # band goes with it automatically.
+        #
+        # The grid comes from ~/.scuba/livemap/costmap_decay.py, which decays
+        # evidence inside a 6 m box on the robot and marks additively outside
+        # it. It MUST be running, or this layer stays empty. It publishes at
+        # exactly this costmap's size/origin/resolution, because StaticLayer
+        # resizes a non-rolling master costmap to match whatever map arrives.
+        # use_maximum is deliberately NOT set: the default (false) gives
+        # updateWithTrueOverwrite on a non-rolling costmap, which is what lets
+        # a forgotten cell be written back to free.
+        plugin: "nav2_costmap_2d::StaticLayer"
+        enabled: true
+        map_topic: /memory_grid
+        map_subscribe_transient_local: true
+        subscribe_to_updates: false
+        transform_tolerance: 0.5
+        # pinned rather than left to defaults, because costmap_decay.py's wire
+        # format depends on them: it publishes exactly 0 (free) and 100 (lethal).
+        use_maximum: false             # overwrite, so a forgotten cell -> free
+        lethal_cost_threshold: 100     # 100 is what the decay grid marks with
+        trinary_costmap: true          # below threshold -> free, no grey band
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: lidar
+        lidar:
+          topic: /cloud_registered
+          sensor_frame: body            # raytrace from the robot, not from the
+          data_type: "PointCloud2"      # cloud frame's origin
+          marking: true
+          clearing: true
+          min_obstacle_height: 0.20
+          max_obstacle_height: 1.60
+          # Foxy names (obstacle_max_range/raytrace_max_range are Galactic+ and
+          # would be silently ignored). Wider than the local costmap: this map
+          # does not roll, so marks persist and need a long clearing reach.
+          obstacle_range: 4.0
+          raytrace_range: 5.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        # GLOBAL only - the local costmap keeps 0.70 / 3.0.
+        # NavFn charges COST_NEUTRAL (50) per cell plus ~0.8 x the costmap
+        # value, so whether a detour wins is decided here. The inflation cost
+        # is 252 * exp(-cost_scaling_factor * (d - 0.28)) and is ZERO beyond
+        # inflation_radius, so at 0.70/3.0 a route squeezing past an obstacle
+        # cost barely more than a clear one and A* kept flip-flopping between
+        # two obstructed routes instead of detouring.
+        #   d      old (0.70/3.0)   new (1.00/1.5)
+        #   0.5 m      130              181
+        #   0.7 m       72              134
+        #   1.0 m        0               86
+        # NOTE a bigger radius does NOT block narrow gaps: only cells inside
+        # the inscribed radius are lethal. It makes them expensive, so A* takes
+        # them only when there is no alternative.
+        # the hard-block zone is robot_radius (0.35 m); this is the soft
+        # gradient OUTSIDE it, which still steers A* toward open space:
+        #   0.7 m -> 187   1.0 m -> 119   1.5 m -> 56
+        inflation_radius: 1.50
+        cost_scaling_factor: 1.5
+
+lifecycle_manager:
+  ros__parameters:
+    use_sim_time: false
+    autostart: true
+    node_names: ["planner_server", "controller_server"]
