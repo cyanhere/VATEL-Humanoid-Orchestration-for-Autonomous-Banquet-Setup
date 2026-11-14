@@ -1,0 +1,731 @@
+{
+  "revo2_right_hand": {
+    "file": "revo2_right_hand.urdf",
+    "root_link": "right_base_link",
+    "actuated_joints": [
+      "right_thumb_metacarpal_joint",
+      "right_thumb_proximal_joint",
+      "right_index_proximal_joint",
+      "right_middle_proximal_joint",
+      "right_ring_proximal_joint",
+      "right_pinky_proximal_joint"
+    ],
+    "movable_joints": [
+      "right_thumb_metacarpal_joint",
+      "right_index_proximal_joint",
+      "right_middle_proximal_joint",
+      "right_ring_proximal_joint",
+      "right_pinky_proximal_joint",
+      "right_thumb_proximal_joint",
+      "right_index_distal_joint",
+      "right_middle_distal_joint",
+      "right_ring_distal_joint",
+      "right_pinky_distal_joint",
+      "right_thumb_distal_joint"
+    ],
+    "coupling": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.131,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.267,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.252,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.271
+      ],
+      [
+        0.0,
+        1.0945,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "coupling_offset": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "touch_links": [
+      "right_thumb_touch_link",
+      "right_index_touch_link",
+      "right_middle_touch_link",
+      "right_ring_touch_link",
+      "right_pinky_touch_link"
+    ],
+    "limits": {
+      "right_thumb_metacarpal_joint": [
+        0.0,
+        1.55334
+      ],
+      "right_index_proximal_joint": [
+        0.0,
+        1.41
+      ],
+      "right_middle_proximal_joint": [
+        0.0,
+        1.41
+      ],
+      "right_ring_proximal_joint": [
+        0.0,
+        1.41
+      ],
+      "right_pinky_proximal_joint": [
+        0.0,
+        1.41
+      ],
+      "right_thumb_proximal_joint": [
+        0.0,
+        1.0472
+      ],
+      "right_index_distal_joint": [
+        0.0,
+        1.69297
+      ],
+      "right_middle_distal_joint": [
+        0.0,
+        1.69297
+      ],
+      "right_ring_distal_joint": [
+        0.0,
+        1.69297
+      ],
+      "right_pinky_distal_joint": [
+        0.0,
+        1.69297
+      ],
+      "right_thumb_distal_joint": [
+        0.0,
+        1.15192
+      ]
+    }
+  },
+  "revo2_right_floating": {
+    "file": "revo2_right_floating.urdf",
+    "root_link": "world",
+    "wrist_joints": [
+      "virtual_x_joint",
+      "virtual_y_joint",
+      "virtual_z_joint",
+      "virtual_roll_joint",
+      "virtual_pitch_joint",
+      "virtual_yaw_joint"
+    ],
+    "actuated_joints": [
+      "right_thumb_metacarpal_joint",
+      "right_thumb_proximal_joint",
+      "right_index_proximal_joint",
+      "right_middle_proximal_joint",
+      "right_ring_proximal_joint",
+      "right_pinky_proximal_joint"
+    ],
+    "touch_links": [
+      "right_thumb_touch_link",
+      "right_index_touch_link",
+      "right_middle_touch_link",
+      "right_ring_touch_link",
+      "right_pinky_touch_link"
+    ]
+  },
+  "revo2_left_hand": {
+    "file": "revo2_left_hand.urdf",
+    "root_link": "left_base_link",
+    "actuated_joints": [
+      "left_thumb_metacarpal_joint",
+      "left_thumb_proximal_joint",
+      "left_index_proximal_joint",
+      "left_middle_proximal_joint",
+      "left_ring_proximal_joint",
+      "left_pinky_proximal_joint"
+    ],
+    "movable_joints": [
+      "left_thumb_metacarpal_joint",
+      "left_index_proximal_joint",
+      "left_middle_proximal_joint",
+      "left_ring_proximal_joint",
+      "left_pinky_proximal_joint",
+      "left_thumb_proximal_joint",
+      "left_index_distal_joint",
+      "left_middle_distal_joint",
+      "left_ring_distal_joint",
+      "left_pinky_distal_joint",
+      "left_thumb_distal_joint"
+    ],
+    "coupling": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.131,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.267,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.252,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.271
+      ],
+      [
+        0.0,
+        1.0945,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "coupling_offset": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "touch_links": [
+      "left_thumb_touch_link",
+      "left_index_touch_link",
+      "left_middle_touch_link",
+      "left_ring_touch_link",
+      "left_pinky_touch_link"
+    ],
+    "limits": {
+      "left_thumb_metacarpal_joint": [
+        0.0,
+        1.55334
+      ],
+      "left_index_proximal_joint": [
+        0.0,
+        1.41
+      ],
+      "left_middle_proximal_joint": [
+        0.0,
+        1.41
+      ],
+      "left_ring_proximal_joint": [
+        0.0,
+        1.41
+      ],
+      "left_pinky_proximal_joint": [
+        0.0,
+        1.41
+      ],
+      "left_thumb_proximal_joint": [
+        0.0,
+        1.0472
+      ],
+      "left_index_distal_joint": [
+        0.0,
+        1.69297
+      ],
+      "left_middle_distal_joint": [
+        0.0,
+        1.69297
+      ],
+      "left_ring_distal_joint": [
+        0.0,
+        1.69297
+      ],
+      "left_pinky_distal_joint": [
+        0.0,
+        1.69297
+      ],
+      "left_thumb_distal_joint": [
+        0.0,
+        1.15192
+      ]
+    }
+  },
+  "revo2_left_floating": {
+    "file": "revo2_left_floating.urdf",
+    "root_link": "world",
+    "wrist_joints": [
+      "virtual_x_joint",
+      "virtual_y_joint",
+      "virtual_z_joint",
+      "virtual_roll_joint",
+      "virtual_pitch_joint",
+      "virtual_yaw_joint"
+    ],
+    "actuated_joints": [
+      "left_thumb_metacarpal_joint",
+      "left_thumb_proximal_joint",
+      "left_index_proximal_joint",
+      "left_middle_proximal_joint",
+      "left_ring_proximal_joint",
+      "left_pinky_proximal_joint"
+    ],
+    "touch_links": [
+      "left_thumb_touch_link",
+      "left_index_touch_link",
+      "left_middle_touch_link",
+      "left_ring_touch_link",
+      "left_pinky_touch_link"
+    ]
+  },
+  "r1_revo2": {
+    "file": "r1_revo2.urdf",
+    "root_link": "pelvis_link",
+    "actuated_joints": [
+      "left_hip_pitch_joint",
+      "right_hip_pitch_joint",
+      "waist_roll_joint",
+      "left_hip_roll_joint",
+      "right_hip_roll_joint",
+      "waist_yaw_joint",
+      "left_hip_yaw_joint",
+      "right_hip_yaw_joint",
+      "left_shoulder_pitch_joint",
+      "right_shoulder_pitch_joint",
+      "head_pitch_joint",
+      "left_knee_joint",
+      "right_knee_joint",
+      "left_shoulder_roll_joint",
+      "right_shoulder_roll_joint",
+      "head_yaw_joint",
+      "left_ankle_pitch_joint",
+      "right_ankle_pitch_joint",
+      "left_shoulder_yaw_joint",
+      "right_shoulder_yaw_joint",
+      "left_ankle_roll_joint",
+      "right_ankle_roll_joint",
+      "left_elbow_joint",
+      "right_elbow_joint",
+      "left_wrist_roll_joint",
+      "right_wrist_roll_joint",
+      "left_thumb_metacarpal_joint",
+      "left_index_proximal_joint",
+      "left_middle_proximal_joint",
+      "left_ring_proximal_joint",
+      "left_pinky_proximal_joint",
+      "right_thumb_metacarpal_joint",
+      "right_index_proximal_joint",
+      "right_middle_proximal_joint",
+      "right_ring_proximal_joint",
+      "right_pinky_proximal_joint",
+      "left_thumb_proximal_joint",
+      "right_thumb_proximal_joint"
+    ]
+  },
+  "r1_revo2_upper_right": {
+    "ready_pose": [
+      0.4,
+      0.01,
+      -1.0,
+      -0.83,
+      0.23
+    ],
+    "locked_other_arm": {
+      "left_shoulder_pitch_joint": 0.4,
+      "left_shoulder_roll_joint": -0.01,
+      "left_shoulder_yaw_joint": 1.0,
+      "left_elbow_joint": -0.83,
+      "left_wrist_roll_joint": -0.23
+    },
+    "file": "r1_revo2_upper_right.urdf",
+    "root_link": "pelvis_link",
+    "arm_joints": [
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint"
+    ],
+    "hand_joints": [
+      "right_thumb_metacarpal_joint",
+      "right_thumb_proximal_joint",
+      "right_index_proximal_joint",
+      "right_middle_proximal_joint",
+      "right_ring_proximal_joint",
+      "right_pinky_proximal_joint"
+    ],
+    "touch_links": [
+      "right_thumb_touch_link",
+      "right_index_touch_link",
+      "right_middle_touch_link",
+      "right_ring_touch_link",
+      "right_pinky_touch_link"
+    ],
+    "hand_root_link": "right_base_link",
+    "flange_link": "right_wrist_roll_link"
+  },
+  "r1_revo2_upper_left": {
+    "ready_pose": [
+      0.4,
+      -0.01,
+      1.0,
+      -0.83,
+      -0.23
+    ],
+    "locked_other_arm": {
+      "right_shoulder_pitch_joint": 0.4,
+      "right_shoulder_roll_joint": 0.01,
+      "right_shoulder_yaw_joint": -1.0,
+      "right_elbow_joint": -0.83,
+      "right_wrist_roll_joint": 0.23
+    },
+    "file": "r1_revo2_upper_left.urdf",
+    "root_link": "pelvis_link",
+    "arm_joints": [
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint"
+    ],
+    "hand_joints": [
+      "left_thumb_metacarpal_joint",
+      "left_thumb_proximal_joint",
+      "left_index_proximal_joint",
+      "left_middle_proximal_joint",
+      "left_ring_proximal_joint",
+      "left_pinky_proximal_joint"
+    ],
+    "touch_links": [
+      "left_thumb_touch_link",
+      "left_index_touch_link",
+      "left_middle_touch_link",
+      "left_ring_touch_link",
+      "left_pinky_touch_link"
+    ],
+    "hand_root_link": "left_base_link",
+    "flange_link": "left_wrist_roll_link"
+  },
+  "r1_a7_revo2": {
+    "file": "r1_a7_revo2.urdf",
+    "root_link": "pelvis_link",
+    "actuated_joints": [
+      "waist_yaw_joint",
+      "left_shoulder_pitch_joint",
+      "right_shoulder_pitch_joint",
+      "head_pitch_joint",
+      "left_shoulder_roll_joint",
+      "right_shoulder_roll_joint",
+      "head_yaw_joint",
+      "left_shoulder_yaw_joint",
+      "right_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "right_elbow_joint",
+      "left_wrist_roll_joint",
+      "right_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "right_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_wrist_yaw_joint",
+      "left_thumb_metacarpal_joint",
+      "left_index_proximal_joint",
+      "left_middle_proximal_joint",
+      "left_ring_proximal_joint",
+      "left_pinky_proximal_joint",
+      "right_thumb_metacarpal_joint",
+      "right_index_proximal_joint",
+      "right_middle_proximal_joint",
+      "right_ring_proximal_joint",
+      "right_pinky_proximal_joint",
+      "left_thumb_proximal_joint",
+      "right_thumb_proximal_joint"
+    ]
+  },
+  "r1_a7_revo2_upper_right": {
+    "ready_pose": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "locked_other_arm": {},
+    "file": "r1_a7_revo2_upper_right.urdf",
+    "root_link": "pelvis_link",
+    "arm_joints": [
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint"
+    ],
+    "hand_joints": [
+      "right_thumb_metacarpal_joint",
+      "right_thumb_proximal_joint",
+      "right_index_proximal_joint",
+      "right_middle_proximal_joint",
+      "right_ring_proximal_joint",
+      "right_pinky_proximal_joint"
+    ],
+    "touch_links": [
+      "right_thumb_touch_link",
+      "right_index_touch_link",
+      "right_middle_touch_link",
+      "right_ring_touch_link",
+      "right_pinky_touch_link"
+    ],
+    "hand_root_link": "right_base_link",
+    "flange_link": "right_wrist_yaw_link"
+  },
+  "r1_a7_revo2_upper_left": {
+    "ready_pose": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "locked_other_arm": {},
+    "file": "r1_a7_revo2_upper_left.urdf",
+    "root_link": "pelvis_link",
+    "arm_joints": [
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint"
+    ],
+    "hand_joints": [
+      "left_thumb_metacarpal_joint",
+      "left_thumb_proximal_joint",
+      "left_index_proximal_joint",
+      "left_middle_proximal_joint",
+      "left_ring_proximal_joint",
+      "left_pinky_proximal_joint"
+    ],
+    "touch_links": [
+      "left_thumb_touch_link",
+      "left_index_touch_link",
+      "left_middle_touch_link",
+      "left_ring_touch_link",
+      "left_pinky_touch_link"
+    ],
+    "hand_root_link": "left_base_link",
+    "flange_link": "left_wrist_yaw_link"
+  },
+  "r1_revo2_upper_both": {
+    "file": "r1_revo2_upper_both.urdf",
+    "root_link": "pelvis_link",
+    "right": {
+      "arm_joints": [
+        "right_shoulder_pitch_joint",
+        "right_shoulder_roll_joint",
+        "right_shoulder_yaw_joint",
+        "right_elbow_joint",
+        "right_wrist_roll_joint"
+      ],
+      "hand_joints": [
+        "right_thumb_metacarpal_joint",
+        "right_thumb_proximal_joint",
+        "right_index_proximal_joint",
+        "right_middle_proximal_joint",
+        "right_ring_proximal_joint",
+        "right_pinky_proximal_joint"
+      ],
+      "touch_links": [
+        "right_thumb_touch_link",
+        "right_index_touch_link",
+        "right_middle_touch_link",
+        "right_ring_touch_link",
+        "right_pinky_touch_link"
+      ],
+      "hand_root_link": "right_base_link",
+      "flange_link": "right_wrist_roll_link",
+      "ready_pose": [
+        0.4,
+        0.01,
+        -1.0,
+        -0.83,
+        0.23
+      ]
+    },
+    "left": {
+      "arm_joints": [
+        "left_shoulder_pitch_joint",
+        "left_shoulder_roll_joint",
+        "left_shoulder_yaw_joint",
+        "left_elbow_joint",
+        "left_wrist_roll_joint"
+      ],
+      "hand_joints": [
+        "left_thumb_metacarpal_joint",
+        "left_thumb_proximal_joint",
+        "left_index_proximal_joint",
+        "left_middle_proximal_joint",
+        "left_ring_proximal_joint",
+        "left_pinky_proximal_joint"
+      ],
+      "touch_links": [
+        "left_thumb_touch_link",
+        "left_index_touch_link",
+        "left_middle_touch_link",
+        "left_ring_touch_link",
+        "left_pinky_touch_link"
+      ],
+      "hand_root_link": "left_base_link",
+      "flange_link": "left_wrist_roll_link",
+      "ready_pose": [
+        0.4,
+        -0.01,
+        1.0,
+        -0.83,
+        -0.23
+      ]
+    }
+  }
+}
