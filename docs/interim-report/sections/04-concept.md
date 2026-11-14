@@ -13,52 +13,62 @@ Table: tab:functions | The three functions VATEL must provide
 | Function | Questions to answer |
 | --- | --- |
 | Instructions | How do we capture the hall's current layout? How does the robot learn the planned event layout? How is the plan turned into tasks for the robot? |
-| Navigation | How does the robot know where it is? How does it plan a path to its destination? How does it find the table's edge? |
+| Navigation | Where is the robot? Where should it go next? What is the best path? How does it walk there safely? How does it stop square at the table’s edge? |
 | Plate manipulation | How does the robot know where the plate is? How does it separate the top plate from the stack? How does it hold the plate? |
 
 ### 4.2. Morphological Charts and Selection
 
-We developed morphological charts to compare possible solutions for each design question, with the
-selected options highlighted in bold.
+For each function, a morphological chart lists the options for every question, with the selected
+ones in bold. The options were then combined into concepts and scored against the requirements in
+Chapter 3 (Table [[tab:specs]]).
+
+#### 4.2.1. Instructions
 
 Table: tab:morph-instructions | Morphological chart: instructions
 | Question | Option A | Option B | Option C | Option D |
 | --- | --- | --- | --- | --- |
 | 1. Capture the current hall layout | Staff measure and enter it | Robot surveys the hall using LiDAR | **Use existing hall CCTV** | Camera reads tags on each table |
 | 2. Input the planned event layout | Spoken or written instructions | Select a stored layout template | Import a floor plan | **Staff arrange tables on a map in an app** |
-| 3. Generate plate-placement tasks | Use a large language model | **Apply fixed rules based on table size and shape** | Staff mark every position manually |  |
+| 3. Generate plate-placement tasks | Use a large language model | **Apply fixed rules based on table size and shape** |  |  |
 
-Each option was evaluated against the requirements in Section 3. For hall mapping, existing CCTV was
-selected as it covers the venue without requiring additional hardware or a preliminary robot survey.
-For event planning, an app-based interface allows staff to specify each event's layout directly,
-avoiding the limitations of fixed templates and inconsistent floor plan formats. Finally, fixed
-rules were chosen to generate plate positions consistently and eliminate the need for staff to
-manually mark each setting.
+Of the three concepts built from the selected options (Table [[tab:concepts]]), only the VATEL
+Planner met all four requirements, so it was implemented (Chapter 5); Appendix 4A gives the
+reasoning for each row.
 
-The selected options were combined into three concepts (Table [[tab:concepts]]) and evaluated
-against the project requirements. The VATEL Planner was the only concept that met all four
-requirements and was therefore selected for implementation (Section 5).
-
-Table: tab:concepts | Three concepts combined from the instructions chart, scored against the requirements in Section 3 (● meets, ◐ partly, ○ does not)
+Table: tab:concepts | Instruction concepts (● meets, ◐ partly, ○ does not)
 | Concept | Options | Adapts to every layout | Little staff effort | Almost no training | Same, checkable result |
 | --- | --- | --- | --- | --- | --- |
 | LLM-Based Planning | 1B, 2A, 3A | ● | ● | ◐ | ○ |
-| Manual Layout Planning | 1A, 2C, 3C | ● | ○ | ◐ | ◐ |
+| Manual Layout Planning | 1A, 2C, 3B | ● | ○ | ◐ | ◐ |
 | **VATEL Planner** | 1C, 2D, 3B | ● | ● | ● | ● |
 
+#### 4.2.2. Navigation
+
 Table: tab:morph-navigation | Morphological chart: navigation
-| Question | Option A | Option B | Option C |
-| --- | --- | --- | --- |
-| Know where the robot is | **Lidar with its built-in IMU** | Hall cameras track the robot in real time | Follow a mapped trail |
-| Plan a path | Line following along a provided trail | **A\* on a Nav2 costmap** |  |
-| Find the table's edge | AprilTag and a vision model | **RealSense depth map** | RFID reader on each table |
+| Question | Option A | Option B | Option C | Option D |
+| --- | --- | --- | --- | --- |
+| 1. Know where the robot is | Leg odometry and IMU only | Hall CCTV tracks the robot | Visual SLAM on a camera | **Lidar–inertial odometry** |
+| 2. Choose where to go next | Staff send each goal | Follow the planner's goal list in order | **State machine that alternates between AGV and table** |  |
+| 3. Plan the path | Follow a trail laid on the floor | Sampling planner (RRT\*) | **A\* on a costmap from the map and live lidar** |  |
+| 4. Walk the path past people | Pure pursuit: track the path, stop when blocked | **DWB: sample reachable speeds, score each** | MPPI: optimise many sampled trajectories |  |
+| 5. Stop square at the table's edge | AprilTag on each table | RFID tag on each table | Lidar scan of the table | **RealSense depth: detect the tabletop edge** |
 
-Lidar localisation needs nothing installed in the hall, while tracking the robot by CCTV would add
-latency and fail where the view is blocked. A trail would have to be laid again for every layout; a
-costmap planner adapts to any layout. The depth camera measures the distance to a table directly,
-while tags or RFID would have to be fitted to every table.
+The choices were made before prototyping, from the robot's sensors and software and published
+performance; Appendix 4B gives the reasoning for each row.
 
-Table: tab:morph-manipulation | Morphological chart: plate manipulation (selected options in bold)
+Table: tab:nav-concepts | Navigation concepts (● meets, ◐ partly, ○ does not)
+| Concept | Options | Adapts to every layout | Nothing fitted to the hall or tables | Runs without staff | Square stop at 20 cm (S5) |
+| --- | --- | --- | --- | --- | --- |
+| Infrastructure-guided | 1B, 2B, 3A, 4A, 5B | ○ | ○ | ◐ | ○ |
+| Camera-only | 1C, 2B, 3B, 4A, 5A | ◐ | ◐ | ◐ | ● |
+| **Lidar-based navigation** | 1D, 2C, 3C, 4B, 5D | ● | ● | ● | ● |
+
+Only lidar-based navigation was expected to meet all four requirements (Table [[tab:nav-concepts]]),
+so it was taken forward; Section 7.3 gives the first measured results.
+
+#### 4.2.3. Plate Manipulation
+
+Table: tab:morph-manipulation | Morphological chart: plate manipulation
 | Question | Option A | Option B | Option C | Option D |
 | --- | --- | --- | --- | --- |
 | 1. Find the plate | **Head depth camera** | Hall CCTV | Stack at a fixed position | Wrist cameras (under evaluation) |
@@ -67,10 +77,11 @@ Table: tab:morph-manipulation | Morphological chart: plate manipulation (selecte
 | 4. Control the motion | **Scripted state machine** | Reinforcement learning | Imitation learning |  |
 
 The head camera sees the stack from close range, far more accurately than the hall cameras, and
-needs no fixed stack position. Separation is the critical question. Table [[tab:separation-eval]]
+needs no fixed stack position. Separation is the critical question. Table [tab:separation-eval]]
 compares its options against the criteria of Table [[tab:pick-criteria]], and Sections 8.3 and 8.4
 give the evidence for each choice. The end effector is fixed by the platform (Revo 2 hands); a
-gripper or suction cup would need new hardware and would not handle other tableware later.
+gripper or suction cup would need new hardware and would not handle other tableware later. Appendix
+4C gives the reasoning for each row.
 
 Table: tab:separation-eval | Separation options against the pick criteria (● meets, ◐ partly, ○ does not, – not reached)
 | Option | Feasible with the R1 arm and hand | Stack kept in place | Tolerates ±15 mm pose error | No added hardware |
@@ -79,10 +90,6 @@ Table: tab:separation-eval | Separation options against the pick criteria (● m
 | Press to tip | ○ far rim rises 3–8 mm; about 16 mm needed | – | – | ● |
 | Push sideways, then grasp | ● 4 of 5 pushes on the R1 | ● < 5 mm in MuJoCo | ● −15 to +20 mm | ● |
 | Tool or fixture | ◐ depends on the undefined AGV holder | – | – | ○ |
-
-> TODO: If the team scored the options (an evaluation matrix with
-> weighted criteria), add it here; the rubric rewards a systematic
-> comparison (A2).
 
 ### 4.3. Selected Concept and System Architecture
 
