@@ -1184,10 +1184,74 @@ a.report-card:active {
   pointer-events: none;
 }
 
-/* appendix previews: title on the first line, the opening text below it */
-.content a.xref-appendix[data-preview]::after {
-  white-space: pre-line;
-  max-width: min(420px, 85vw);
+/* appendix links: a floating window with a copy of the whole appendix, scrollable (report.js) */
+.content .appendix-pop {
+  position: fixed;
+  z-index: 60;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 18px 4px;
+  background: #fff;
+  border: 1px solid var(--rule-strong);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 21, 19, 0.2);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  animation: appendix-pop-in 0.15s ease-out;
+}
+
+.content .appendix-pop[hidden] {
+  display: none;
+}
+
+@keyframes appendix-pop-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* the appendix title stays at the top while its text scrolls */
+.content .appendix-pop .appendix-pop-title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0 -18px 10px;
+  padding: 10px 18px 8px;
+  background: #fff;
+  border-bottom: 1px solid var(--rule);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-align: left;
+}
+
+.content .appendix-pop .appendix-pop-title a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.content .appendix-pop .appendix-pop-title a:hover {
+  color: var(--accent);
+}
+
+.content .appendix-pop p,
+.content .appendix-pop li {
+  text-align: left;
+  hyphens: manual;
+}
+
+.content .appendix-pop h4,
+.content .appendix-pop h5 {
+  margin: 14px 0 4px;
+  font-size: 0.88rem;
+}
+
+.content .appendix-pop table-component,
+.content .appendix-pop image-component {
+  margin: 10px 0 14px;
+}
+
+.content .appendix-pop .report-table {
+  font-size: 0.78rem;
 }
 
 .content a.xref[data-preview]:hover::after,
