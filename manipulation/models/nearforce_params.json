@@ -1,0 +1,162 @@
+{
+  "hand": "left",
+  "simulation": {
+    "hand_service": [
+      0.0,
+      0.0,
+      0.006,
+      0.0,
+      1.0,
+      1.0
+    ],
+    "palm_deg": {
+      "yaw": 35.161,
+      "pitch": 25.697,
+      "roll": 11.895
+    },
+    "index_pad_point_rel_plate_mm": {
+      "x": -74.1,
+      "y": 97.7,
+      "z_above_foot": 24.4
+    },
+    "contact_on_rim": {
+      "index": {
+        "r_mm": 116.6,
+        "theta_deg": 52.8
+      },
+      "middle": {
+        "r_mm": 111.4,
+        "theta_deg": 65.6
+      }
+    },
+    "joints_encoder_frame": {
+      "n3_t0.747": {
+        "at_contact_q_meas": [
+          -0.404,
+          1.607,
+          -0.868,
+          -0.492,
+          0.401
+        ],
+        "plate_centre_cam_mm": [
+          360.0,
+          60.0,
+          50.6
+        ]
+      },
+      "n2_t0.747": {
+        "at_contact_q_meas": [
+          -0.377,
+          1.575,
+          -0.856,
+          -0.473,
+          0.43
+        ],
+        "plate_centre_cam_mm": [
+          360.0,
+          60.0,
+          43.8
+        ]
+      },
+      "n3_t0.762": {
+        "at_contact_q_meas": [
+          -0.477,
+          1.676,
+          -0.907,
+          -0.534,
+          0.338
+        ],
+        "plate_centre_cam_mm": [
+          360.0,
+          60.0,
+          65.6
+        ]
+      }
+    },
+    "arm_gains": {
+      "kp": [
+        50,
+        50,
+        40,
+        40,
+        30
+      ],
+      "kd": 2
+    },
+    "pelvis_m": 0.71,
+    "approach": {
+      "above_rim_start_mm": 80,
+      "joint_move_s": 3.0,
+      "line_to_above_rim_mm": 20,
+      "line_speed_mm_s": 40,
+      "descend_mm_s": 12,
+      "descend_below_rim_mm": 21
+    },
+    "push_direction_deg_forward_of_robot_right": 6.0,
+    "peak_joint_lag_rad_at_push_cap_12N": 0.109
+  },
+  "test": {
+    "press_levels_N": [
+      3,
+      5,
+      8
+    ],
+    "repeats": 3,
+    "stacks": [
+      3,
+      2
+    ],
+    "table_m": 0.747,
+    "contact_each_pad_N": 0.5,
+    "contact_hold_s": 1.0,
+    "level_step_service": 0.005,
+    "level_max_service": 0.05,
+    "operator_confirm_contact": true,
+    "fz_gain_N_per_tick_per_N": 0.05,
+    "fz_rate_N_s": 2.0,
+    "press_settle_s": 2.0,
+    "push_rate_N_s": 1.0,
+    "push_cap_N": 15.0,
+    "q_lag_max_rad": 0.15,
+    "stop_plate_moved_mm": 10.0,
+    "stop_hand_ahead_of_plate_mm": 12.0,
+    "stop_pad_lost_N": 0.3,
+    "stop_pad_lost_ticks": 3,
+    "stop_pad_max_N": 20.0,
+    "stop_force_abort_N": 30.0,
+    "try_timeout_s": 25.0,
+    "retries": 0
+  },
+  "prediction_from_force_probe": {
+    "press_3N": {
+      "push_to_start_N": [
+        3.8,
+        4.9
+      ],
+      "pad_friction_needed": [
+        1.3,
+        1.6
+      ]
+    },
+    "press_5N": {
+      "push_to_start_N": [
+        4.8,
+        6.2
+      ],
+      "pad_friction_needed": [
+        1.0,
+        1.2
+      ]
+    },
+    "press_8N": {
+      "push_to_start_N": [
+        6.2,
+        8.0
+      ],
+      "pad_friction_needed": [
+        0.8,
+        1.0
+      ]
+    }
+  }
+}

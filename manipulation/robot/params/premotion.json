@@ -1,0 +1,35 @@
+{
+ "q": [
+  -0.5625,
+  1.0872,
+  -0.4158,
+  0.0029,
+  -0.5648,
+  0.4,
+  0.01,
+  -1.0,
+  -0.83,
+  0.23,
+  0.0
+ ],
+ "hands": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.36,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "head": [
+  0.55,
+  0.3
+ ],
+ "source": "first sample of refs/p071_n3mr_t0.747.csv (the push stage's start, MuJoCo reference, pelvis 0.71)",
+ "note": "arm order L0..L4 R0..R4 W; hands: left Thumb, Thumb_aux, Index, Middle, Ring, Pinky, then right; head pitch (+down), yaw (+left), rad"
+}

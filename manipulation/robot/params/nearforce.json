@@ -1,0 +1,151 @@
+{
+ "n": 3,
+ "pose_by_stack": {
+  "n3_t0.747": {
+   "hand_cmd": [
+    0.0,
+    0.0,
+    0.006,
+    0.0,
+    1.0,
+    1.0
+   ],
+   "q_plan_rad": [
+    -0.404,
+    1.607,
+    -0.868,
+    -0.492,
+    0.401
+   ]
+  },
+  "n2_t0.747": {
+   "hand_cmd": [
+    0.0,
+    0.0,
+    0.006,
+    0.0,
+    1.0,
+    1.0
+   ],
+   "q_plan_rad": [
+    -0.377,
+    1.575,
+    -0.856,
+    -0.473,
+    0.43
+   ]
+  },
+  "n1_t0.747": {
+   "hand_cmd": [
+    0.0,
+    0.0,
+    0.006,
+    0.0,
+    1.0,
+    1.0
+   ],
+   "q_plan_rad": [
+    -0.377,
+    1.575,
+    -0.856,
+    -0.473,
+    0.43
+   ]
+  },
+  "n3_t0.762": {
+   "hand_cmd": [
+    0.0,
+    0.0,
+    0.006,
+    0.0,
+    1.0,
+    1.0
+   ],
+   "q_plan_rad": [
+    -0.477,
+    1.676,
+    -0.907,
+    -0.534,
+    0.338
+   ]
+  }
+ },
+ "pad_rel_plate_mm": [
+  -74.1,
+  97.7
+ ],
+ "pad_above_foot_mm": 24.4,
+ "q_correct_mrad": [
+  0.0,
+  0.0,
+  0.0,
+  -37.0,
+  0.0
+ ],
+ "above_rim_mm": 45.0,
+ "hover_mm": 20.0,
+ "speed_hover": 8.0,
+ "hover_low_mm": 8.0,
+ "settle_s": 1.5,
+ "ik_up_steps": 16,
+ "ik_max_mm": 12.0,
+ "speed_descend": 5.0,
+ "below_rim_mm": 12.0,
+ "touch_prox": 30000,
+ "touch_ticks": 3,
+ "touch_both_mm": 5.0,
+ "touch_z_max_mm": 10.0,
+ "contact_N": 0.5,
+ "zero_s": 1.5,
+ "zero_settle_s": 0.5,
+ "touch_hold_s": 2.0,
+ "pad_N_per_count": 0.044,
+ "operator_confirm": true,
+ "confirm_timeout_s": 90.0,
+ "auto_answer": null,
+ "press_moved_mm": 3.0,
+ "stop_sink_mm": 8.0,
+ "fz_rate_N_s": 2.0,
+ "fz_max_N": 12.0,
+ "press_N": 5.0,
+ "press_settle_s": 2.0,
+ "press_hold_s": 10.0,
+ "press_levels_N": [
+  2.0,
+  4.0,
+  6.0,
+  8.0,
+  6.0,
+  4.0,
+  2.0,
+  0.0
+ ],
+ "press_step_hold_s": 3.0,
+ "h_rate_N_s": 1.0,
+ "h_cap_N": 15.0,
+ "push_deg": 6.0,
+ "stop_moved_mm": 10.0,
+ "stop_slip_mm": 12.0,
+ "stop_lost_ticks": 5,
+ "stop_pad_max_N": 20.0,
+ "stop_tau_rise_Nm": 8.0,
+ "try_timeout_s": 25.0,
+ "f_abort_N": 30.0,
+ "unload_N_s": 5.0,
+ "lift_mm": 40.0,
+ "tip_rate_N_s": 0.5,
+ "tip_cap_N": 15.0,
+ "tip_marker_mm": 1.5,
+ "tip_sink_mm": 4.0,
+ "plate_N": 5.126,
+ "foot_r_mm": 77.5,
+ "slip_press_N": [
+  3.0,
+  5.0,
+  8.0
+ ],
+ "slip_repeats": 2,
+ "slip_stop_mm": 8.0,
+ "slip_plate_moved_mm": 2.0,
+ "slip_lift_mm": 35.0
+}

@@ -1,0 +1,131 @@
+{
+ "plate": {
+  "R_mm": 127.5,
+  "rim_top_at_edge_mm": 22.0
+ },
+ "pose_by_table": {
+  "0.747": {
+   "hand_cmd": [
+    0.0,
+    0.0313,
+    0.0,
+    0.7667,
+    0.0,
+    0.0
+   ],
+   "hand_rad": {
+    "tm": 0.048567035455367745,
+    "tp": 0.0,
+    "ci": 0.0,
+    "cm": 1.0810231749224215,
+    "cr": 0.0,
+    "cp": 0.0
+   },
+   "yaw_deg": 33.32,
+   "pitch_deg": 18.04,
+   "roll_deg": 6.59,
+   "di_mm": 18.77,
+   "q_plan_rad": [
+    -0.5449,
+    1.326,
+    -0.8909,
+    -0.1356,
+    0.3964
+   ]
+  },
+  "0.762": {
+   "hand_cmd": [
+    0.0,
+    0.0067,
+    0.0,
+    0.7557,
+    0.0,
+    0.0
+   ],
+   "hand_rad": {
+    "tm": 0.010457210662362989,
+    "tp": 0.0,
+    "ci": 0.0,
+    "cm": 1.0655202400290853,
+    "cr": 0.0,
+    "cp": 0.0
+   },
+   "yaw_deg": 34.35,
+   "pitch_deg": 17.76,
+   "roll_deg": 8.77,
+   "di_mm": 18.9,
+   "q_plan_rad": [
+    -0.6015,
+    1.3823,
+    -0.9255,
+    -0.1774,
+    0.3827
+   ]
+  }
+ },
+ "up": 20.0,
+ "out0": 10.0,
+ "step": 5.0,
+ "steps": 12,
+ "below": 12.0,
+ "stall_lead": 6.0,
+ "edge_lead": 20.0,
+ "press_sink": 12.0,
+ "edge_drop": 4.0,
+ "edge_bias": -13.5,
+ "edge_tol": 30.0,
+ "lead_y": 10.0,
+ "lead_z": 8.0,
+ "gap_max": 40.0,
+ "f_engage": 3.0,
+ "v": 30.0,
+ "stop": 35.0,
+ "slip": 20.0,
+ "retries": 2,
+ "w_rot": 0.2,
+ "w_rot_edge": 0.05,
+ "speeds_mm_s": {
+  "pre": 40,
+  "search": 25,
+  "touch": 15,
+  "edge_press": 15,
+  "edge_slide": 8,
+  "set": 15,
+  "set_down": 10,
+  "press": 15,
+  "engage": 15,
+  "push": 30.0,
+  "retry_lift": 20,
+  "release": 20,
+  "release_up": 30
+ },
+ "sim_conditions": {
+  "arm_kp": [
+   50,
+   50,
+   40,
+   40,
+   30
+  ],
+  "arm_kd": 2,
+  "joint_friction_Nm": [
+   0.9,
+   0.7,
+   0.25,
+   0.39,
+   0.45
+  ],
+  "joint_friction_scale": [
+   0.6,
+   1.0
+  ],
+  "command_rate_hz": 30,
+  "joint_speed_max_rad_s": 0.8,
+  "pad_on_glaze_mu": 0.25,
+  "foot_on_glaze_mu": 0.575,
+  "glaze_on_glaze_mu": 0.375,
+  "index_pad_noise_N": 0.25,
+  "lag_force_noise_N": 2.0,
+  "camera_noise_mm": 1.0
+ }
+}
