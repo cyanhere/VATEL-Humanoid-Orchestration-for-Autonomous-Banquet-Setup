@@ -6,6 +6,9 @@ id: background
 
 ### 2.1. Current Plate-Setting Practice
 
+With plate placement selected as the focus (Section 1.5), this chapter breaks the task down into the
+steps servers follow today.
+
 During banquet preparation, servers follow the event layout and setup instructions, carrying stacks
 of plates to each table and placing one plate at every designated seat (Figure
 [[fig:server-steps]]). This process is repeated until all tables are fully set, as described in
@@ -35,8 +38,8 @@ robot through the hall; and **plate manipulation**, to retrieve and place indivi
 
 ### 2.3. Value Proposition and Novelty
 
-VATEL aims to automates the repetitive task of retrieving and placing individual plates, reducing
-the banquet team's workload and streamlining the overall setup process. As a humanoid designed to
+VATEL aims to automate the repetitive task of retrieving and placing individual plates, reducing the
+banquet team's workload and streamlining the overall setup process. As a humanoid designed to
 operate in human-oriented environments, it requires no fixed installation and can adapt to different
 event layouts.
 

@@ -6,11 +6,11 @@ id: navigation
 
 ### 7.1. Inputs and Outputs
 
-Development and every test in this chapter use a Unitree G1 fitted with a Livox MID-360 lidar. The
+Development and every test in this chapter use a Unitree G1 fitted with a Livox MID-360 LiDAR. The
 final demonstration will run on the Unitree R1, with the Hesai JT128 on the sensor helmet (Chapter
 6).
 
-Navigation takes three inputs and produces one output (Figure [[fig:nav-black-box]]). The lidar and
+Navigation takes three inputs and produces one output (Figure [[fig:nav-black-box]]). The LiDAR and
 depth camera on the sensor helmet (Chapter 6) and the VATEL Planner's rough map (Chapter 5) go in,
 and a walking command comes out. Table [[tab:nav-io]] gives what each signal carries and its format.
 
@@ -35,9 +35,9 @@ go next, what is the best path, and how do I walk there? Each question is handle
 Table: tab:nav-modules | Navigation modules, the question each answers, and the data they exchange
 | Question | Module | Section | Takes in | Hands on |
 | --- | --- | --- | --- | --- |
-| Where am I? (localisation) | Localiser (odometry, accumulator, relocaliser) | 7.2.1 | Lidar point cloud and IMU readings | Pose (x, y, heading) in the map frame |
+| Where am I? (localisation) | Localiser (odometry, accumulator, relocaliser) | 7.2.1 | LiDAR point cloud and IMU readings | Pose (x, y, heading) in the map frame |
 | Where should I go next? (goal selection) | Mission planner (state machine) | 7.2.2 | Rough map, detected table and AGV positions, pose | Destination: the table or the AGV |
-| What is the best path? (path planning) | Path planner (costmap and A\*) | 7.2.3 | Lidar point cloud, pose, destination | Lowest-cost path that avoids every obstacle |
+| What is the best path? (path planning) | Path planner (costmap and A\*) | 7.2.3 | LiDAR point cloud, pose, destination | Lowest-cost path that avoids every obstacle |
 | How do I walk there? (path following) | Local controller (DWB, table fine approach) | 7.2.4 | Path, costmap, pose; RealSense depth near the table | Walking command (Section 7.1) |
 
 #### 7.2.1. Localiser: Where Am I?
@@ -58,11 +58,11 @@ displacement. Even a small error in the acceleration measured will be magnified 
 time, so the drift keeps growing.
 
 FAST-LIO2 [18] avoids this by keeping the pose, velocity and IMU biases in one filter, corrected
-with every lidar sweep. It de-skews each sweep using the IMU (Figure [[fig:lio-backprop]]), then
+with every LiDAR sweep. It de-skews each sweep using the IMU (Figure [[fig:lio-backprop]]), then
 matches it to its map in an iterated EKF that also corrects the IMU biases (Figure [[fig:lio-iekf]],
-Appendix 7B).
+Appendix 7A).
 
-![fig:lio-backprop | Backward propagation · de-skewing one lidar sweep](../assets/interim/nav-lio-backprop.webp)
+![fig:lio-backprop | Backward propagation · de-skewing one LiDAR sweep](../assets/interim/nav-lio-backprop.webp)
 
 ![fig:lio-iekf | The iterated EKF · one sweep's update loop](../assets/interim/nav-lio-iekf.webp)
 
@@ -82,12 +82,12 @@ We therefore added two modules that form a slow correction cycle around the odom
 
 ![fig:localiser | Odometry corrected by the relocaliser against the accumulated map](../assets/interim/nav-localiser.webp)
 
-**The accumulator** adds each lidar scan to a growing point-cloud map of the room, but only when the
-relocaliser trusts the current pose, so a poor pose is never written into the map (Appendix 7C).
+**The accumulator** adds each LiDAR scan to a growing point-cloud map of the room, but only when the
+relocaliser trusts the current pose, so a poor pose is never written into the map (Appendix 7B).
 
 **The relocaliser** registers the latest scans against the accumulated map by Iterative Closest
 Point (ICP) once per second. The offset between the best fit and the odometry pose is the
-accumulated drift (Appendix 7C).
+accumulated drift (Appendix 7B).
 
 The correction is published as a separate transform rather than written into the odometry, so the
 pose stays smooth at 10 Hz while drift is corrected at 1 Hz.
@@ -96,7 +96,7 @@ pose stays smooth at 10 Hz while drift is corrected at 1 Hz.
 
 We compared two runs, with and without the relocaliser. Each walked five 5 m out-and-back laps
 (about 58 m) from a floor mark (Figure [[fig:start-position]]), and after every lap the robot's
-position was taped on arrival and compared with its own estimate (procedure in Appendix 7C).
+position was taped on arrival and compared with its own estimate (procedure in Appendix 7B).
 
 ![fig:start-position | Starting position of robot](../assets/interim/nav-start-position.webp)
 
@@ -122,7 +122,7 @@ With it, the error stayed between 2.4 and 3.5 cm on every lap, with no trend (Fi
 [[fig:drift-per-lap]]). Sideways error is the clearer sign of drift here, because the return leg
 cancels much of the forward error. Without the relocaliser it stayed on one side and grew every lap,
 to −7.8 cm; with it, both components stayed within ±3 cm. Because the route cancels part of the
-drift, these results are a lower bound (lap-by-lap data in Appendix 7C).
+drift, these results are a lower bound (lap-by-lap data in Appendix 7B).
 
 #### 7.2.2. Mission Planner: Where Should I Go Next?
 
@@ -134,13 +134,13 @@ from the AGV, the robot heads to the table; after the plate is placed, it return
 
 ##### 7.2.2.1. Overwriting the Rough Map with What the Robot Sees
 
-Once the rough map is connected (Chapter 9), the table and AGV positions at the start of a run come
-from the VATEL planner's rough map. These are good enough to head in the right direction, but not to
-stop accurately 20 cm from a table edge.
+Once the rough map is connected (Chapter 9 Open Issues), the table and AGV positions at the start of
+a run come from the VATEL planner's rough map. These are good enough to head in the right direction,
+but not to stop accurately 20 cm from a table edge.
 
 So once the robot's own sensors detect the table or the AGV, and the planner is confident in the
-detection (Appendix 7D), the measured position overwrites the one from the rough map. From then on,
-the robot plans to where the table actually is, not to where the map says it was.
+detection (Appendix 7C detection criteria), the measured position overwrites the one from the rough
+map. From then on, the robot plans to where the table actually is, not to where the map says it was.
 
 ##### 7.2.2.2. Sending the Destination
 
@@ -155,7 +155,7 @@ map for a path.
 
 ##### 7.2.3.1. Building the Map
 
-The map is built from the lidar point cloud, keeping only points 0.20–1.60 m above the floor, where
+The map is built from the LiDAR point cloud, keeping only points 0.20–1.60 m above the floor, where
 something would block the robot (Figure [[fig:point-filtering]]). Returns beyond 3 m are discarded
 as too sparse, and the robot's own footprint is cleared so it never marks itself as an obstacle.
 
@@ -164,7 +164,7 @@ as too sparse, and the robot's own footprint is cleared so it never marks itself
 The remaining points are projected onto a 2D grid of 5 cm cells covering 60 × 60 m, published
 continuously so it can be updated while the robot moves (Figure [[fig:grid-map]]).
 
-> TODO: add the figure fig:grid-map: Example of the 2D grid map.
+![fig:grid-map | Example of the 2D grid map (iLounge, Innovation & Design Hub)](../assets/interim/nav-grid-map.webp)
 
 Obstacles are then inflated with a 0.25 m hard block and a decaying cost, where d is the distance to
 the nearest obstacle cell (Table [[tab:inflation]]):
@@ -183,15 +183,15 @@ Iteration 1: a map that only adds. The first map only ever added obstacles. A pe
 left a permanent trail of obstacle cells, which inflation widened into impassable bands that blocked
 corridors that were actually clear (Figure [[fig:human-trail]]).
 
-![fig:human-trail | Costmap with a person's trail, trail highlighted in orange](../assets/interim/nav-human-trail.webp)
+![fig:human-trail | Costmap with a person's trail, trail highlighted in orange (Tinkering Corner, Innovation & Design Hub)](../assets/interim/nav-human-trail.webp)
 
-Iteration 2: The second map removes obstacles, using the fact that a lidar beam is evidence about
+Iteration 2: The second map removes obstacles, using the fact that a LiDAR beam is evidence about
 everything it passes through. Each beam travels in a straight line from the sensor to the point it
 hits, so every cell along the way must be empty.
 
 Each cell is updated by what the beams say (Table [[tab:beam-evidence]]):
 
-Table: tab:beam-evidence | Cell evidence from lidar beams
+Table: tab:beam-evidence | Cell evidence from LiDAR beams
 | What the beams say | Effect on the cell |
 | --- | --- |
 | Hit at least once | Evidence +1 |
@@ -199,26 +199,28 @@ Table: tab:beam-evidence | Cell evidence from lidar beams
 | Neither hit nor swept | Unchanged |
 
 A cell that is neither hit nor swept is occluded, so areas behind the robot or behind a wall remain
-unchanged; the decay calculation is in Appendix 7A.
+unchanged; the decay calculation is in Appendix 7D.
 
-As a result, a person's trail disappears within about 6 to 12 s of their leaving, while a
-continuously observed wall survives up to 60 s of occlusion (Appendix 7A).
+As a result, a person's trail disappears within about 6 to 12 s of their leaving (Figure
+[[fig:trail-clearing]]), while a continuously observed wall survives up to 60 s of occlusion
+(Appendix 7D).
 
-![fig:map-decay | Map updating as a person leaves (animated)](../assets/interim/nav-decay-video.webp)
+![fig:trail-clearing | Costmap updating as a person leaves (featuring Song Cheng Yan)](../assets/interim/nav-decay-video.webp)
 
 ##### 7.2.3.3. Finding the Path: A\* with Replanning
 
 Paths are calculated with A\* [19] in the Nav2 framework [20], giving the lowest-cost path that
 never enters an impassable cell.
 
-As people move, a clear path can become blocked, so the planner replans every 1.5 s. To stop the
-robot swapping between similar paths on every replan, a new path is adopted only if it is at least
-15% shorter and saves at least 0.30 m, and the current path is reconsidered every 10 s regardless.
+As people move, a clear path can become blocked, so the planner replans every 1.5 s (Figure
+[[fig:replanning]]). To stop the robot swapping between similar paths on every replan, a new path is
+adopted only if it is at least 15% shorter and saves at least 0.30 m, and the current path is
+reconsidered every 10 s regardless.
 
 Replanning stops entirely within 1.0 m of the goal. Near the destination the benefit of a better
 route is negligible.
 
-![fig:replan | Path replanning (animated)](../assets/interim/nav-replan-video.webp)
+![fig:replanning | Path replanning as people move](../assets/interim/nav-replan-video.webp)
 
 #### 7.2.4. Local Controller: How Do I Walk There?
 
@@ -245,7 +247,9 @@ DWB stops the robot within 30 cm of its goal, but placing a plate needs it squar
 
 The RealSense, 1.262 m above the floor and pitched down at 63.6°, segments the tabletop from the
 depth image and fits a line to its near edge (Figure [[fig:plane-detector]]). The distance to that
-line gives the stop point, and its angle gives the heading correction.
+line gives the stop point, and its angle gives the heading correction. The AGV needs the same
+precise, square stop, but its method has not been chosen yet; the options under consideration are in
+Appendix 7E.
 
 ![fig:plane-detector | Tabletop edge from the RealSense plane detector](../assets/interim/nav-table-edge.webp)
 
@@ -259,5 +263,9 @@ suited to placing a plate.
 Table: tab:approach-tests | Table approach test results
 | Location | Runs | Stop distance from edge, mean ± SD (cm) | Heading error, mean ± SD (°) | Collisions |
 | --- | --- | --- | --- | --- |
-| **Tinkering Corner** | **2** |  |  | **0** |
-| **Sandbox** | **2** |  |  | **0** |
+| **Tinkering Corner** | **2** | **3.2** | **2.1** | **0** |
+| **Sandbox** | **2** | **-1.3** | **1.5** | **0** |
+
+However, the robot does not stop centred on the table edge every time yet. The fine approach
+corrects only distance and heading, and LiDAR localisation is not accurate enough to fix the
+sideways position; this remains an open issue (Table [[tab:open-navigation]]).

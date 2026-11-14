@@ -26,8 +26,8 @@ marriages registered in 2025 suggests that hotel wedding banquets could represen
 share of the demand for banquet preparation services.
 
 Given the frequency of such events and the considerable manual effort involved, our initial problem
-statement was broad: *How can the banquet setup process be made less labour-intensive,
-time-consuming and more efficient?*
+statement was broad: ***How can the banquet setup process be made less labour-intensive,
+time-consuming and more efficient?***
 
 ### 1.2. Context and Stakeholders
 
@@ -99,7 +99,7 @@ Unitree R1 humanoid robot to optimize banquet setup by automating plate setup?*
 ### 1.5. Project Scope and Objectives
 
 Based on our understanding of typical banquet setup [5] and discussions with PARKROYAL, we propose a
-five-step plate-setting workflow(Figure [[fig:workflow]] and Table [[tab:workflow]]). As PARKROYAL
+five-step plate-setting workflow (Figure [[fig:workflow]] and Table [[tab:workflow]]). As PARKROYAL
 has shared limited operational details so far, this initial proposal includes assumptions that will
 be verified with the hotel next semester. The workflow follows the necessary sequence: the banquet
 team arranges the table layout, staff load plate stacks onto a dish dolly, and PARKROYAL's AGV
@@ -119,8 +119,8 @@ Table: tab:workflow | The current plate-setting workflow, and the part VATEL add
 | 1 | Set the table layout for the event | Banquet team |
 | 2 | Load plate stacks onto dish dolly | Staff |
 | 3 | Transport plates to banquet hall | AGV |
-| 4 | Retrieve and transport plates to tables | Humanoid robot |
-| 5 | Place plates at designated seats | Humanoid robot |
+| 4 | Retrieve and transport plates to tables | Humanoid robot (VATEL) |
+| 5 | Place plates at designated seats | Humanoid robot (VATEL) |
 
 By the end of CDE4301, VATEL aims to achieve three objectives:
 

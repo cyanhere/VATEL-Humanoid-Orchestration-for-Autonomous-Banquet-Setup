@@ -104,14 +104,14 @@ camera, the farthest point in each direction corresponds to the tabletop's actua
 **Step 6: Snap tables onto the map.** Each detected table is matched to the nearest standard size
 used by the venue (Figure [[fig:snap]]). If its measured dimensions differ by more than 15% from all
 available standard sizes, the measured dimensions are retained. The planner then generates every
-place setting and assigns a robot stopping position 0.45 m from the table edge. In live mode, the
-map updates every 1.5 s to reflect table movements by staff. Finally, the plan is exported as a
-static map (.pgm and .yaml) for the navigation stack, with a named goal assigned to each place
-setting (parameters in Appendix 5D).
+place setting and assigns a robot approach point 0.5m from the table edge. In live mode, the map
+updates every 1.5 s to reflect table movements by staff. Finally, the plan is exported as a static
+map (.pgm and .yaml) for the navigation stack, with a named goal assigned to each place setting
+(parameters in Appendix 5D).
 
 ![fig:snap | Snapping a table to stock sizes, with its settings and robot stops](../assets/interim/planner-snap.webp)
 
-![fig:to-robot-map | Tinkering Corner tables in the planner (left) and on the robot's lidar map (right)](../assets/interim/planner-to-robot-map.webp)
+![fig:to-robot-map | Tinkering Corner tables in the planner (left) and on the robot's LiDAR map (right)](../assets/interim/planner-to-robot-map.webp)
 
 ### 5.4. Tests and Results
 
@@ -120,7 +120,7 @@ Table: tab:planner-tests | Planner tests in Semester 1
 | --- | --- | --- |
 | Simulated hall | Corner CCTV camera, 23 tables at known positions | All 23 tables detected; mean centre error of 2.3 cm and worst-case error of 6.6 cm |
 | Height correction | Same scene, with and without it | Position offsets of 223 mm and 329 mm reduced to 0 mm |
-| Real CCTV | Recorded footage of the Tinkering Corner, NUS Innovation & Design Hub | All 6 tables detected and placed on the floor plan |
+| Real CCTV | Recorded footage of the Tinkering Corner | All 6 tables detected and placed on the floor plan |
 | Devices | Tablet and laptop | Successfully runs on both devices |
 | Hand-off | Export to .pgm and .yaml | Exported map successfully loaded by the navigation stack |
 

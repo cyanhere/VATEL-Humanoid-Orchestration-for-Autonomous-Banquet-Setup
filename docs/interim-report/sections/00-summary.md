@@ -15,9 +15,7 @@ application, uses the hall's existing CCTV infrastructure to detect tables and c
 layout into a static 2D map containing the designated plate positions. Second, the **navigation
 stack** guides the robot to each table and positions it approximately 20 cm from the table edge.
 Finally, the **plate manipulation pipeline** retrieves individual plates from a stack supplied by an
-AGV from [PARKROYAL COLLECTION
-Pickering](https://www.panpacific.com/en/hotels-and-resorts/pr-collection-pickering.html) and places
-them at the designated positions on the table.
+AGV from PARKROYAL COLLECTION Pickering and places them at the designated positions on the table.
 
 During Semester 1, each subsystem was developed and tested independently. The VATEL Planner
 successfully identified all 6 tables from real CCTV footage of the Tinkering Corner, followed by the

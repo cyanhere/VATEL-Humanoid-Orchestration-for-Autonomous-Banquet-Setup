@@ -6,10 +6,10 @@ id: manipulation
 
 ### 8.1. Requirements, Scope and Design Decisions
 
-Of the 28 items in the partner's tableware inventory (Appendix E), the 10.5-inch porcelain dinner
+Out of the 28 items in PARKROYAL's tableware inventory (Appendix E), the 10.5-inch porcelain dinner
 plate is the most numerous (3,000 pieces), so development began with it. Test plates of the same
-diameter were procured; they weigh 522 g and dimension is as shown in figure (Figure
-[[fig:plate-geometry]]). Two further constraints follow from the partner's operation:
+diameter were procured; they weigh 522 g, with the dimensions shown in Figure
+[[fig:plate-geometry]]. Two further constraints follow from PARKROYAL's operation:
 
 - **Stacked delivery.** Plates arrive in nested stacks with only 0.5–2.0 mm between adjacent rims,
   so a single plate must be separated from the stack.
@@ -18,16 +18,16 @@ diameter were procured; they weigh 522 g and dimension is as shown in figure (Fi
 
 ![fig:plate-geometry | Test plate: (a) cross-section; (b) two nested plates](../assets/interim/manip-plate-geometry.webp)
 
-Table [[tab:pick-criteria]] lists the evaluation criteria, and Figure [[fig:pick-decisions]]
-summarises the design decisions of Sections 8.4 and 8.5.
+Besides requirements T11–T13 (Section 3.2), Table [[tab:pick-criteria]] lists the conditions and
+criteria specific to picking, and Figure [[fig:pick-decisions]] summarises the design decisions of
+Sections 8.4 and 8.5.
 
 Table: tab:pick-criteria | Evaluation criteria for plate picking
 | Criterion | Value | Basis |
 | --- | --- | --- |
-| Object | 10.5-inch round porcelain plate (255 mm test plate) | Partner inventory |
+| Object | 10.5-inch round porcelain plate (255 mm test plate) | PARKROYAL inventory |
 | Initial state | Nested stack of 2–5 plates on a flat surface | Stacked delivery; fixture not yet defined |
-| Separation | Top plate displaced 30–70 mm; plates below displaced < 5 mm | a) Lower bound: rim exposure required by the receiving hand. b) Upper bound: an 85 mm push tipped the plate off the stack in simulation; 70 mm keeps a margin.  c) The remaining stack must stay in place for the next pick |
-| Contact force | ≤ 30 N hold load and ≤ 60 N peak per finger | Estimated rim fracture load 120–165 N from porcelain flexural strength [22], about twice the peak limit (Appendix 8B) |
+| Separation | Top plate displaced 30–70 mm; plates below within T12 | a) Lower bound: rim exposure required by the receiving hand. b) Upper bound: an 85 mm push tipped the plate off the stack in simulation; 70 mm keeps a margin. |
 | Pose uncertainty | ±15 mm lateral between camera estimate and hand | Measured camera and arm errors (Section 8.3) |
 
 ![fig:pick-decisions | Design decisions for single-plate picking](../assets/interim/manip-pick-decisions.webp)
@@ -39,13 +39,13 @@ Until the AGV's holder is defined, every test uses a stack of 2–5 test plates 
 and turns only at the waist. Since the final fixture may hold the stack at a different height, the
 working height is treated as adjustable.
 
-Every motion is first developed in MuJoCo 3.14 [28] on a model of the same scene, built from the
+Every motion is first developed in MuJoCo 3.14 [23] on a model of the same scene, built from the
 manufacturers' URDF models of the R1 and the Revo 2 hand (Appendix 8F). A motion is taken to the
 robot only if it still succeeds, within the force limits, when the camera, encoder-zero and
 joint-friction errors measured on the R1 are applied (Appendix 8E). MuJoCo was chosen over Isaac Lab
-[31] (Table [[tab:simulators]]) for its contact accuracy. It performed best on robotics tests in a
-comparison of five physics engines [29], and it applies friction at every contact point rather than
-approximating it per contact patch [36], which matters for the slow sliding contacts of the push and
+[24] (Table [[tab:simulators]]) for its contact accuracy. It performed best on robotics tests in a
+comparison of five physics engines [25], and it applies friction at every contact point rather than
+approximating it per contact patch [26], which matters for the slow sliding contacts of the push and
 grasp.
 
 Table: tab:test-setup | Test setup on the robot and in simulation
@@ -65,7 +65,7 @@ Table: tab:simulators | Simulator comparison
 |  | MuJoCo (CPU) | MuJoCo Warp (GPU) | Isaac Lab |
 | --- | --- | --- | --- |
 | Use in this project | Motion design, evaluation, log replay, system identification | RL (current) | Early RL experiments |
-| Strength | Accurate, stable contact [29] | Thousands of parallel environments, same physics | Thousands of parallel environments |
+| Strength | Accurate, stable contact [25] | Thousands of parallel environments, same physics | Thousands of parallel environments |
 | Limitation found | One environment per CPU core | GPU memory limits the number of plates per scene | Collision coarser than grasp clearance; out of memory with 3–5 plates |
 
 ### 8.3. Plate Perception
@@ -81,9 +81,9 @@ Table: tab:stack-failures | Stack localisation failures and fixes
 | Failure observed | Change made | Result |
 | --- | --- | --- |
 | Glare removes depth data, mainly in the well | Outline found from colour edges; depth sampled on the rim only | Height and centre unaffected |
-| At oblique views the rim appears elliptical; a circle fit gave up to 21% diameter error | Ellipse fit [23] | Diameter 249–256 mm (true 255 mm) |
+| At oblique views the rim appears elliptical; a circle fit gave up to 21% diameter error | Ellipse fit [27] | Diameter 249–256 mm (true 255 mm) |
 | The outline followed both edges of the gapped rim; diameter read about 200 mm | Outline follows the outer rim edge only | Centre repeatable to 0.25–0.30 mm |
-| Robot lean (IMU pitch 3.0°) made the level table appear tilted 2.5° | Table plane fitted around the stack (RANSAC [24]); heights measured from it | Heights unaffected by lean and camera-pose error |
+| Robot lean (IMU pitch 3.0°) made the level table appear tilted 2.5° | Table plane fitted around the stack (RANSAC [28]); heights measured from it | Heights unaffected by lean and camera-pose error |
 | The well forms a second, lower height cluster; a high depth percentile was biased upward by noise | Median of the topmost (rim) cluster, re-centred until stable | Stable top-plate height |
 | Counting side edges under-counted tall stacks | Plate count = stack height ÷ nesting pitch | Exact for 1–20 plates in synthetic tests |
 
@@ -116,28 +116,37 @@ uses it to tell plate motion from fingertip slip.
 ![fig:rim-tracker | Rim tracker on a 3-plate stack](../assets/interim/manip-rim-tracker.webp)
 
 **Wrist cameras.** The head camera leaves a lateral error of up to about 10 mm, and the hand hides
-the gripped rim from it. To fix this the colour cameras mounted on the wrists were used, which a
-model-based tracker projects the expected rim into this image, finds the rim edge along lines normal
-to the projection and corrects the rim's position and height (Figure [[fig:wrist-camera]]); in
-MuJoCo it reduced a 12 mm position error to 2.7 mm. Robot integration is in progress.
+the gripped rim from it. To fix this, the colour cameras on the wrists are used: a model-based
+tracker projects the expected rim into the wrist image, finds the rim edge along lines normal to the
+projection and corrects the rim's position and height (Figure [[fig:wrist-camera]]); in MuJoCo it
+reduced a 12 mm position error to 2.7 mm. Robot integration is in progress.
 
 ![fig:wrist-camera | Wrist-camera rim tracking in MuJoCo](../assets/interim/manip-wrist-camera.webp)
 
 ### 8.4. Single-Plate Separation: Challenges and Concept Selection
 
-A single plate can be clamped between two hands, but a nested stack offers no grasp point: the
-0.5–2.0 mm gap between rims is far smaller than the 14 mm fingertip. Human operators use three
-strategies (Figure [[fig:human-strategies]]): two grasp the plate in place (fingernail insertion and
-rim pinch), and the third draws the plate outward with the thumb to create a grasp point.
+A single plate can be clamped between two hands, but a stack offers no grasp point: the 0.5–2.0 mm
+gap between rims is far smaller than the 14 mm fingertip. Human operators use three strategies
+(Figure [[fig:human-strategies]]): two grasp the plate in place (fingernail insertion and rim
+pinch), and the third draws the plate outward with the thumb to create a grasp point.
 
 ![fig:human-strategies | Human strategies: fingernail, rim pinch, thumb draw](../assets/interim/manip-human-strategies.webp)
 
-None of these strategies transfers directly to the R1. Each arm has five joints and no wrist pitch,
-so in simulation the fingertip approaches the gap 54° from the required angle (Figure
+**None of these strategies transfers directly to the R1**. Each arm has five joints and no wrist
+pitch, so in simulation the fingertip approaches the gap 54° from the required angle (Figure
 [[fig:r1-arm]]); each hand has 6 actuated joints against approximately 24 in the human hand, and the
 rigid fingertips have no force sensing at the tip.
 
-![fig:r1-arm | R1 arm (left) and simulated fingertip approach (right) The plate must therefore be displaced before it can be grasped. Pre-grasp manipulation of thin objects has been shown by sliding an object to a table edge [25] or pushing it against a wall [26], both with a gripper and a wrist. A stack has no such edge, so the plate beneath serves as the support. Concepts were evaluated in MuJoCo (Section 8.2). Pressing the near rim to tip the far rim up (Figure [[fig:rejected-press]]) was rejected: the near rim can drop only by the rim gap, so the far rim rose 3–8 mm, against about 16 mm needed for finger entry. Pushing the plate sideways instead makes its far side to overhang and rise over the plate beneath; the opposite hand then grasps the exposed rim and the pushing hand regrasps.](../assets/interim/manip-r1-reach.webp)
+![fig:r1-arm | R1 arm (left) and simulated fingertip approach (right)](../assets/interim/manip-r1-reach.webp)
+
+The plate must therefore be displaced before it can be grasped. Pre-grasp manipulation of thin
+objects has been shown by sliding an object to a table edge [29] or pushing it against a wall [30],
+both with a gripper and a wrist. A stack has no such edge, so the plate beneath serves as the
+support. Concepts were evaluated in MuJoCo (Section 8.2). Pressing the near rim to tip the far rim
+up (Figure [[fig:rejected-press]]) was rejected: the near rim can drop only by the rim gap, so the
+far rim rose 3–8 mm, against about 16 mm needed for finger entry. Pushing the plate sideways instead
+makes its far side overhang and rise over the plate beneath; the opposite hand then grasps the
+exposed rim and the pushing hand regrasps.
 
 ![fig:rejected-press | Rejected concept: pressing the near rim](../assets/interim/manip-rejected-press.webp)
 
@@ -183,7 +192,7 @@ Table: tab:control-approaches | Control approaches
 | --- | --- | --- | --- |
 | Scripted state machine | Interpretable; each step sensor-checked; no training data | Hand-tuned; limited generalisation | Baseline; implemented |
 | Reinforcement learning (RL) | Generalises through training in simulation | Needs accurate contact simulation and reward design | Parallel development |
-| Imitation learning, e.g. diffusion policy [27] | Learns from demonstrations; handles multimodal actions | Needs teleoperation and demonstrations of a dexterous push | Fallback |
+| Imitation learning, e.g. diffusion policy [31] | Learns from demonstrations; handles multimodal actions | Needs teleoperation and demonstrations of a dexterous push | Fallback |
 
 ![fig:pick-sequence | Pick sequence in simulation](../assets/interim/manip-state-machine.webp)
 
@@ -199,8 +208,9 @@ simulation began with estimates (Table [[tab:friction]]). Ten robot pushes were 
 MuJoCo with their logged commands over a range of friction values and compared with the camera
 record (Figure [[fig:friction-id]], Appendix 8D). The data require a fingertip friction of at least
 0.75, most likely 1.0–1.3, three to five times the estimate. This makes the drag contact of Section
-8.4 feasible, and it is being re-evaluated. *Table: tab:friction | Contact friction: initial and
-identified*
+8.4 feasible, and it is being re-evaluated.
+
+Table: tab:friction | Contact friction: initial and identified
 | Contact pair | Initial value in simulation | Source | Identified value | Method |
 | --- | --- | --- | --- | --- |
 | Revo 2 fingertip on glaze | 0.25 | Material estimate; not measured | ≥ 0.75, most likely 1.0–1.3 | Replay of ten R1 pushes (MuJoCo) |

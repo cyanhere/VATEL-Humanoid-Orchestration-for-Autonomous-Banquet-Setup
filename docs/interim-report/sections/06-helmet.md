@@ -18,17 +18,19 @@ to the head without modifying the robot (Section 6.2) and how the cables follow 
 
 ### 6.1. Sensor Placement
 
-Both sensors sit on the head, the robot's highest point (1.2–1.3 m, above the 0.76 m tabletops) and
-the only part that can be aimed independently of the body (Figure [[fig:sensor-view]]). Their data
-are transformed into the robot's frame through the head's pitch (±36°) and yaw (±115°) angles.
+Both sensors are mounted on the head, the robot's highest point (1.2–1.35 m, above the 0.76 m
+tabletops) and the only part that can be aimed independently of the body (Figure
+[[fig:sensor-view]]). Their data is transformed into the robot's frame using the head's pitch (±36°)
+and yaw (±115°) angles.
 
 ![fig:sensor-view | Sensor fields of view (side view, to scale)](../assets/interim/helmet-sensor-view.webp)
 
-The JT128 is tilted forward by 24°, so its lowest beam points 28.4° down and sees tabletops from
-1.05 m and the floor from 2.46 m, while the whole helmet stays below its beams. The RealSense is
-tilted 30° down, below the LiDAR's view, and sees tabletops from 0.37 m and the floor from 0.82 m.
-The LiDAR therefore finds tables from about a metre away and the camera covers the final metre of
-the approach (Section 7.2.4). Appendix 6A gives the geometry.
+The JT128 is tilted forward by 24°, directing its lowest beam 28.4° below the horizontal. This
+allows it to detect tabletops from 1.05 m away and the floor from 2.46 m away, while keeping the
+helmet outside its field of view. The RealSense is tilted 30° downwards, covering the area below the
+LiDAR's field of view. It can detect tabletops from 0.37 m away and the floor from 0.82 m away. The
+LiDAR therefore detects tables from a distance, while the camera provides coverage during the final
+metre of the approach (Section 7.2.4). Appendix 6A provides the geometric calculations.
 
 ### 6.2. Mounting and Added Weight
 

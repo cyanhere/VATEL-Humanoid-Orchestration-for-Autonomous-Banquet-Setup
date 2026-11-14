@@ -26,8 +26,9 @@ Table: tab:open-navigation | Problems: navigation
 | --- | --- |
 | The robot does not know where it starts in the rough map, so its own map and the rough map are not aligned | Localise the robot within the rough map at the start of each run |
 | The rough map is not yet connected to the navigation system | Connect the VATEL Planner's rough map to the mission planner |
-| All tests so far ran on a Unitree G1 borrowed from the BEADZ Lab | Move the stack to the R1 with the JT128 lidar and the helmet RealSense, and retest |
-| The AGV detection criterion and fine-approach method are not yet developed | Compare the fine-approach options (Appendix 7E), define when an AGV detection is trusted (Appendix 7D), then test the AGV leg |
+| All tests so far ran on a Unitree G1 borrowed from the BEADZ Lab | Move the stack to the R1 with the JT128 LiDAR and the helmet RealSense, and retest |
+| The AGV detection criterion and fine-approach method are not yet developed | Compare the fine-approach options (Appendix 7E), define when an AGV detection is trusted (Appendix 7C), then test the AGV leg |
+| The robot does not stop centred on the table edge: the fine approach corrects only distance and heading, and the sideways position from LiDAR localisation is not accurate enough | Add a sideways correction to the fine approach, such as locating the table's ends in the RealSense image, and measure the sideways offset in the approach tests |
 
 Table: tab:open-manipulation | Problems: plate manipulation
 | Problem | Solution or work needed |
@@ -38,6 +39,7 @@ Table: tab:open-manipulation | Problems: plate manipulation
 | Rim breaking load only estimated (120–165 N) | Measure it in a static test and set the finger force limits from it |
 | The AGV's stack holder is undefined, so the working height may differ | Evaluate the height-controlled locomotion policy with the pick sequence |
 | How plates are carried to the table is not decided | Compare single plates, a tray and a trolley |
+| Placing the plate at its set position is not yet developed | Develop the place motion: lower and release the plate, then check its position with the head camera against T14 |
 
 ### 9.2. Targeted Workflow
 

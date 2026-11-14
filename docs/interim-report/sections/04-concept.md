@@ -47,23 +47,23 @@ Table: tab:concepts | Instruction concepts (● meets, ◐ partly, ○ does not)
 Table: tab:morph-navigation | Morphological chart: navigation
 | Question | Option A | Option B | Option C | Option D |
 | --- | --- | --- | --- | --- |
-| 1. Know where the robot is | Leg odometry and IMU only | Hall CCTV tracks the robot | Visual SLAM on a camera | **Lidar–inertial odometry** |
+| 1. Know where the robot is | Leg odometry and IMU only | Hall CCTV tracks the robot | Visual SLAM on a camera | **LiDAR–inertial odometry** |
 | 2. Choose where to go next | Staff send each goal | Follow the planner's goal list in order | **State machine that alternates between AGV and table** |  |
-| 3. Plan the path | Follow a trail laid on the floor | Sampling planner (RRT\*) | **A\* on a costmap from the map and live lidar** |  |
+| 3. Plan the path | Follow a trail laid on the floor | Sampling planner (RRT\*) | **A\* on a costmap from the map and live LiDAR** |  |
 | 4. Walk the path past people | Pure pursuit: track the path, stop when blocked | **DWB: sample reachable speeds, score each** | MPPI: optimise many sampled trajectories |  |
-| 5. Stop square at the table's edge | AprilTag on each table | RFID tag on each table | Lidar scan of the table | **RealSense depth: detect the tabletop edge** |
+| 5. Stop square at the table's edge | AprilTag on each table | RFID tag on each table | LiDAR scan of the table | **RealSense depth: detect the tabletop edge** |
 
 The choices were made before prototyping, from the robot's sensors and software and published
 performance; Appendix 4B gives the reasoning for each row.
 
 Table: tab:nav-concepts | Navigation concepts (● meets, ◐ partly, ○ does not)
-| Concept | Options | Adapts to every layout | Nothing fitted to the hall or tables | Runs without staff | Square stop at 20 cm (S5) |
+| Concept | Options | Adapts to every layout | Nothing fitted to the hall or tables | Runs without staff | Square stop at 20 cm (T10) |
 | --- | --- | --- | --- | --- | --- |
 | Infrastructure-guided | 1B, 2B, 3A, 4A, 5B | ○ | ○ | ◐ | ○ |
 | Camera-only | 1C, 2B, 3B, 4A, 5A | ◐ | ◐ | ◐ | ● |
-| **Lidar-based navigation** | 1D, 2C, 3C, 4B, 5D | ● | ● | ● | ● |
+| **LiDAR-based navigation** | 1D, 2C, 3C, 4B, 5D | ● | ● | ● | ● |
 
-Only lidar-based navigation was expected to meet all four requirements (Table [[tab:nav-concepts]]),
+Only LiDAR-based navigation was expected to meet all four requirements (Table [[tab:nav-concepts]]),
 so it was taken forward; Section 7.3 gives the first measured results.
 
 #### 4.2.3. Plate Manipulation
@@ -71,25 +71,21 @@ so it was taken forward; Section 7.3 gives the first measured results.
 Table: tab:morph-manipulation | Morphological chart: plate manipulation
 | Question | Option A | Option B | Option C | Option D |
 | --- | --- | --- | --- | --- |
-| 1. Find the plate | **Head depth camera** | Hall CCTV | Stack at a fixed position | Wrist cameras (under evaluation) |
+| 1. Find the plate | **Head depth camera** | Hall CCTV | Stack at a fixed position | Wrist cameras |
 | 2. Separate the top plate | Grasp in the rim gap, as people do | Press the near rim to tip the plate | **Push sideways, then grasp** | Tool or fixture |
 | 3. Hold the plate | Thumb–middle pinch | Palm under, thumb above | **Rim in the index–middle slot** |  |
-| 4. Control the motion | **Scripted state machine** | Reinforcement learning | Imitation learning |  |
+| 4. Carry plates to the table | **One plate in the hand** | Tray carried by the robot | Trolley pushed by the robot |  |
 
-The head camera sees the stack from close range, far more accurately than the hall cameras, and
-needs no fixed stack position. Separation is the critical question. Table [tab:separation-eval]]
-compares its options against the criteria of Table [[tab:pick-criteria]], and Sections 8.3 and 8.4
-give the evidence for each choice. The end effector is fixed by the platform (Revo 2 hands); a
-gripper or suction cup would need new hardware and would not handle other tableware later. Appendix
-4C gives the reasoning for each row.
+Of the three concepts built from the options (Table [[tab:manip-concepts]]), only push-and-grasp met
+all four requirements, so it was developed; Section 8.4 gives the tests behind each choice and
+Appendix 4C the reasoning for the other options.
 
-Table: tab:separation-eval | Separation options against the pick criteria (● meets, ◐ partly, ○ does not, – not reached)
-| Option | Feasible with the R1 arm and hand | Stack kept in place | Tolerates ±15 mm pose error | No added hardware |
-| --- | --- | --- | --- | --- |
-| Grasp in the rim gap | ○ 14 mm finger, 0.5–2.0 mm gap; approach 54° off | – | – | ● |
-| Press to tip | ○ far rim rises 3–8 mm; about 16 mm needed | – | – | ● |
-| Push sideways, then grasp | ● 4 of 5 pushes on the R1 | ● < 5 mm in MuJoCo | ● −15 to +20 mm | ● |
-| Tool or fixture | ◐ depends on the undefined AGV holder | – | – | ○ |
+Table: tab:manip-concepts | Plate manipulation concepts (● meets, ◐ partly, ○ does not)
+| Concept | Options | Separates one plate, stack kept in place (T12) | Holds the plate through the lift (T11) | Tolerates ±15 mm pose error | Nothing added to the robot or AGV (N5) |
+| --- | --- | --- | --- | --- | --- |
+| Human-like grasp | 1A, 2A, 3A | ○ | ○ | ○ | ● |
+| Fixture-assisted | 1C, 2D, 3B | ◐ | ◐ | ● | ○ |
+| **Push-and-grasp** | 1A, 2C, 3C | ● | ● | ● | ● |
 
 ### 4.3. Selected Concept and System Architecture
 
@@ -100,7 +96,7 @@ side, and navigation and plate manipulation on the robot.
 
 Figure [[fig:pipeline]] shows the full pipeline. The banquet team plans the event in the VATEL
 Planner, which hands the robot a static map with the tables and every set position. The robot
-navigates from that map, checks the real table positions with its lidar, and takes plates one at a
+navigates from that map, checks the real table positions with its LiDAR, and takes plates one at a
 time from the AGV to their positions.
 
 ![fig:pipeline | The VATEL pipeline: segments, hand-offs and success criteria](../assets/interim/vatel-pipeline.webp)
