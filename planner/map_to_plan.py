@@ -3,7 +3,7 @@ Turn a lidar map (.pgm + .yaml) into an editable layout the planner can open.
 
     python3 map_to_plan.py ilounge.pgm ilounge.yaml -o ilounge.plan.json
 
-Then in the planner: Export tab -> Import file. The room arrives as real objects --
+Then in the planner: Settings -> This layout -> Open a file. The room arrives as real objects --
 walls, obstacles -- that drag, rotate and delete like anything else. Lay tables on it,
 then export a static map back out.
 
@@ -431,7 +431,7 @@ def main(argv=None):
           % (fm["w"], fm["h"], fm["cell"], _n * fm["cell"] ** 2,
              len(fm["bits"]) / 1024.0))
     print("\nwrote %s  (%d items)" % (out, len(items)))
-    print("open the planner -> Export tab -> Import file")
+    print("open the planner -> Settings -> This layout -> Open a file")
     return 0
 
 

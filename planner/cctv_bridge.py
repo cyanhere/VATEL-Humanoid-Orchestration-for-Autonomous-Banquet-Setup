@@ -393,7 +393,7 @@ def run_room_worker(state, args):
     if not rooms:
         sys.exit("no room %r in %s (it has: %s)" % (args.room, args.venue,
                  ", ".join(r["name"] for r in venue["rooms"])))
-    room = cm.Room(rooms[0])
+    room = cm.Room(rooms[0], venue["_base"])
     names = room.cameras or list(venue["_cams"])
     caps, plates = {}, {}
     for n in names:
@@ -560,9 +560,24 @@ def main(argv=None):
         args.every = 15.0 if args.every is None else args.every
         args.name = args.name or args.room_name
         args.room = args.room_name
+        if not Path(args.venue).is_file():
+            ap.error("no venue file %r here -- run from the folder that holds it, or give "
+                     "its full path" % args.venue)
         state = State()
         state.doc["units"] = "metres"
-        threading.Thread(target=run_room_worker, args=(state, args), daemon=True).start()
+
+        def worker():
+            # A worker that dies must take the bridge with it: a server still answering
+            # with nothing looks, from the planner, exactly like an empty room.
+            try:
+                run_room_worker(state, args)
+            except BaseException:
+                import os
+                import traceback
+                traceback.print_exc()
+                print("the camera worker stopped -- shutting the bridge down", flush=True)
+                os._exit(1)
+        threading.Thread(target=worker, daemon=True).start()
         srv = ThreadingHTTPServer((args.host, args.port), make_handler(state, None, args))
         args.detector = "grounded-sam, " + args.room_name
         print("VATEL camera bridge: %s -> http://%s:%d" % (args.name, args.host, args.port), flush=True)

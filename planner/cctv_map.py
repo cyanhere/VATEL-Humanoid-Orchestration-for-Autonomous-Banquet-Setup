@@ -29,9 +29,20 @@ THE VENUE FILE
     frame, so a room can be any rectangle on the venue's plan, square to it or not.
     floor_m (optional): the room's real outline in venue metres, when its walls are not
     that rectangle. Tables outside it are dropped, and the planner draws it as the walls.
+    fixed_m (optional): polygons of fixed structure inside the room (columns, counters),
+    which cctv_navmap.py keeps when it clears old furniture from the robot's map.
+    map (optional): {"pgm", "yaml", "align"} -- the robot's own lidar map of this room and
+    its alignment (cctv_navmap.py align). With it, everything sent to the planner is in
+    THAT map's frame (x right, y down from its top-left, the planner's convention), so the
+    tables land on a layout imported from it (cctv_navmap.py plan), and the planner's own
+    export comes out in the robot's frame. Paths are relative to the venue file.
     axes_deg: the directions the room's walls run, to square rectangular tables to.
     ignore_m: fixed furniture the detector will call a table (counters, sofas, a bar).
     snap_deg (per room): rectangles within this of the walls' direction are squared to them.
+    measure_from (per room): walls to check tables against with a tape measure,
+    [{"name": "cabinet fronts", "from": [x, y], "to": [x, y]}, ...] in venue metres. With
+    --review, each table's gap from its nearest edge to each of them is printed and saved
+    (default: the two nearest sides of the room's box).
     max_m_per_px: how far one pixel of outline may move a table along the floor before
     its camera is too far away to be believed about it (default 0.07 m). Far off, at a
     grazing angle, a pixel is many centimetres: the table is real but its place is not.
@@ -103,7 +114,7 @@ def camera_source(cfg):
 class Room:
     """A rectangle on the venue plan, and the planner's frame on it."""
 
-    def __init__(self, d):
+    def __init__(self, d, base=None):
         self.name = d["name"]
         self.o = np.asarray(d.get("origin_m", (0.0, 0.0)), float)
         self.rot = float(d.get("rotation_deg", 0.0))
@@ -119,10 +130,65 @@ class Room:
         # the detector's score below which nothing counts as a table here: it depends on
         # the furniture (light tables score high, dark ones low), so it is the venue's call
         self.min_score = float(d.get("min_score", 0.0))
+        self.measure_from = [{"name": w["name"], "a": np.asarray(w["from"], float),
+                              "b": np.asarray(w["to"], float)} for w in d.get("measure_from", [])]
+        # fixed structure inside the room (a column, a counter): never cleared from a map
+        self.fixed = [np.asarray(q, float) for q in d.get("fixed_m", [])]
         self.walls = bool(d.get("floor_m"))      # a real outline, not just the rectangle
         self.floor = (np.asarray(d["floor_m"], float) if d.get("floor_m") else
                       np.array([self.to_venue(p) for p in ((0, 0), (self.w, 0), (self.w, self.h),
                                                            (0, self.h))]))
+        self.map = None                          # (MapFrame, Alignment) when reporting in it
+        if d.get("map") and base is not None:
+            import cctv_navmap as nm
+            m = d["map"]
+            mf, _ = nm.load_base(os.path.join(base, m["pgm"]), os.path.join(base, m["yaml"]))
+            self.map = (mf, nm.Alignment.load(os.path.join(base, m["align"])))
+            self.map_name = os.path.basename(m["pgm"])
+
+    # -- what the planner is sent: the room's own frame, or the robot map's
+    @property
+    def out_frame(self):
+        return "map:" + self.map_name if self.map else "room"
+
+    def out_size(self):
+        if self.map:
+            mf = self.map[0]
+            return mf.w * mf.res, mf.h * mf.res
+        return self.w, self.h
+
+    def out_pts(self, P):
+        """Venue points (N, 2) -> the frame the planner is sent."""
+        P = np.asarray(P, float).reshape(-1, 2)
+        if not self.map:
+            return np.array([self.to_room(p) for p in P])
+        mf, al = self.map
+        XY = al.venue_to_map(P)
+        return np.column_stack([XY[:, 0] - mf.ox, mf.h * mf.res - (XY[:, 1] - mf.oy)])
+
+    def from_out(self, Q, frame=None):
+        """The planner's frame -> venue. `frame`: what the points are in (a doc's
+        room.frame); a doc from before a map was attached is in the room's own frame."""
+        Q = np.asarray(Q, float).reshape(-1, 2)
+        if not (self.map and (frame or self.out_frame).startswith("map")):
+            return np.array([self.to_venue(q) for q in Q])
+        mf, al = self.map
+        XY = np.column_stack([Q[:, 0] + mf.ox, mf.oy + mf.h * mf.res - Q[:, 1]])
+        return al.map_to_venue(XY)
+
+    def out_floor(self):
+        """The room's walls in the frame the planner is sent, rounded the same way every
+        time: the planner compares the walls a camera reports with the ones it has, and
+        takes a difference to mean a different room."""
+        return [[round(float(x), 3), round(float(y), 3)] for x, y in self.out_pts(self.floor)]
+
+    def out_turn(self, deg):
+        """A direction's angle, venue (y down) -> the planner's frame (y down), degrees."""
+        if not self.map:
+            return deg - self.rot
+        a = math.radians(deg)
+        q = self.out_pts([[0.0, 0.0], [math.cos(a), math.sin(a)]])
+        return math.degrees(math.atan2(q[1, 1] - q[0, 1], q[1, 0] - q[0, 0]))
 
     def to_room(self, p):
         d = np.asarray(p, float) - self.o
@@ -172,9 +238,26 @@ def map_instances(cfg, instances, venue, axes_deg=None, snap_deg=12.0):
     return tables
 
 
-def camera_view(cfg, room, max_range_m=25.0, n=24):
-    """Where a camera hangs and what floor it sees, in the room's frame -- so the plan can
-    say which way the picture faces. The floor it sees is the frame's border traced onto
+def camera_view(cfg, room, out=True, **kw):
+    """Where a camera hangs and what floor it sees -- so the plan can say which way the
+    picture faces -- in the frame the planner is sent (out=True) or the room's own."""
+    v = camera_view_venue(cfg, room, **kw)
+    if out:
+        place, turn = room.out_pts, room.out_turn
+    else:
+        place = lambda P: np.array([room.to_room(p) for p in np.asarray(P).reshape(-1, 2)])
+        turn = lambda deg: deg - room.rot
+    seen = place(v["view"]) if len(v["view"]) else np.zeros((0, 2))
+    return {"name": cfg["name"], "label": cfg.get("short", cfg["name"]),
+            "at_m": [round(float(x), 3) for x in place([v["at"]])[0]],
+            "height_m": round(float(v["height_m"]), 2),
+            "heading_deg": round(turn(v["heading_deg"]), 1),
+            "hfov_deg": round(v["hfov_deg"], 1),
+            "view_m": [[round(float(x), 2), round(float(y), 2)] for x, y in seen]}
+
+
+def camera_view_venue(cfg, room, max_range_m=25.0, n=24):
+    """The same, in the venue's frame. The floor it sees is the frame's border traced onto
     the floor (out to `max_range_m` where the border is above the horizon), cut to the room."""
     cam = cfg["_cam"]
     t = np.linspace(0.0, 1.0, n)
@@ -193,21 +276,17 @@ def camera_view(cfg, room, max_range_m=25.0, n=24):
                 continue
         if h > 1e-9:
             pts.append(cam.C[:2] + max_range_m * d[:2] / h)
-    poly = np.array([room.to_room(p) for p in pts])
-    # cut to the room's real floor where the venue gives one (walls need not be square to
-    # the plan's rectangle), as its hull -- the clip needs a convex edge to cut against
-    floor = np.array([room.to_room(p) for p in room.floor])
-    rim = cc._hull(floor) if len(floor) >= 3 else np.array(
-        [[0.0, 0.0], [room.w, 0.0], [room.w, room.h], [0.0, room.h]])
+    poly = np.array(pts)
+    # cut to the room's real floor (walls need not be square to anything), as its hull --
+    # the clip needs a convex edge to cut against
+    rim = cc._hull(room.floor)
     seen = cc._clip(poly, rim) if len(poly) >= 3 else np.zeros((0, 2))
     f = cam.R[2][:2]                                  # the optical axis, on the floor
     edge = cam.rays([[0, H / 2], [W, H / 2]])
-    return {"name": cfg["name"], "label": cfg.get("short", cfg["name"]),
-            "at_m": [round(float(v), 3) for v in room.to_room(cam.nadir)],
-            "height_m": round(float(cam.height_m), 2),
-            "heading_deg": round(math.degrees(math.atan2(f @ room.ey, f @ room.ex)), 1),
-            "hfov_deg": round(math.degrees(math.acos(float(np.clip(edge[0] @ edge[1], -1, 1)))), 1),
-            "view_m": [[round(float(x), 2), round(float(y), 2)] for x, y in seen]}
+    return {"at": np.asarray(cam.nadir, float), "view": np.asarray(seen, float),
+            "height_m": float(cam.height_m),
+            "heading_deg": math.degrees(math.atan2(f[1], f[0])),
+            "hfov_deg": math.degrees(math.acos(float(np.clip(edge[0] @ edge[1], -1, 1))))}
 
 
 # ================================================================ sanity, then one list
@@ -324,26 +403,89 @@ def fuse(tables, touch_same=0.1, touch_cross=0.3):
     return out
 
 
+def number(tables, room):
+    """Give the tables ids t1, t2 ... in reading order of the room (top row first, left to
+    right), so the JSON, the pictures and the gap list all call a table the same thing."""
+    tables = sorted(tables, key=lambda t: tuple(np.round(room.to_room(t["centre_m"])[::-1], 1)))
+    for k, t in enumerate(tables):
+        t["id"] = "t%d" % (k + 1)
+    return tables
+
+
+def wall_gaps(t, room):
+    """[(wall name, gap in m, square to it?)] from the table's nearest edge to each wall
+    the room says to measure from -- what a tape measure would read, edge to wall."""
+    walls = room.measure_from
+    if not walls:                                    # the two nearest sides of the room's box
+        c = room.to_room(t["centre_m"])
+        sides = [("top wall", (0, 0), (room.w, 0), c[1]), ("bottom wall", (0, room.h), (room.w, room.h), room.h - c[1]),
+                 ("left wall", (0, 0), (0, room.h), c[0]), ("right wall", (room.w, 0), (room.w, room.h), room.w - c[0])]
+        walls = [{"name": n, "a": room.to_venue(a), "b": room.to_venue(b)}
+                 for n, a, b, _ in sorted(sides, key=lambda x: x[3])[:2]]
+    inside = room.floor.mean(0)
+    pts = _poly(t)
+    out = []
+    for w in walls:
+        u = (w["b"] - w["a"]) / max(np.linalg.norm(w["b"] - w["a"]), 1e-9)
+        n = np.array([-u[1], u[0]])
+        if (inside - w["a"]) @ n < 0:                # normal pointing into the room
+            n = -n
+        gap = float(min((pts - w["a"]) @ n))
+        if t["shape"] == "rect":
+            d = (math.degrees(math.atan2(u[1], u[0])) - t["rotation_deg"]) % 90.0
+            square = min(d, 90.0 - d) < 5.0
+        else:
+            square = True
+        out.append((w["name"], gap, square))
+    return out
+
+
+def gap_report(room, tables):
+    """The wall gaps as a table for a person with a tape measure."""
+    lines = []
+    names = [g[0] for g in wall_gaps(tables[0], room)] if tables else []
+    lines.append("%s: each table's nearest edge to each wall, in metres (as a tape reads it)" % room.name)
+    lines.append("%-5s %-13s %-16s" % ("table", "size", "shape") +
+                 "".join("%-24s" % n[:23] for n in names))
+    for t in tables:
+        size = ("%.2f x %.2f" % tuple(t["size_m"]) if t["shape"] == "rect"
+                else "%.2f across" % t["diameter_m"])
+        row = "%-5s %-13s %-16s" % (t.get("id", "?"), size,
+                                    t["shape"] + (" (cut off)" if t.get("clipped") else ""))
+        for _, gap, square in wall_gaps(t, room):
+            row += "%-24s" % ("%.2f%s" % (gap, "" if square else "  (corner)"))
+        lines.append(row)
+    lines.append("")
+    lines.append("Measure from the table edge that faces the wall, square to the wall. If a whole")
+    lines.append("column is off by about the same amount, that is where the plan puts the wall,")
+    lines.append("not the tables; the scatter within a column is the pipeline's error. '(corner)':")
+    lines.append("the table is not square to that wall, so the gap is to its nearest corner. Tables")
+    lines.append("marked cut off run past the edge of the picture and are only partly measured.")
+    return "\n".join(lines)
+
+
 def room_doc(room, tables, cameras=(), source="", seq=0):
     """The planner's view: the room's own frame and units."""
     rt = []
-    for k, t in enumerate(sorted(tables, key=lambda t: (t["centre_m"][1], t["centre_m"][0]))):
-        c = room.to_room(t["centre_m"])
-        e = {"id": "t%d" % (k + 1), "shape": t["shape"],
+    for k, t in enumerate(number(tables, room)):
+        c = room.out_pts([t["centre_m"]])[0]
+        e = {"id": t["id"], "shape": t["shape"],
              "centre_m": [round(float(c[0]), 3), round(float(c[1]), 3)],
              "confidence": round(float(t["confidence"]), 3),
              "cameras": t.get("cameras", [t.get("camera")])}
         if t["shape"] == "rect":
             e["size_m"] = [round(float(x), 3) for x in t["size_m"]]
-            e["rotation_deg"] = round(((t["rotation_deg"] - room.rot + 90.0) % 180.0) - 90.0, 1)
+            e["rotation_deg"] = round(((room.out_turn(t["rotation_deg"]) + 90.0) % 180.0) - 90.0, 1)
         else:
             e["diameter_m"] = round(float(t["diameter_m"]), 3)
         if t.get("clipped"):
             e["clipped"] = True
         rt.append(e)
-    rd = {"name": room.name, "w": room.w, "h": room.h}
+    w, h = room.out_size()
+    rd = {"name": room.name, "w": round(float(w), 3), "h": round(float(h), 3),
+          "frame": room.out_frame}
     if room.walls:                                   # the walls, when they are not the box
-        rd["floor_m"] = [[round(float(v), 3) for v in room.to_room(p)] for p in room.floor]
+        rd["floor_m"] = room.out_floor()
     return {"schema": SCHEMA, "source": source, "seq": seq,
             "captured_at": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
             "units": "metres", "room": rd, "tables": rt, "cameras": list(cameras)}
@@ -383,7 +525,19 @@ def draw_on_frame(img, cfg, instances, tables, top_h):
         col = (0, 0, 255) if not t.get("rejected") else (160, 160, 160)
         if ok.sum() >= 2:
             cv2.polylines(out, [uv[ok].astype(np.int32)], True, col, 4, cv2.LINE_AA)
+        if t.get("id") and not t.get("rejected"):
+            c, okc = cam.project(np.array([[*t["centre_m"], -top_h]]))
+            if okc[0]:
+                _label(out, t["id"], c[0], 1.6)
     return out
+
+
+def _label(img, text, at, scale):
+    """White text on a black box, centred on `at`."""
+    (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, 3)
+    x, y = int(at[0] - tw / 2), int(at[1] + th / 2)
+    cv2.rectangle(img, (x - 6, y - th - 6), (x + tw + 6, y + 8), (0, 0, 0), -1)
+    cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, scale, (255, 255, 255), 3, cv2.LINE_AA)
 
 
 def draw_plan(venue, room, tables, rejected, px_per_m=60, plan=None):
@@ -408,13 +562,19 @@ def draw_plan(venue, room, tables, rejected, px_per_m=60, plan=None):
     if room.walls:                                   # draw the outline as the walls
         cv2.polylines(img, [np.array([rp(p) for p in room.floor], np.int32)], True,
                       (40, 40, 40), 4, cv2.LINE_AA)
+    for w in room.measure_from:                      # the walls a tape is measured from
+        cv2.line(img, rp(w["a"]), rp(w["b"]), (200, 90, 0), 5, cv2.LINE_AA)
+        m = rp((w["a"] + w["b"]) / 2)
+        cv2.putText(img, w["name"], (m[0] + 8, m[1] - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.55,
+                    (200, 90, 0), 2, cv2.LINE_AA)
     for t in rejected:
         P = np.array([rp(p) for p in _poly(t)], np.int32)
         cv2.polylines(img, [P], True, (170, 170, 170), 1, cv2.LINE_AA)
+
     def qp(q):
         return int(round(q[0] * px_per_m)), int(round(q[1] * px_per_m))
 
-    views = [camera_view(cfg, room) for name, cfg in venue["_cams"].items()
+    views = [camera_view(cfg, room, out=False) for name, cfg in venue["_cams"].items()
              if not room.cameras or name in room.cameras]
     for v in views:                                   # the floor each camera sees
         if len(v["view_m"]) >= 3:
@@ -429,6 +589,8 @@ def draw_plan(venue, room, tables, rejected, px_per_m=60, plan=None):
         cv2.polylines(img, [P], True, (20, 80, 20), 2, cv2.LINE_AA)
         dims = ("%.1fx%.1f" % tuple(t["size_m"]) if t["shape"] == "rect"
                 else "%.1f round" % t["diameter_m"])
+        if t.get("id"):
+            dims = t["id"] + "  " + dims
         cx, cy = rp(t["centre_m"])
         cv2.putText(img, dims, (cx - 30, cy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2, cv2.LINE_AA)
         cv2.putText(img, dims, (cx - 30, cy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
@@ -490,7 +652,8 @@ def main(argv=None):
 
     import cctv_segment as cs
     venue = load_venue(args.venue)
-    rooms = [Room(r) for r in venue["rooms"] if not args.room or r["name"] == args.room]
+    rooms = [Room(r, venue["_base"]) for r in venue["rooms"]
+             if not args.room or r["name"] == args.room]
     if not rooms:
         raise SystemExit("no room called %r" % args.room)
     frames = dict(args.frame or [])
@@ -512,6 +675,7 @@ def main(argv=None):
                 seen[name] = (img, _segment_cached(seg, img, name, args.cache))
             imgs[name], per_cam[name] = seen[name]
         tables, rejected = map_room(room, venue, per_cam, log=print)
+        tables = number(tables, room)
         doc = room_doc(room, tables, [camera_view(venue["_cams"][n], room) for n in names],
                        source=venue.get("name", ""))
         for t in rejected:
@@ -534,6 +698,12 @@ def main(argv=None):
                             [cv2.IMWRITE_JPEG_QUALITY, 85])
             cv2.imwrite(os.path.join(args.review, "%s_plan.png" % slug),
                         draw_plan(venue, room, tables, rejected, plan=plan))
+            if tables:
+                rep = gap_report(room, tables)
+                print()
+                print(rep)
+                with open(os.path.join(args.review, "%s_wall_gaps.txt" % slug), "w") as f:
+                    f.write(rep + "\n")
             print("review pictures in", args.review)
 
 
