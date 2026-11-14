@@ -209,12 +209,30 @@ function linkReferencesAndAppendices(root) {
   hits.forEach((node) => {
     const html = esc(node.nodeValue)
       .replace(/\[(\d+)\]/g, (m, n) => (refs.has(n) ? `<a class="xref" href="#ref-${n}">[${n}]</a>` : m))
-      .replace(appRe, (m, word, list) => word + " " + list.replace(/\d?[A-Z](?![\w-])/g,
-        (c) => (apps[c] ? `<a class="xref" href="#${apps[c]}">${c}</a>` : c)));
+      // the link covers the word too: "Appendix 5B"; in a list the first code takes the word with it
+      .replace(appRe, (m, word, list) => {
+        let first = true;
+        return list.replace(/\d?[A-Z](?![\w-])/g, (c) => {
+          const text = first ? word + " " + c : c;
+          first = false;
+          return apps[c] ? `<a class="xref" href="#${apps[c]}">${text}</a>` : text;
+        });
+      });
     if (html === esc(node.nodeValue)) return;
     const span = document.createElement("span");
     span.innerHTML = html;
     node.replaceWith(...span.childNodes);
+  });
+
+  // hover preview: the reference entry, the appendix title, or the figure / table caption
+  root.querySelectorAll("a[href^='#']").forEach((a) => {
+    if (a.closest("#toc")) return;
+    const target = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+    if (!target) return;
+    const text = (target.getAttribute("subtitle") || target.textContent).replace(/\s+/g, " ").trim();
+    if (!text) return;
+    a.classList.add("xref");
+    a.dataset.preview = text.length > 220 ? text.slice(0, 217) + "…" : text;
   });
 }
 

@@ -1143,11 +1143,52 @@ a.report-card:active {
 
 /* Citation and appendix links, and the button that returns to the link that was followed */
 .content a.xref {
+  position: relative;
   text-decoration: none;
+  border-bottom: 1px dotted var(--accent-2);
+  border-radius: 3px;
+  transition: background 0.15s, color 0.15s;
 }
 
-.content a.xref:hover {
-  text-decoration: underline;
+.content a.xref:hover,
+.content a.xref:focus-visible {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-bottom-style: solid;
+}
+
+/* hover preview of the target: reference entry, appendix title or caption */
+.content a.xref[data-preview]::after {
+  content: attr(data-preview);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  z-index: 40;
+  width: max-content;
+  max-width: min(360px, 80vw);
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #1f2a27;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+  pointer-events: none;
+}
+
+.content a.xref[data-preview]:hover::after,
+.content a.xref[data-preview]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .content section.references li:target,
