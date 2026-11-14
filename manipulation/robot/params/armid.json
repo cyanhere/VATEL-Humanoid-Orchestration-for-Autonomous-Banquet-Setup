@@ -1,0 +1,103 @@
+{
+ "hand_cmd": [
+  0.0,
+  0.0,
+  0.006,
+  0.0,
+  1.0,
+  1.0
+ ],
+ "q_plan_rad": [
+  -0.404,
+  1.607,
+  -0.868,
+  -0.492,
+  0.401
+ ],
+ "centre_xy": [
+  0.2859,
+  0.1577
+ ],
+ "rim_z": 0.075,
+ "wp_rad": [
+  0.06,
+  0.05,
+  0.06,
+  0.06,
+  0.06
+ ],
+ "sweep_z_mm": 50,
+ "sweep_rad": 0.04,
+ "sweep_v_rad_s": [
+  0.05,
+  0.2
+ ],
+ "v_slow_rad_s": 0.1,
+ "v_fast_rad_s": 0.3,
+ "hand_range_max_mm": 170.0,
+ "hold_s": 1.5,
+ "z_floor_mm": -5.0,
+ "ik_max_mm": 25.0,
+ "f_abort_N": 35.0,
+ "q_lag_max_rad": 0.15,
+ "pre_v_rad_s": 0.25,
+ "load_f_abort_N": 25.0,
+ "load_settle_s": 5.0,
+ "load_max_s": 300.0,
+ "q_correct_mrad": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "contact_z_mm": 10.0,
+ "contact_floor_mm": -70.0,
+ "vmax_id_rad_s": 0.6,
+ "grav_n": 24,
+ "grav_amp_rad": [
+  0.25,
+  0.2,
+  0.25,
+  0.3,
+  0.25
+ ],
+ "grav_step_rad": 0.04,
+ "grav_v_rad_s": 0.25,
+ "grav_slow_rad_s": 0.1,
+ "grav_hold_s": 2.0,
+ "grav_x_min_m": 0.15,
+ "grav_y_min_m": 0.03,
+ "grav_elbow_y_min_m": 0.2,
+ "fric_amp_rad": 0.06,
+ "fric_v_rad_s": [
+  0.02,
+  0.05,
+  0.1,
+  0.2,
+  0.4
+ ],
+ "fric_hold_s": 0.7,
+ "fric_dither_mrad": [
+  2.0,
+  5.0,
+  10.0,
+  20.0
+ ],
+ "fric_dither_hz": 0.5,
+ "fric_dither_cycles": 3,
+ "chirp_hz": [
+  0.25,
+  0.5,
+  1.0,
+  2.0,
+  3.0
+ ],
+ "chirp_amp_rad": 0.04,
+ "chirp_v_max": 0.4,
+ "chirp_a_max": 2.9,
+ "chirp_cycles": 3,
+ "hand_amp": 0.6,
+ "hand_ramp_s": 6.0,
+ "hand_step_s": 1.5
+}

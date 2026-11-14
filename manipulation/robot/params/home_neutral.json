@@ -1,0 +1,35 @@
+{
+ "q": [
+  0.0,
+  0.8727,
+  0.3,
+  -0.8,
+  0.0,
+  0.0,
+  -0.8727,
+  -0.3,
+  -0.8,
+  0.0,
+  0.0
+ ],
+ "hands": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "head": [
+  0.0,
+  0.0
+ ],
+ "source": "neutral HOME, agreed with the user 2026-11-06, CHANGED the same day after the R1 run: shoulder roll 50 deg out (left +0.8727, right -0.8727; was 10 deg), shoulder yaw 0.3 rad turning the forearms outward (left +0.3, right -0.3; was 0), elbow -0.80 rad (forearms ~40 deg up), wrist 0, fingers open, head level. Why: at roll 10 deg the hands sat in the head camera's line to the plate's rim (perception 'rim edge seen in only 7-10 sectors', R1 2026-11-06 12:4x; projection of perception's own arm spheres: 23 of 72 rim sectors hidden for a plate at x 0.287 y +0.088). Roll alone (30-50 deg) did not clear it; roll 50 + yaw 0.3 hides 0 sectors at 4 plate spots (10 mm margin) and in MuJoCo (tests/home_paths_check.py) the hands stay >= 37 mm above a 0.755 m table on every move to / from HOME, no table / plate contact. Previous: 10 deg roll, yaw 0 (backup in the session scratchpad)",
+ "note": "arm order L0..L4 R0..R4 W; hands: left Thumb, Thumb_aux, Index, Middle, Ring, Pinky, then right; head pitch (+down), yaw (+left), rad. The previous HOME (the push stage's start) is params/premotion.json, the 'pre-grip pose'"
+}

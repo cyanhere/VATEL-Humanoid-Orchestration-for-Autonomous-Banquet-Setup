@@ -1,0 +1,49 @@
+{
+ "side": "left",
+ "rate_hz": 30.0,
+ "move_v_rad_s": 0.25,
+ "approach_rad": 0.04,
+ "approach_v_rad_s": 0.1,
+ "hold_s": 2.0,
+ "n_poses": 0,
+ "max_speed": 0.6,
+ "n_motions": 0,
+ "motion_s": 0,
+ "home_tol_rad": 0.12,
+ "lag_abort_rad": 0.2,
+ "joints": [],
+ "sweeps": [
+  [
+   0.01,
+   0.1
+  ],
+  [
+   0.04,
+   0.6
+  ],
+  [
+   0.15,
+   0.6
+  ],
+  [
+   0.4,
+   0.6
+  ]
+ ],
+ "sweep_reps": 1,
+ "rev_amps": [
+  0.005,
+  0.01,
+  0.02,
+  0.05
+ ],
+ "rev_v_rad_s": 0.05,
+ "rev_cycles": 3,
+ "step_sizes": [
+  0.02,
+  0.1
+ ],
+ "step_hold_s": 1.5,
+ "load_kg": 0.0,
+ "load_hold_s": 4.0
+}

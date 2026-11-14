@@ -1,0 +1,65 @@
+{
+ "side": "both",
+ "rate_hz": 30.0,
+ "channels": [],
+ "step_sizes": [
+  0.1,
+  0.3,
+  0.6,
+  0.9
+ ],
+ "step_speed": 20.0,
+ "step_hold_s": 1.5,
+ "ramp_speeds": [
+  0.1,
+  0.3,
+  1.0
+ ],
+ "ramp_hi": 0.9,
+ "rev_centre": 0.5,
+ "rev_amps": [
+  0.01,
+  0.02,
+  0.05
+ ],
+ "rev_speed": 0.1,
+ "rev_cycles": 3,
+ "levels": [
+  0.0,
+  0.25,
+  0.5,
+  0.75,
+  1.0
+ ],
+ "level_hold_s": 3.0,
+ "multisine_s": 40.0,
+ "multisine_hz": [
+  0.1,
+  0.17,
+  0.29,
+  0.47,
+  0.71
+ ],
+ "multisine_max": [
+  0.5,
+  0.0,
+  0.9,
+  0.9,
+  0.9,
+  0.9
+ ],
+ "multisine_seed": 5,
+ "move_v_rad_s": 0.25,
+ "load_shape": [
+  0.0,
+  0.0,
+  0.3,
+  0.3,
+  0.3,
+  0.3
+ ],
+ "curl_max": 0.8,
+ "load_max_s": 900.0,
+ "home_tol_rad": 0.12,
+ "lag_abort_rad": 0.2
+}

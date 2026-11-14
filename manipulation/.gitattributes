@@ -1,0 +1,5 @@
+# Meshes and arrays: never line-ending-normalise or text-diff them.
+*.stl    binary
+*.STL    binary
+*.npz    binary
+*.sh     text eol=lf
