@@ -31,7 +31,7 @@ Table: tab:activity-risks | Activity risks and their controls; residual risk is 
 | Handling porcelain plates | Cuts from broken plates | Trials over a padded surface; gloves and a dustpan for breakage; broken pieces in a separate bin | Low |
 | 3D printing the helmet parts | Burns from the nozzle and bed; fumes | Printer used in a ventilated room; parts left to cool before removal | Low |
 | Fitting heat-set inserts | Burns from the soldering iron | Iron kept in its stand on a heat-resistant mat; switched off after use | Low |
-| Running the LiDAR and depth camera | Laser exposure to the eyes | Both are Class 1 eye-safe devices [12], [32]; do not stare into the emitters at close range | Low |
+| Running the LiDAR and depth camera | Laser exposure to the eyes | Both are Class 1 eye-safe devices [12], [31]; do not stare into the emitters at close range | Low |
 | Cables and floor tape in the test area | Tripping | Cables routed along walls and taped down; walking path kept clear | Low |
 | Wiring the sensor helmet and cable box | Electric shock or short circuit | Work with the power off; insulated tools; fused supply | Low |
 
@@ -43,7 +43,7 @@ Table: tab:bom | Main hardware
 | Unitree R1 humanoid robot | 1 | 40,000 |
 | BrainCo Revo 2 dexterous hand | 2 | 40,000 (pair) |
 | Hesai JT128 LiDAR | 1 | 1,000 |
-| Intel RealSense D435if depth camera | 1 | ≈ 730 [33] |
+| Intel RealSense D435if depth camera | 1 | ≈ 730 [32] |
 | Sensor helmet (3D-printed PETG parts, inserts, screws) | 1 set | 35 |
 | Cable management box (USB hub, cables, printed parts) | 1 | 40 |
 | Test plates, 10.5-inch porcelain (255 mm, 522 g) | [TBD] | 20 |
@@ -449,7 +449,7 @@ quickly when the robot turns on the spot, though it was observed only once.
 two runs, at 4.0% and 4.3% of distance walked, while the net shift of the map origin was under 1.5
 cm. The relocaliser was therefore not displacing the frame, but continuously cancelling an error
 that re-accumulated at about 4% of distance. For comparison, a published benchmark over 51.9 km of
-driving reports FAST-LIO2 drift of up to 4.7% of distance travelled [34].
+driving reports FAST-LIO2 drift of up to 4.7% of distance travelled [33].
 
 ### Appendix 7C: Detection Confidence
 
@@ -563,8 +563,8 @@ was recovered to 2.9 mm and 0.6° in MuJoCo.
 ### Appendix 8B: Estimated Rim Breaking Load
 
 No published breaking load for the rim of a porcelain plate was found; tableware standards address
-impact rather than static load [35]. An estimate was therefore made from the flexural strength of
-porcelain, typically 60–80 MPa for conventional porcelain [22], treating the rim as a cantilever
+impact rather than static load [34]. An estimate was therefore made from the flexural strength of
+porcelain, typically 60–80 MPa for conventional porcelain [35], treating the rim as a cantilever
 loaded at its edge by a finger:
 
 F = σ b t² / (6 L)

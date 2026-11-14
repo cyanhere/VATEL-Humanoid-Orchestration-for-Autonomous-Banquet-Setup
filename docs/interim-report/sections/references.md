@@ -53,40 +53,40 @@ class: references
   10.1109/IROS45743.2020.9341207.
 - [21] D. Fox, W. Burgard, and S. Thrun, "The dynamic window approach to collision avoidance," *IEEE
   Robot. Autom. Mag.*, vol. 4, no. 1, pp. 23–33, 1997, doi: 10.1109/100.580977.
-- [22] W. M. Carty and U. Senapati, "Porcelain: Raw materials, processing, phase evolution, and
-  mechanical behavior," *J. Am. Ceram. Soc.*, vol. 81, no. 1, pp. 3–20, 1998, doi:
-  10.1111/j.1151-2916.1998.tb02290.x.
-- [23] E. Todorov, T. Erez, and Y. Tassa, "MuJoCo: A physics engine for model-based control," in
+- [22] E. Todorov, T. Erez, and Y. Tassa, "MuJoCo: A physics engine for model-based control," in
   *Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS)*, 2012, pp. 5026–5033, doi:
   10.1109/IROS.2012.6386109.
-- [24] M. Mittal et al., "Orbit: A unified simulation framework for interactive robot learning
+- [23] M. Mittal et al., "Orbit: A unified simulation framework for interactive robot learning
   environments," *IEEE Robot. Autom. Lett.*, vol. 8, no. 6, pp. 3740–3747, 2023.
-- [25] T. Erez, Y. Tassa, and E. Todorov, "Simulation tools for model-based robotics: Comparison of
+- [24] T. Erez, Y. Tassa, and E. Todorov, "Simulation tools for model-based robotics: Comparison of
   Bullet, Havok, MuJoCo, ODE and PhysX," in *Proc. IEEE Int. Conf. Robot. Autom. (ICRA)*, 2015, pp.
   4397–4404.
-- [26] E. Todorov, "Convex and analytically-invertible dynamics with contacts and constraints: Theory
+- [25] E. Todorov, "Convex and analytically-invertible dynamics with contacts and constraints: Theory
   and implementation in MuJoCo," in *Proc. IEEE Int. Conf. Robot. Autom. (ICRA)*, 2014, pp. 6054–6061,
   doi: 10.1109/ICRA.2014.6907751.
-- [27] A. Fitzgibbon, M. Pilu, and R. B. Fisher, "Direct least square fitting of ellipses," *IEEE
+- [26] A. Fitzgibbon, M. Pilu, and R. B. Fisher, "Direct least square fitting of ellipses," *IEEE
   Trans. Pattern Anal. Mach. Intell.*, vol. 21, no. 5, pp. 476–480, 1999.
-- [28] M. A. Fischler and R. C. Bolles, "Random sample consensus: A paradigm for model fitting with
+- [27] M. A. Fischler and R. C. Bolles, "Random sample consensus: A paradigm for model fitting with
   applications to image analysis and automated cartography," *Commun. ACM*, vol. 24, no. 6, pp.
   381–395, 1981.
-- [29] K. Hang, A. S. Morgan, and A. M. Dollar, "Pre-grasp sliding manipulation of thin objects
+- [28] K. Hang, A. S. Morgan, and A. M. Dollar, "Pre-grasp sliding manipulation of thin objects
   using soft, compliant, or underactuated hands," *IEEE Robot. Autom. Lett.*, vol. 4, no. 2, pp.
   662–669, 2019.
-- [30] W. Zhou and D. Held, "Learning to grasp the ungraspable with emergent extrinsic dexterity," in
+- [29] W. Zhou and D. Held, "Learning to grasp the ungraspable with emergent extrinsic dexterity," in
   *Proc. Conf. Robot Learn. (CoRL)*, 2022.
-- [31] C. Chi, S. Feng, Y. Du, Z. Xu, E. Cousineau, B. Burchfiel, and S. Song, "Diffusion policy:
+- [30] C. Chi, S. Feng, Y. Du, Z. Xu, E. Cousineau, B. Burchfiel, and S. Song, "Diffusion policy:
   Visuomotor policy learning via action diffusion," in *Proc. Robot.: Sci. Syst. (RSS)*, 2023.
-- [32] AIFitLab, "HESAI JT128 LiDAR," product listing. [Online]. Available:
+- [31] AIFitLab, "HESAI JT128 LiDAR," product listing. [Online]. Available:
   https://aifitlab.com/products/hesai-jt128-lidar. Accessed: Nov. 14, 2026.
-- [33] AIFitLab, "Intel RealSense depth camera D435if," product listing. [Online]. Available:
+- [32] AIFitLab, "Intel RealSense depth camera D435if," product listing. [Online]. Available:
   https://aifitlab.com/products/intel-realsense-depth-camera-d435if. Accessed: Nov. 14, 2026.
-- [34] S. Turgut, "LIO-SAM versus FAST-LIO2," Leo Drive Blog, Nov. 10, 2026. [Online]. Available:
+- [33] S. Turgut, "LIO-SAM versus FAST-LIO2," Leo Drive Blog, Nov. 10, 2026. [Online]. Available:
   https://www.leodrive.ai/blog/leo-drive-blog-1/lio-sam-versus-fast-lio2-13
-- [35] ASTM International, *Standard Test Method for Impact Resistance of Ceramic Tableware*, ASTM
+- [34] ASTM International, *Standard Test Method for Impact Resistance of Ceramic Tableware*, ASTM
   C368-88 (Reapproved 2020), 2020.
+- [35] W. M. Carty and U. Senapati, "Porcelain: Raw materials, processing, phase evolution, and
+  mechanical behavior," *J. Am. Ceram. Soc.*, vol. 81, no. 1, pp. 3–20, 1998, doi:
+  10.1111/j.1151-2916.1998.tb02290.x.
 - [36] C. Canudas de Wit, H. Olsson, K. J. Åström, and P. Lischinsky, "A new model for control of
   systems with friction," *IEEE Trans. Autom. Control*, vol. 40, no. 3, pp. 419–425, 1995.
 - [37] Unitree Robotics, "unitree_ros: R1 robot description," GitHub repository. [Online]. Available:

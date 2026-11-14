@@ -39,13 +39,13 @@ Until the AGV's holder is defined, every test uses a stack of 2–5 test plates 
 and turns only at the waist. Since the final fixture may hold the stack at a different height, the
 working height is treated as adjustable.
 
-Every motion is first developed in MuJoCo 3.14 [23] on a model of the same scene, built from the
+Every motion is first developed in MuJoCo 3.14 [22] on a model of the same scene, built from the
 manufacturers' URDF models of the R1 and the Revo 2 hand (Appendix 8F). A motion is taken to the
 robot only if it still succeeds, within the force limits, when the camera, encoder-zero and
 joint-friction errors measured on the R1 are applied (Appendix 8E). MuJoCo was chosen over Isaac Lab
-[24] (Table [[tab:simulators]]) for its contact accuracy. It performed best on robotics tests in a
-comparison of five physics engines [25], and it applies friction at every contact point rather than
-approximating it per contact patch [26], which matters for the slow sliding contacts of the push and
+[23] (Table [[tab:simulators]]) for its contact accuracy. It performed best on robotics tests in a
+comparison of five physics engines [24], and it applies friction at every contact point rather than
+approximating it per contact patch [25], which matters for the slow sliding contacts of the push and
 grasp.
 
 Table: tab:test-setup | Test setup on the robot and in simulation
@@ -65,7 +65,7 @@ Table: tab:simulators | Simulator comparison
 |  | MuJoCo (CPU) | MuJoCo Warp (GPU) | Isaac Lab |
 | --- | --- | --- | --- |
 | Use in this project | Motion design, evaluation, log replay, system identification | RL (current) | Early RL experiments |
-| Strength | Accurate, stable contact [25] | Thousands of parallel environments, same physics | Thousands of parallel environments |
+| Strength | Accurate, stable contact [24] | Thousands of parallel environments, same physics | Thousands of parallel environments |
 | Limitation found | One environment per CPU core | GPU memory limits the number of plates per scene | Collision coarser than grasp clearance; out of memory with 3–5 plates |
 
 ### 8.3. Plate Perception
@@ -81,9 +81,9 @@ Table: tab:stack-failures | Stack localisation failures and fixes
 | Failure observed | Change made | Result |
 | --- | --- | --- |
 | Glare removes depth data, mainly in the well | Outline found from colour edges; depth sampled on the rim only | Height and centre unaffected |
-| At oblique views the rim appears elliptical; a circle fit gave up to 21% diameter error | Ellipse fit [27] | Diameter 249–256 mm (true 255 mm) |
+| At oblique views the rim appears elliptical; a circle fit gave up to 21% diameter error | Ellipse fit [26] | Diameter 249–256 mm (true 255 mm) |
 | The outline followed both edges of the gapped rim; diameter read about 200 mm | Outline follows the outer rim edge only | Centre repeatable to 0.25–0.30 mm |
-| Robot lean (IMU pitch 3.0°) made the level table appear tilted 2.5° | Table plane fitted around the stack (RANSAC [28]); heights measured from it | Heights unaffected by lean and camera-pose error |
+| Robot lean (IMU pitch 3.0°) made the level table appear tilted 2.5° | Table plane fitted around the stack (RANSAC [27]); heights measured from it | Heights unaffected by lean and camera-pose error |
 | The well forms a second, lower height cluster; a high depth percentile was biased upward by noise | Median of the topmost (rim) cluster, re-centred until stable | Stable top-plate height |
 | Counting side edges under-counted tall stacks | Plate count = stack height ÷ nesting pitch | Exact for 1–20 plates in synthetic tests |
 
@@ -140,7 +140,7 @@ rigid fingertips have no force sensing at the tip.
 ![fig:r1-arm | R1 arm (left) and simulated fingertip approach (right)](../assets/interim/manip-r1-reach.webp)
 
 The plate must therefore be displaced before it can be grasped. Pre-grasp manipulation of thin
-objects has been shown by sliding an object to a table edge [29] or pushing it against a wall [30],
+objects has been shown by sliding an object to a table edge [28] or pushing it against a wall [29],
 both with a gripper and a wrist. A stack has no such edge, so the plate beneath serves as the
 support. Concepts were evaluated in MuJoCo (Section 8.2). Pressing the near rim to tip the far rim
 up (Figure [[fig:rejected-press]]) was rejected: the near rim can drop only by the rim gap, so the
@@ -192,7 +192,7 @@ Table: tab:control-approaches | Control approaches
 | --- | --- | --- | --- |
 | Scripted state machine | Interpretable; each step sensor-checked; no training data | Hand-tuned; limited generalisation | Baseline; implemented |
 | Reinforcement learning (RL) | Generalises through training in simulation | Needs accurate contact simulation and reward design | Parallel development |
-| Imitation learning, e.g. diffusion policy [31] | Learns from demonstrations; handles multimodal actions | Needs teleoperation and demonstrations of a dexterous push | Fallback |
+| Imitation learning, e.g. diffusion policy [30] | Learns from demonstrations; handles multimodal actions | Needs teleoperation and demonstrations of a dexterous push | Fallback |
 
 ![fig:pick-sequence | Pick sequence in simulation](../assets/interim/manip-state-machine.webp)
 
