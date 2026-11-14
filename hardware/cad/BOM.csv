@@ -1,0 +1,77 @@
+﻿Category,ID,Item,Spec / file,Qty,Buy,Fit-check material,Final material,Settings,Goes into,Est. filament (g),Notes
+Printed,P1,Crest (spine),stl_print/P1_crest (PLA).stl,1,,PLA,ASA,"4 walls, 30 % gyroid, 0.2 mm, tree supports (36 cm2)",,106,camera face on the bed
+Printed,P2,Side piece L,stl_print/P2_side_piece_L (PETG).stl,1,,PETG,PETG,"4 walls, 40 % gyroid, 0.2 mm, tree supports (22 cm2)",,46,"ear cup outer face on the bed; PETG even for the fit-check (PLA would clamp ~2x harder and can crack); v0.8: skull tab (no support), smooth ear-cup rim"
+Printed,P3,Side piece R,stl_print/P3_side_piece_R (PETG).stl,1,,PETG,PETG,"4 walls, 40 % gyroid, 0.2 mm, tree supports (22 cm2)",,47,"ear cup outer face on the bed; PETG even for the fit-check; v0.8: skull tab (no support), smooth ear-cup rim"
+Printed,P4,Lidar seat plate,stl_print/P4_lidar_seat_plate (PETG).stl,1,,PETG + H19 inserts,"CNC Al 6061 4 mm (drill + tap M3 instead of inserts)","100 % infill, 0.2 mm, no supports",,26,"v0.9: 5 M3 short heat-set inserts (H19: 3 for P4b, 2 for P7) pressed in flush from the top; screws snug only"
+Printed,P4b,Lidar adapter plate,stl_print/P4b_lidar_adapter (PETG).stl,1,,PETG,"CNC Al 6061 4 mm (Hesai recommends a grounded metal mount)","100 % infill, 0.2 mm, no supports",P4 (3 x H21),18,"v0.9 new: JT128 screws to it from below (H4, countersunk flush), it screws to P4 from above; underside on the bed"
+Printed,P5,Camera cradle,stl_print/P5_camera_cradle (PETG).stl,1,,PETG,CNC Al 6061 4 mm (dxf/),"100 % infill, 0.2 mm, no supports",,19,countersinks face up as printed; v0.8: right cradle screw countersunk
+Printed,P6,Brow bumper (hood),stl_print/P6_brow_bumper (TPU).stl,1,,TPU 95A,TPU 95A,"3 walls, 25 % gyroid, slow, supports (0 cm2)",,18,v0.8: USB-C outlet at the back of the right cheek; left ear only
+Printed,P7,Plug cradle (v0.11),stl_print/P7_connector_guard (PETG).stl,1,,PETG,PETG,"4 walls, 40 % gyroid, 0.2 mm, no support",P4 (2 x H9),6,"v0.11: one piece, no cable former (P7b takes the pull); _mirror file if the plug cable leaves to the right"
+Printed,P7b,Cable clip on the rear clamp (v0.10),stl_print/P7b_cable_clip (TPU).stl,1,,TPU 95A,TPU 95A,"3 walls, 25 % gyroid, slow",rear clamp flanges (2 zip ties),4,JT128 + RealSense cables meet here and go on in one sleeve
+Printed,P8a,Crown pads 1-4,stl_print/P8a_crown_pad_1..4 (TPU).stl,4,,TPU 95A,TPU 95A,"100 % infill, slow",P1 crown pockets,4,four different files; CA-glue into pockets
+Printed,P8b,Forehead pad,stl_print/P8b_forehead_pad (TPU).stl,1,,TPU 95A,TPU 95A,"100 % infill, slow",P1 forehead pocket,1,CA-glue
+Printed,P8c,Ear ring pads L + R,stl_print/P8c_ear_ring_pad_L (TPU).stl + _R (TPU).stl,2,,TPU 95A,TPU 95A,"100 % infill, slow, tree supports (9 cm2 each)",P2/P3 ear cups,3,CA-glue; 0.5 mm preload; v0.8: one smooth cone
+Printed,P8d,Rear pads L + R,stl_print/P8d_rear_pad_L (TPU).stl + _R (TPU).stl,2,,TPU 95A,TPU 95A,"100 % infill, slow",P2/P3 rear pockets,2,CA-glue
+Printed,P9,Roll hoop,stl_print/P9_roll_hoop (PETG).stl,1,,PETG,"Ø6 steel / 304 rod ~300 mm, bent R42","100 % infill, brim, supports (10 cm2)",P4 ears,9,printed hoop = fit/clearance check only; optional for the first fit
+Cable box,B3,Take-up carriage,stl_print/B3_takeup_carriage (PETG).stl,1,,PETG,PETG,"4 walls, 40 % gyroid; 1 M3 short insert (spring)",left column (slides),33,back cheek on the bed; tenons on the bridge ends
+Cable box,B3b,Carriage front cheek,stl_print/B3b_carriage_cheek (PETG).stl,1,,PETG,PETG,"4 walls, 40 % gyroid",B3 (axle + tenons),27,outer face on the bed (nut pocket down)
+Cable box,B4,Take-up pulley,stl_print/B4_takeup_pulley (PETG).stl,1,,PETG,PETG,"4 walls, 40 % gyroid, 0.15 mm",B3 on M5 axle (1 x 627ZZ),45,"two grooves pitch R28; one bearing seat 22.15 x 7 under the cables (v2.8)"
+Cable box,B5,Corner hook L,stl_print/B5_handle_hook_L (PETG).stl,1,,PETG,PETG,"100 % infill",B9 top (2 x M3x10) on the holder's left back corner,25,"top face on the bed (lips up); v2.4: arm on the corner + side arm, outer lip, inner tooth"
+Cable box,B5,Corner hook R,stl_print/B5_handle_hook_R (PETG).stl,1,,PETG,PETG,"100 % infill",B9 top (2 x M3x10) on the holder's right back corner,25,"mirror image of L"
+Cable box,B7,Spring drum,stl_print/B7_spring_drum (PETG).stl,1,,PETG,PETG,"100 % infill, 0.15 mm",B10 fork on M4 axle,3,support under the top flange
+Cable box,B9,Top cap,stl_print/B9_top_cap (PETG).stl,1,,PETG,PETG,"4 walls, 40 % gyroid; 10 M3 short inserts, 2 magnets",between the panels (top),29,top face on the bed
+Cable box,B10,Bottom cap,stl_print/B10_bottom_cap (PETG).stl,1,,PETG,PETG,"4 walls, 40 % gyroid; 8 M3 short inserts, 2 magnets",between the panels (bottom),24,bottom face on the bed; drum fork
+Cable box,B11,U-turn former + tie rib,stl_print/B11_uturn_former (PETG).stl,1,,PETG,PETG,"4 walls, 30 % gyroid; 2 M3 short inserts",B1 (2 x M3x8),32,front face on the bed
+Cable box,B12,Hub cradle,stl_print/B12_hub_cradle (PETG).stl,1,,PETG,PETG,"4 walls, 30 % gyroid; 4 M3 short inserts",B1 (2 x M3x8); end lips in the right panel notch,21,"front face on the bed; v2.4: for the measured 121.5 x 32.4 x 14 hub"
+Cable box,B13,Cable spool,stl_print/B13_cable_spool (PETG).stl,1,,PETG,PETG,"4 walls, 30 % gyroid",back of B12 (2 x M3x8),15,disc face on the bed
+Cable box,B14,Strap ears L + R,stl_print/B14_strap_ear_L (PETG).stl + _R (PETG).stl,2,,PETG,PETG,"100 % infill",side panels -> B10 (2 x M3x12 each),26,"front face on the bed; v2.5: 3 mm longer, screws on a diagonal"
+Laser cut,B1,Front panel,laser_cut/B1_front_panel (3mm acrylic).dxf,1,,3 mm cast acrylic,3 mm cast acrylic,,faces the robot,,"145 x 261; 8 x 3.4 holes, 12 slots, window 58 x 23"
+Laser cut,B2,Lid,laser_cut/B2_lid (3mm acrylic).dxf,1,,3 mm cast acrylic,3 mm cast acrylic,,tabs + 4 magnets,,"145 x 261; 4 x 6 magnet holes, 13 slots, finger notch"
+Laser cut,B6,Side panels L + R,laser_cut/B6_side_panel_L (3mm acrylic).dxf + _R,2,,3 mm cast acrylic,3 mm cast acrylic,,caps (3 x M3 each),,"49 x 261; R has the hub notch + 4 tie slots (v2.4)"
+Laser cut,B8,Divider,laser_cut/B8_divider (3mm acrylic).dxf,1,,3 mm cast acrylic,3 mm cast acrylic,,"tabs in B1, B2, B10, B11",,49 x 223
+Box hardware,C1,Constant-force spring,"~4 N (0.4 kgf), strip <= 10 mm, free coil ID 11.3-12.3 mm (grips the 13.5 drum), extension >= 150 mm",1,1,,,,B7 -> B3 lower bridge,,"3-5 N is fine (~1.3 N per cable, ~2.6 N on the head)"
+Box hardware,C2,Ball bearing,NSK 627ZZ (7 x 22 x 7),1,1,,,,B4 pulley,,
+Box hardware,C3,Pulley axle,ISO 4762 M5 x 35 + ISO 4032 M5 nut,1 + 1,2 + 2,,,,B3 -> B4 -> B3b,,
+Box hardware,C4,Drum axle,ISO 4762 M4 x 30 + M4 washer + M4 nyloc,1 + 1 + 1,2 + 2 + 2,,,,B10 fork -> B7 -> fork,,nyloc only snug (the drum must spin)
+Box hardware,C6,"Heat-set inserts, short","brass M3 x 3-5 long, OD ~4.6 (4.0 holes; B3: 3-4 long)",25,30,,,,"B9 (10), B10 (8), B11 (2), B12 (4), B3 (1)",,not the 5.7 mm type
+Box hardware,C7,Lid magnets,6 x 3 mm N42 disc,8,10,,,,"4 pressed into the caps, 4 glued into the B2 lid",,cap magnets same pole out; lid magnets opposite pole facing; do not press into acrylic
+Box hardware,C8,Hook screws,ISO 10642 M3 x 10,4,6,,,,B5 -> B9 top,,
+Box hardware,C9,Spring screw,ISO 7380 M3 x 5 + washer,1,2,,,,spring end -> B3 (from below),,
+Box hardware,C10,Velcro straps,20 mm x >= 200 mm,2,2,,,,B14 ears <-> R1 U-frame bars,,stop the box bottom swinging
+Box hardware,C11,Dual Lock / velcro tape,25 mm,~15 cm,1 roll,,,,hub <-> B1 inside face; splitter <-> divider,,
+Box hardware,C12,Spiral wrap (optional),"10 mm, ~200 mm",1,1,,,,"the four jumpers, B1 window -> Jetson panel",,not on the head span (those cables slide through the top slot)
+Box hardware,C13,Zip ties + stick-on bases,"2.5-3.6 mm ties, ~6 adhesive bases",as needed,1 pack,,,,"P7b, B11 rib, helmet runs",,
+Box hardware,C14,JT128 power adapter,XT30 male -> DC5521 male,1,1,,,,Jetson XT30 -> splitter DC5521,,measure the XT30 voltage first (9-32 V)
+Box hardware,C15,Velcro cable ties,"reusable, 10-12 mm wide, ~150 mm",2,2,,,,spare branch cable hanks <-> right panel slots,,
+Box hardware,C16,Panel screws,ISO 7380 M3 x 8 button head,16,20,,,,"B1 -> caps (4), side panels -> caps (6), B1 -> B11/B12 (4), B13 -> B12 (2)",,2 mm hex
+Box hardware,C17,Ear screws,ISO 7380 M3 x 12 button head,4,5,,,,B14 + side panel -> B10,,heads sunk 4 mm in the ear
+Box hardware,C18,Acrylic sheet,3 mm cast acrylic >= 460 x 270 mm,1,1,,,,"B1, B2, B6 L/R, B8",,measure the thickness first
+Box hardware,C19,Magnet glue,2-part epoxy or gel CA,-,1,,,,C7,,
+Hardware,H1,Hinge pin,ISO 2338 dowel pin Ø4 h8 x 32 (steel or A1),2,4,,,,P1 lugs + P2/P3 knuckles,,pressed in from the front of the front lug
+Hardware,H2,Pin retainer,ISO 4026 grub screw M3 x 4 flat point,4,10,,,,tapped M3 in the P1 lug barrels,,1.5 mm hex
+Hardware,H3,Clamp thumbscrew,DIN 464 knurled thumb screw M5 x 25,1,2,,,,P2 flange -> H14 nut,,tighten until the flanges touch
+Hardware,H4,Lidar screws,"ISO 10642 countersunk M3 x 8, class >= 4.8",3,5,,,,P4b (from below) -> the JT128's own M3 holes,,"4 mm into the 6 mm holes (manual: 3-5 mm past the plate); 0.5-0.6 Nm; 2 mm hex"
+Hardware,H6,Plate screws,ISO 10642 countersunk M3 x 10,5,8,,,,P4 -> H15 inserts in the P1 collar (4); right cradle screw H8 (1),,2 mm hex
+Hardware,H7,Camera screws,ISO 10642 countersunk M3 x 6,2,4,,,,P5 (from behind) -> D435if,,max 3 mm into the camera
+Hardware,H8,Cradle screws,left: ISO 7380 button head M3 x 12; right: ISO 10642 M3 x 10 (counted under H6),1,2,,,,"left through the P6 ear + P5, right flush in P5 -> H15 inserts in the P1 face",,left with the H16 washer
+Hardware,H9,Guard screws,ISO 7380 button head M3 x 6,2,4,,,,P7 -> H19 M3 inserts in P4,,
+Hardware,H11,Hoop retainers,"shaft collar Ø6 bore, OD <= 12, width <= 5, set screw",2,2,,,,P9 legs under the P4 ears,,only if the hoop is fitted
+Hardware,H14,Clamp nut,ISO 4032 hex nut M5,1,2,,,,captive in the P3 flange pocket,,
+Hardware,H15,Heat-set inserts,"brass M3 x 5.7, OD 4.6, for a Ø4.0 hole (e.g. ruthex M3x5.7)",6,12,,,,4 in the P1 collar + 2 in the P1 face ends,,~200-220 C in PLA; 245-260 C in ASA
+Hardware,H16,Washer,ISO 7089 M3 (3.2 / 7 / 0.5),1,4,,,,under the left H8 on the TPU hood ear,,
+Hardware,H17,Skull screws,ISO 4762 socket head M3 x 16,2,4,,,,P2/P3 skull tab -> the R1's threaded hole B (middle pair),,2.5 mm hex; check the hole takes >= 7 mm of screw
+Hardware,H18,Washers,"ISO 7089 M3 (3.2 / 7 / 0.5), same as H16",2,4,,,,under H17 in the tab's counterbore,,
+Hardware,H19,"Heat-set inserts, short","brass M3 x 3.0 or 4.0 OD 4.6 (Ø4.0 hole), e.g. CNC Kitchen M3 short / ruthex M3 x 4.0",5,8,,,,"printed P4: 3 under the P4b ears, 2 under the P7 guard",,P4 is 4 mm thick: the standard M3 x 5.7 insert is too long
+Hardware,H21,Adapter screws,ISO 7380 button head M3 x 6 (same as H9),3,5,,,,P4b ears -> H19 inserts in P4,,3 mm engaged; 2 mm hex
+Hardware,-,Clamp shims,M5 shim washer 0.5 mm (e.g. DIN 988 5 x 10 x 0.5),0-2,4,,,,between the rear flanges,,only to reduce the clamp force
+Hardware,H10,Cable anchors,zip ties + stick-on zip-tie bases / P-clips,as needed,1 pack,,,,P1 rear + torso handle,,
+Final only,H5,Lidar locating pins,size not in the manual (round hole at 40 deg + slot at 270 deg in the JT128 base),2,,,,,JT128 <-> P4b,,optional: the countersunk H4 screws centre the lidar
+Final only,H12,Hoop sleeve,heat-shrink or TPU tube for Ø6 rod,1,~300 mm,,,,steel P9,,not needed for the fit-check
+Sensor,S1,Hesai JT128,,1,(have),,,,on P4b with H4 (connector pointing back),,
+Sensor,S2,Intel RealSense D435if,,1,(have),,,,on P5 with H7,,
+Tool,-,Soldering iron + M3 heat-set tip,,1,,,,,"H15 inserts (P1), H19 inserts (P4)",,
+Tool,-,Tap M3 and tap wrench,,1 each,,,,,P1 barrels (4x M3),,
+Tool,-,Ø4.0 drill bit or Ø4 H8 reamer,,1,,,,,hinge bores in P1 and P2/P3,,printed holes come out undersize
+Tool,-,Hex keys 1.5 / 2 / 2.5 mm,,1 set,,,,,,,
+Tool,-,Ø3 pin punch + small hammer or vise,,1,,,,,press / remove H1 dowels,,
+Consumable,-,CA glue,,1,,,,,P8 pads into their pockets,,
